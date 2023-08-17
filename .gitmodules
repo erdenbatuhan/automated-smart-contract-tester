@@ -1,0 +1,6 @@
+[submodule "framework-comparison"]
+	path = framework-comparison
+	url = git@github.com:erdenbatuhan/automated-smart-contract-tester-comparison.git
+[submodule "thesis-docs"]
+	path = thesis-docs
+	url = git@github.com:erdenbatuhan/automated-smart-contract-tester-docs.git
