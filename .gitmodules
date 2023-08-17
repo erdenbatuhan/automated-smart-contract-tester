@@ -4,3 +4,6 @@
 [submodule "thesis-docs"]
 	path = thesis-docs
 	url = git@github.com:erdenbatuhan/automated-smart-contract-tester-docs.git
+[submodule "bbse-bank-2.0"]
+	path = example-projects/bbse-bank-2.0
+	url = git@github.com:erdenbatuhan/bbse-bank-2.0.git
