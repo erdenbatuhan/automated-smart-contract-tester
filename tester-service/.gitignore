@@ -1,7 +1,10 @@
-### Custom
+### User-defined ignores
 
 # MacOS
 .DS_Store
+
+# Application Properties
+application-properties.js
 
 # Projects
 projects/
