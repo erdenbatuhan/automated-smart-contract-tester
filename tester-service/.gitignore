@@ -4,7 +4,7 @@
 .DS_Store
 
 # Application Properties
-application-properties.js
+application-properties.json
 
 # Projects
 projects/
