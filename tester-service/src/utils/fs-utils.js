@@ -56,6 +56,8 @@ const readProjectFromZipBuffer = async (projectName, zipBuffer) => {
       throw new HTTPError(500, removalErr.message || `An error occurred while removing the temp folder (${tempFolderPath}).`);
     }
   }
+
+  return projectName;
 };
 
 module.exports = { readProjectFromZipBuffer };
