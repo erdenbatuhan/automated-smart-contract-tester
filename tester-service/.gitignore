@@ -3,11 +3,11 @@
 # MacOS
 .DS_Store
 
-# Application Properties
+# Application properties
 application-properties.json
 
-# Projects
-projects/
+# Projects uploaded
+upload/projects/
 
 
 ### https://github.com/github/gitignore/blob/main/Node.gitignore

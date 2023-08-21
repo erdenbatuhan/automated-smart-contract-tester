@@ -1,8 +1,8 @@
 const path = require("path");
 
 module.exports.PATH_ROOT = path.dirname(require.main.filename);
-module.exports.PATH_PROJECT_TEMPLATE = path.join(this.PATH_ROOT, "project-template");
-module.exports.PATH_PROJECTS_DIR = path.join(this.PATH_ROOT, "projects");
+module.exports.PATH_PROJECT_TEMPLATE = path.join(this.PATH_ROOT, "templates", "project");
+module.exports.PATH_PROJECTS_DIR = path.join(this.PATH_ROOT, "upload", "projects");
 
 module.exports.UPLOAD_REQUIREMENT_FILES = [ "remappings.txt", ".gitmodules" ];
 module.exports.UPLOAD_REQUIREMENT_FOLDERS = [ "test", "src", "solution" ];
