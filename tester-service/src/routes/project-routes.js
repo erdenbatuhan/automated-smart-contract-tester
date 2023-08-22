@@ -26,7 +26,7 @@ router.post("/:projectName/upload", upload.single("projectZip"), async (req, res
   }
 
   projectController.createNewProject(projectName, zipBuffer).then((imageId) => {
-    res.status(200).json({ imageId });
+    res.status(200).json({ projectName, imageId });
   }).catch(err => {
     res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
   });
