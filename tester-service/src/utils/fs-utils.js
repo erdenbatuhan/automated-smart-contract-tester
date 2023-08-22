@@ -4,7 +4,7 @@ const unzipper = require("unzipper");
 
 const logger = require("./logger-utils");
 const constantUtils = require("./constant-utils");
-const { HTTPError } = require("./http-error");
+const HTTPError = require("../errors/http-error");
 
 const _checkDirectoryContents = async (extractedPath) => {
   const extractedFiles = await fs.promises.readdir(extractedPath);

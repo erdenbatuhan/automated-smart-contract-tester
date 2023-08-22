@@ -25,8 +25,8 @@ router.post("/:projectName/upload", upload.single("projectZip"), async (req, res
     return res.status(400).json({ error: err.message || "An error occurred while reading the parameters." });
   }
 
-  projectController.createNewProject(projectName, zipBuffer).then((imageId) => {
-    res.status(200).json({ projectName, imageId });
+  projectController.createNewProject(projectName, zipBuffer).then((project) => {
+    res.status(200).json(project);
   }).catch(err => {
     res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
   });
