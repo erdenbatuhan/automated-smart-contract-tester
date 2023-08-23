@@ -16,7 +16,7 @@ const getDockerContext = (projectName) => {
   return path.dirname(dockerfilePath);
 };
 
-const extractImageIdFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(constantUtils.DOCKER_STREAM_REGEX_IMAGE_ID)[1];
+const extractImageIdFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(/Successfully built ([a-f0-9]+)/)[1];
 
 const createDockerImage = (projectName) => {
   logger.info(`Creating the docker image for ${projectName}..`);
@@ -47,18 +47,25 @@ const createDockerImage = (projectName) => {
       },
       // The callback function triggered at each step
       ({ stream }) => {
-        if (constantUtils.DOCKER_STREAM_REGEX_STEP.test(stream)) {
+        if (/^Step \d+\/\d+ : .+$/.test(stream)) {
           logger.info(stream);
         }
       }
     );
+  }).then((imageId) => {
+    logger.info(`Created the docker image (${imageId}) for ${projectName}!`);
+    return imageId;
   }).catch(err => {
     logger.error(`Could not create the docker image for ${projectName}!`);
     throw err;
   }).finally(async () => {
+    logger.info(`Pruning unused containers and images..`);
+
     // Prune unused containers and images
     await dockerode.pruneContainers();
     await dockerode.pruneImages();
+
+    logger.info(`Pruned unused containers and images!`);
   });
 };
 

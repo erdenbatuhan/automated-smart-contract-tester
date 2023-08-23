@@ -6,8 +6,8 @@
 # Application properties
 application-properties.json
 
-# Projects uploaded
-upload/projects/
+# Application storage (e.g. projects uploaded)
+application-storage/
 
 
 ### https://github.com/github/gitignore/blob/main/Node.gitignore

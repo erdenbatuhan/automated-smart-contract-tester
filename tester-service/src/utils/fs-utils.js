@@ -43,7 +43,7 @@ const readProjectFromZipBuffer = async (projectName, zipBuffer) => {
 
     // Copy necessary files from the project template to the project folder
     await fs.copy(constantUtils.PATH_PROJECT_TEMPLATE, destinationPath, { overwrite: true }); // Must overwrite!
-    logger.info(`Successfully read ${projectName} from the zip buffer and writing it to the projects folder!`);
+    logger.info(`Read ${projectName} from the zip buffer and wrote it to the projects folder!`);
   } catch (err) {
     logger.error(`An error occurred while reading ${projectName} from the zip buffer and writing it to the projects folder!`);
     throw new HTTPError(err.statusCode || 500, err.message || "An error occurred.");
