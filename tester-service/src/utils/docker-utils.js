@@ -23,7 +23,7 @@ const getDockerContext = (projectName) => {
 
 const extractImageIdFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(/Successfully built ([a-f0-9]+)/)[1];
 
-const pruneDocker = async () => {
+const pruneDocker = async (dockerode) => {
   logger.info(`Pruning unused containers and images..`);
 
   // Prune unused containers and images
@@ -74,7 +74,7 @@ const createDockerImage = (projectName) => {
     logger.error(`Could not create the Docker image for the project ${projectName}! (Error: ${err.message || null})`);
     throw err;
   }).finally(async () => {
-    await pruneDocker();
+    await pruneDocker(dockerode);
   });
 };
 
@@ -84,15 +84,11 @@ const runDockerContainer = async (projectName, cmd, srcFolder) => {
   return new Dockerode().run(projectName, cmd, [stdout, stderr], {
     Tty: false,
     HostConfig: {
-      Binds: [
-        `${path.join(constantUtils.PATH_PROJECTS_DIR, projectName, srcFolder)}:/app/src`
-      ]
+      AutoRemove: true,
+      Binds: [ `${path.join(constantUtils.PATH_PROJECTS_DIR, projectName, srcFolder)}:/app/src` ]
     }
   }).then(async ([ { StatusCode }, container ]) => {
     const containerName = await container.inspect().then(({ Name }) => Name.substr(1)); // Get the container name without the leading slash
-
-    // Remove the container
-    await container.remove();
 
     if (StatusCode === 0) {
       logger.info(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode}`);

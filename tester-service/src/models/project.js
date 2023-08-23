@@ -14,6 +14,7 @@ const ProjectSchema = new mongoose.Schema(
     projectName: { type: String, required: true, unique: true },
     dockerImageID: { type: String, required: true },
     deployer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    executorEnvironmentConfig: { type: Object },
     tests: [TestSchema],
   }
 );

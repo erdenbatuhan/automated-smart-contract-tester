@@ -27,6 +27,10 @@ app.listen(appProps["port"], () => {
 const healthCheckRoutes = require("./src/routes/health-check-routes");
 app.use("/", healthCheckRoutes);
 
+// Routes: Forge
+const forgeRoutes = require("./src/routes/forge-routes");
+app.use("/forge", forgeRoutes);
+
 // Routes: Project
 const projectRoutes = require("./src/routes/project-routes");
 app.use("/project", projectRoutes);

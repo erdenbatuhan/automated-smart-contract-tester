@@ -5,7 +5,7 @@ const fsUtils = require("../utils/fs-utils");
 const dockerUtils = require("../utils/docker-utils");
 const testOutputUtils = require("../utils/test-output-utils");
 
-const createNewProject = async (projectName, zipBuffer) => {
+const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfig) => {
   // Read project from zip buffer and create Docker image
   await fsUtils.readProjectFromZipBuffer(projectName, zipBuffer);
   const imageId = await dockerUtils.createDockerImage(projectName);
@@ -22,6 +22,7 @@ const createNewProject = async (projectName, zipBuffer) => {
     {
       dockerImageID: imageId,
       deployer: null,
+      executorEnvironmentConfig,
       tests: testNames.map(testName => ({ ...testName, weight: averageTestWeight }))
     },
     { upsert: true, new: true }
