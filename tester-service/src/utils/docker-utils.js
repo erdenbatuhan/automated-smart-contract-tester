@@ -23,6 +23,16 @@ const getDockerContext = (projectName) => {
 
 const extractImageIdFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(/Successfully built ([a-f0-9]+)/)[1];
 
+const pruneDocker = async () => {
+  logger.info(`Pruning unused containers and images..`);
+
+  // Prune unused containers and images
+  await dockerode.pruneContainers();
+  await dockerode.pruneImages();
+
+  logger.info(`Pruned unused containers and images!`);
+}
+
 const createDockerImage = (projectName) => {
   logger.info(`Creating the Docker image for the project ${projectName}..`);
   const dockerode = new Dockerode();
@@ -64,13 +74,7 @@ const createDockerImage = (projectName) => {
     logger.error(`Could not create the Docker image for the project ${projectName}! (Error: ${err.message || null})`);
     throw err;
   }).finally(async () => {
-    logger.info(`Pruning unused containers and images..`);
-
-    // Prune unused containers and images
-    await dockerode.pruneContainers();
-    await dockerode.pruneImages();
-
-    logger.info(`Pruned unused containers and images!`);
+    await pruneDocker();
   });
 };
 
