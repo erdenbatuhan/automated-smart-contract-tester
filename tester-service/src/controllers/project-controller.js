@@ -1,24 +1,28 @@
 const Project = require("../models/project");
 
+const constantUtils = require("../utils/constant-utils");
 const fsUtils = require("../utils/fs-utils");
 const dockerUtils = require("../utils/docker-utils");
+const testOutputUtils = require("../utils/test-output-utils");
 
 const createNewProject = async (projectName, zipBuffer) => {
-  // Read project from zip buffer and create docker image
+  // Read project from zip buffer and create Docker image
   await fsUtils.readProjectFromZipBuffer(projectName, zipBuffer);
   const imageId = await dockerUtils.createDockerImage(projectName);
 
-  // Run docker container to get the tests
-  const tests = [];
-  const averageTestWeight = 1.0 / tests.length;
+  // Run the Docker container to retrieve the names of the tests and assign an average weight to each test
+  const testOutput = await dockerUtils.runDockerContainer(
+    projectName, constantUtils.FORGE_COMMANDS.LIST_TEST_NAMES, constantUtils.PROJECT_FOLDERS.SOLUTION);
+  const testNames = testOutputUtils.extractTestNamesFromTestListOutput(testOutput);
+  const averageTestWeight = 1.0 / testNames.length;
 
-  // Save the project to DB (or update it if it exists), and then return it
+  // Save the project in the DB (or update it if it already exists)
   return await Project.findOneAndUpdate(
     { projectName },
     {
       dockerImageID: imageId,
       deployer: null,
-      tests: tests.map(testName => ({ testName, weight: averageTestWeight }))
+      tests: testNames.map(testName => ({ ...testName, weight: averageTestWeight }))
     },
     { upsert: true, new: true }
   );

@@ -2,6 +2,11 @@ const fs = require("fs");
 const path = require("path");
 const Dockerode = require("dockerode"); // https://github.com/apocas/dockerode
 
+// Streams to capture stdout and stderr
+const streams = require("memory-streams")
+const stdout = new streams.WritableStream()
+const stderr = new streams.WritableStream()
+
 const logger = require("./logger-utils");
 const constantUtils = require("./constant-utils");
 
@@ -19,11 +24,11 @@ const getDockerContext = (projectName) => {
 const extractImageIdFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(/Successfully built ([a-f0-9]+)/)[1];
 
 const createDockerImage = (projectName) => {
-  logger.info(`Creating the docker image for ${projectName}..`);
+  logger.info(`Creating the Docker image for the project ${projectName}..`);
   const dockerode = new Dockerode();
 
   return new Promise(async (resolve, reject) => {
-    // Create the docker image
+    // Create the Docker image
     let stream;
     try {
       stream = await dockerode.buildImage({
@@ -53,10 +58,10 @@ const createDockerImage = (projectName) => {
       }
     );
   }).then((imageId) => {
-    logger.info(`Created the docker image (${imageId}) for ${projectName}!`);
+    logger.info(`Created the Docker image (${imageId}) for the project ${projectName}!`);
     return imageId;
   }).catch(err => {
-    logger.error(`Could not create the docker image for ${projectName}!`);
+    logger.error(`Could not create the Docker image for the project ${projectName}! (Error: ${err.message || null})`);
     throw err;
   }).finally(async () => {
     logger.info(`Pruning unused containers and images..`);
@@ -69,4 +74,33 @@ const createDockerImage = (projectName) => {
   });
 };
 
-module.exports = { createDockerImage };
+const runDockerContainer = async (projectName, cmd, srcFolder) => {
+  logger.info(`Running a Docker container for ${projectName} with the command '${cmd.join(" ")}'..`);
+
+  return new Dockerode().run(projectName, cmd, [stdout, stderr], {
+    Tty: false,
+    HostConfig: {
+      Binds: [
+        `${path.join(constantUtils.PATH_PROJECTS_DIR, projectName, srcFolder)}:/app/src`
+      ]
+    }
+  }).then(async ([ { StatusCode }, container ]) => {
+    const containerName = await container.inspect().then(({ Name }) => Name.substr(1)); // Get the container name without the leading slash
+
+    // Remove the container
+    await container.remove();
+
+    if (StatusCode === 0) {
+      logger.info(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode}`);
+      return stdout.toString();
+    } else {
+      logger.error(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode}`);
+      throw new Error(stderr.toString());
+    }
+  }).catch(err => {
+    logger.error(`Could not run the Docker container for ${projectName} with the command '${cmd.join(" ")}'!`);
+    throw err;
+  });
+};
+
+module.exports = { createDockerImage, runDockerContainer };
