@@ -11,3 +11,5 @@ while IFS= read -r line; do
     forge install "$library" --no-commit
   fi
 done < .gitmodules
+
+echo "All libraries installed!"

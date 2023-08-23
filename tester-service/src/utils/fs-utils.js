@@ -6,6 +6,8 @@ const logger = require("./logger-utils");
 const constantUtils = require("./constant-utils");
 const HTTPError = require("../errors/http-error");
 
+const readFile = (filename) => fs.readFileSync(filename, "utf-8");
+
 const checkDirectoryContents = async (extractedPath) => {
   const extractedFiles = await fs.promises.readdir(extractedPath);
   const extractedFolders = await fs.promises.readdir(extractedPath, { withFileTypes: true })
@@ -60,4 +62,4 @@ const readProjectFromZipBuffer = async (projectName, zipBuffer) => {
   return projectName;
 };
 
-module.exports = { readProjectFromZipBuffer };
+module.exports = { readFile, readProjectFromZipBuffer };

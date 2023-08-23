@@ -76,18 +76,20 @@ const createDockerImage = (projectName) => {
   });
 };
 
-const runDockerContainer = async (projectName, cmd, srcFolder) => {
+const runDockerContainer = async (projectName, cmd, srcFolder=null) => {
   logger.info(`Running a Docker container for ${projectName} with the command '${cmd.join(" ")}'..`);
   const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
 
   return new Dockerode().run(projectName, cmd, [stdout, stderr], {
     Tty: false,
     HostConfig: {
-      AutoRemove: true,
-      Binds: [ `${path.join(constantUtils.PATH_PROJECTS_DIR, projectName, srcFolder)}:/app/src` ]
+      Binds: srcFolder ? [ `${path.join(constantUtils.PATH_PROJECTS_DIR, projectName, srcFolder)}:/app/src` ] : []
     }
   }).then(async ([ { StatusCode }, container ]) => {
     const containerName = await container.inspect().then(({ Name }) => Name.substr(1)); // Get the container name without the leading slash
+
+    // Remove the container
+    await container.remove();
 
     if (StatusCode === 0) {
       logger.info(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode}`);

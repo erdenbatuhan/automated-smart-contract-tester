@@ -27,10 +27,11 @@ RUN ./install_libraries.sh
 # Copy the tests into the container
 COPY test test
 
-# Ensure that the compiler is pre-installed and the dependencies are pre-created
-# By default, the "src" folder should contain empty contracts with only the necessary imports
-COPY src src
-RUN forge build
+# (1) "forge build": Ensures that the compiler is pre-installed and the dependencies are pre-created
+# (2) "forge snapshot": (1) + Generates gas snapshots for all the test functions using the solution provided
+COPY solution src
+# RUN forge build
+RUN forge snapshot --snap .gas-snapshot
 RUN rm -rf src
 
 # Run the tests (make sure to copy the "src" folder containing the implemented contracts before running the container!)

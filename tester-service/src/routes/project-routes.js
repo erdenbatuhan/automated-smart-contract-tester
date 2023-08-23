@@ -13,7 +13,7 @@ const upload = multer({ storage: storage });
  * 
  * The folder must contain:
  *  - Files: "remappings.txt", ".gitmodules"
- *  - Folders: "test", "src", "solution"
+ *  - Folders: "test", "solution"
  */
 router.post("/:projectName/upload", upload.single("projectZip"), async (req, res) => {
   let projectName, zipBuffer, executorEnvironmentConfig;

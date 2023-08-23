@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 
 const TestSchema = new mongoose.Schema(
   {
-    fullTestName: { type: String, required: true },
-    testName: { type: String, required: true },
+    test: { type: String, required: true },
     weight: { type: Number, required: true }
   },
   { _id: false } // Omit the _id field
