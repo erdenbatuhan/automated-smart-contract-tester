@@ -6,7 +6,7 @@ const logger = require("./logger-utils");
 const constantUtils = require("./constant-utils");
 const HTTPError = require("../errors/http-error");
 
-const _checkDirectoryContents = async (extractedPath) => {
+const checkDirectoryContents = async (extractedPath) => {
   const extractedFiles = await fs.promises.readdir(extractedPath);
   const extractedFolders = await fs.promises.readdir(extractedPath, { withFileTypes: true })
     .then(entries => entries.filter(entry => entry.isDirectory()).map(entry => entry.name));
@@ -35,7 +35,7 @@ const readProjectFromZipBuffer = async (projectName, zipBuffer) => {
     await fs.remove(zipFilename);
 
     // Check if the contents match the required contents
-    await _checkDirectoryContents(extractedProjectPath);
+    await checkDirectoryContents(extractedProjectPath);
 
     // Write extracted files and folders to the destination
     const destinationPath = path.join(constantUtils.PATH_PROJECTS_DIR, projectName);

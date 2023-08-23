@@ -5,7 +5,7 @@ const Dockerode = require("dockerode"); // https://github.com/apocas/dockerode
 const logger = require("./logger-utils");
 const constantUtils = require("./constant-utils");
 
-const _getDockerContext = (projectName) => {
+const getDockerContext = (projectName) => {
   const dockerfilePath = path.join(constantUtils.PATH_PROJECTS_DIR, projectName, "Dockerfile");
 
   // Check if the Dockerfile exists before attempting to build the image
@@ -16,59 +16,50 @@ const _getDockerContext = (projectName) => {
   return path.dirname(dockerfilePath);
 };
 
-const _extractImageIdFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(constantUtils.DOCKER_STREAM_REGEX_IMAGE_ID)[1];
+const extractImageIdFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(constantUtils.DOCKER_STREAM_REGEX_IMAGE_ID)[1];
 
 const createDockerImage = (projectName) => {
   logger.info(`Creating the docker image for ${projectName}..`);
+  const dockerode = new Dockerode();
 
   return new Promise(async (resolve, reject) => {
+    // Create the docker image
+    let stream;
     try {
-      const dockerode = new Dockerode();
-      const stream = await dockerode.buildImage({
-        context: _getDockerContext(projectName),
+      stream = await dockerode.buildImage({
+        context: getDockerContext(projectName),
         src: constantUtils.DOCKER_IMAGE_SRC
-      }, {
-        t: projectName
-      });
-
-      dockerode.modem.followProgress(stream,
-        /**
-         * The callback function triggered when the progress is complete
-         */
-        async (streamErr, streamRes) => {
-          // On Error
-          const execErr = streamRes ? streamRes.find(({ error }) => !!error) : null;
-          if (streamErr || execErr) {
-            await dockerode.pruneContainers();
-            await dockerode.pruneImages();
-
-            logger.error(`Could not create the docker image for ${projectName}!`);
-            return reject(new Error(streamErr || execErr.error));
-          }
-
-          // On Success
-          try {
-            logger.info(`Successfully created the docker image for ${projectName}!`);
-            resolve(_extractImageIdFromStreamResult(streamRes));
-          } catch {
-            logger.error(`Image ID not found after creating the docker image for ${projectName}!`);
-            reject(new Error("Image ID not found!"));
-          }
-        },
-        /**
-         * The callback function triggered at each step
-         */
-        ({ stream }) => {
-          if (constantUtils.DOCKER_STREAM_REGEX_STEP.test(stream)) {
-            logger.info(stream);
-          }
-        }
-      );
+      }, { t: projectName });
     } catch (err) {
-      logger.error(`Could not create the docker image for ${projectName}!`);
-      reject(err);
+      return reject(err);
     }
-  })
+
+    // Follow the process of creating the image 
+    dockerode.modem.followProgress(stream,
+      // The callback function triggered when the progress is complete
+      (streamErr, streamRes) => {
+        const execErr = streamRes ? streamRes.find(({ error }) => !!error) : null;
+        if (streamErr || execErr) {
+          return reject(new Error(streamErr || execErr.error)); // On Error
+        }
+
+        resolve(extractImageIdFromStreamResult(streamRes)); // On Success
+      },
+      // The callback function triggered at each step
+      ({ stream }) => {
+        if (constantUtils.DOCKER_STREAM_REGEX_STEP.test(stream)) {
+          logger.info(stream);
+        }
+      }
+    );
+  }).catch(err => {
+    logger.error(`Could not create the docker image for ${projectName}!`);
+    throw err;
+  }).finally(async () => {
+    // Prune unused containers and images
+    await dockerode.pruneContainers();
+    await dockerode.pruneImages();
+  });
 };
 
 module.exports = { createDockerImage };
