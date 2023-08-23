@@ -3,9 +3,7 @@ const path = require("path");
 const Dockerode = require("dockerode"); // https://github.com/apocas/dockerode
 
 // Streams to capture stdout and stderr
-const streams = require("memory-streams")
-const stdout = new streams.WritableStream()
-const stderr = new streams.WritableStream()
+const streams = require("memory-streams");
 
 const logger = require("./logger-utils");
 const constantUtils = require("./constant-utils");
@@ -80,6 +78,7 @@ const createDockerImage = (projectName) => {
 
 const runDockerContainer = async (projectName, cmd, srcFolder) => {
   logger.info(`Running a Docker container for ${projectName} with the command '${cmd.join(" ")}'..`);
+  const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
 
   return new Dockerode().run(projectName, cmd, [stdout, stderr], {
     Tty: false,
