@@ -1,5 +1,5 @@
 const StatusEnum = {
-  FAIL: "FAILURE",
+  FAILURE: "FAILURE",
   SUCCESS: "SUCCESS"
 };
 

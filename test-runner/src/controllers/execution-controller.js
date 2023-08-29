@@ -15,12 +15,12 @@ const HTTPError = require("../errors/http-error");
 const runDockerContainer = async (projectName, zipBuffer) => {
   // Save the current execution and attach it to the project
   const project = await projectController.findProjectByName(projectName, ["_id"]);
-  const execution = await new Execution({ project: project._id }).save();
+  const execution = new Execution({ project: project._id });
+
+  // Read the source files from the zip buffer
+  const [tempSrcDirPath, executionContents] = await fsUtils.readFromZipBuffer(`${projectName}_execution_${execution._id}`, zipBuffer);
 
   try {
-    // Read the source files from the zip buffer
-    const [tempSrcDirPath, executionContents] = await fsUtils.readFromZipBuffer(`${projectName}_execution_${execution._id}`, zipBuffer);
-
     // Run the Docker container to execute the tests
     const [dockerContainerName, testOutput, elapsedTimeMs] = await dockerUtils.runDockerContainer(
       projectName, constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS, tempSrcDirPath
@@ -35,15 +35,16 @@ const runDockerContainer = async (projectName, zipBuffer) => {
       ...testOutputUtils.extractGasDiffAnalysis(testOutput)
     };
 
-    // Update the execution
-    return await Execution.findOneAndReplace(
-      { _id: execution._id },
-      { project: project._id, status: StatusEnum.SUCCESS, dockerContainerName, contents: executionContents, results: testExecutionResults },
-      { new: true }
-    )
+    // Update the execution fields
+    execution.status = testExecutionResults.overall.passed ? StatusEnum.SUCCESS : StatusEnum.FAILURE;
+    execution.dockerContainerName = dockerContainerName;
+    execution.contents = executionContents;
+    execution.results = testExecutionResults;
   } catch (err) {
     logger.warn(`Test execution for the project '${projectName}' has failed (execution=${execution._id})!`);
-    return execution;
+  } finally {
+    // Save the execution
+    return await execution.save();
   }
 };
 
