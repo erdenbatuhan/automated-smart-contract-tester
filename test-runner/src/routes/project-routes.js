@@ -3,53 +3,48 @@ const router = express.Router();
 const multer = require("multer");
 
 const projectController = require("../controllers/project-controller");
+const routerUtils = require("../utils/router-utils");
 
 // Set up storage for uploaded ZIP files
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 /**
- * Upload a new project
+ * Uploads a new project
  * 
  * The folder must contain:
  *  - Files: "remappings.txt", ".gitmodules"
  *  - Folders: "test", "solution"
  */
 router.post("/:projectName/upload", upload.single("projectZip"), async (req, res) => {
-  let projectName, zipBuffer, executorEnvironmentConfig;
   try {
-    projectName = req.params.projectName;
-    zipBuffer = req.file.buffer;
-    executorEnvironmentConfig = req.body && req.body.executorEnvironmentConfig ? JSON.parse(req.body.executorEnvironmentConfig) : null;
-  } catch (err) {
-    return res.status(400).json({ error: err.message || "An error occurred while reading the parameters." });
-  }
+    const { projectName } = routerUtils.extractRequiredParams(req, ["projectName"]);
+    const zipBuffer = routerUtils.extractFileBuffer(req);
+    const executorEnvironmentConfig = req.body && req.body.executorEnvironmentConfig ? JSON.parse(req.body.executorEnvironmentConfig) : null;
 
-  projectController.createNewProject(projectName, zipBuffer, executorEnvironmentConfig).then((project) => {
-    res.status(200).json(project);
-  }).catch(err => {
+    await projectController.createNewProject(projectName, zipBuffer, executorEnvironmentConfig).then((project) => {
+      res.status(200).json(project);
+    });
+  } catch (err) {
     res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
-  });
+  }
 });
 
 /**
- * Download project files
+ * Downloads project files
  */
 router.get("/:projectName/download", async (req, res) => {
-  let projectName;
   try {
-    projectName = req.params.projectName;
-  } catch (err) {
-    return res.status(400).json({ error: err.message || "An error occurred while reading the parameters." });
-  }
+    const { projectName } = routerUtils.extractRequiredParams(req, ["projectName"]);
 
-  projectController.getProjectFilesInZipBuffer(projectName).then((zipBuffer) => {
-    res.setHeader("Content-Disposition", `attachment; filename=${projectName}.zip`);
-    res.setHeader("Content-Type", "application/zip");
-    res.status(200).send(zipBuffer);
-  }).catch(err => {
+    await projectController.getProjectFilesInZipBuffer(projectName).then((zipBuffer) => {
+      res.setHeader("Content-Disposition", `attachment; filename=${projectName}.zip`);
+      res.setHeader("Content-Type", "application/zip");
+      res.status(200).send(zipBuffer);
+    });
+  } catch (err) {
     res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
-  });
+  }
 });
 
 module.exports = router;

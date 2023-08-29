@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
 const appProps = require("./application-properties.json");
-const router = require("./router.js");
+const apiRoutes = require("./api-routes.js");
 
 const app = express();
 
@@ -21,7 +21,7 @@ app.use(cors()); // CORS
 app.use(bodyParser.json({ limit: "50mb" })); // Parses the text as JSON and exposes the resulting object on req.body
 
 // Use the modular routes with the common prefix
-app.use("/test-runner/api/v1", router);
+app.use("/test-runner/api/v1", apiRoutes);
 
 // Listen on the port specified
 app.listen(appProps["port"], () => {
