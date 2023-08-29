@@ -9,14 +9,17 @@ const HTTPError = require("../errors/http-error");
 const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfig) => {
   // Read the project from the zip buffer
   const [tempProjectDirPath, projectContents] = await fsUtils.readFromZipBuffer(
-    projectName, zipBuffer, [constantUtils.PATH_PROJECT_TEMPLATE]);
+    projectName, zipBuffer,
+    { requiredFiles: constantUtils.UPLOAD_REQUIREMENT_FILES, requiredFolders: constantUtils.UPLOAD_REQUIREMENT_FOLDERS },
+    [constantUtils.PATH_PROJECT_TEMPLATE]
+  );
 
   // Create a docker image from the project read from zip buffer
   const dockerImage = await dockerUtils.createDockerImage(projectName, tempProjectDirPath).finally(async () => {
     await fsUtils.removeDirectory(tempProjectDirPath); // Remove the temp directory after creating the image
   });
 
-  // Run the Docker container to retrieve the names of the tests from the gas snapshot file and assign an average weight to each test
+  // Run the Docker container to retrieve the names of the tests from the gas snapshot file
   const [_, gasSnapshot] = await dockerUtils.runDockerContainer(projectName, ["cat", constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
   const tests = testOutputUtils.getTestNamesFromGasSnapshot(gasSnapshot);
 
@@ -28,13 +31,18 @@ const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfi
   );
 };
 
-const getProjectFilesInZipBuffer = async (projectName) => {
-  const project = await Project.findOne({ projectName }).select("contents");
-  if (!project) {
-    throw new HTTPError(404, `Project with name=${projectName} not found!`);
-  }
+const findProjectByName = async (projectName, arg=null) => {
+  const findOnePromise = !arg ? Project.findOne({ projectName }) : Project.findOne({ projectName }).select(arg.join(" "));
 
+  return findOnePromise.then(project => {
+    if (!project) throw new HTTPError(404, `Project with name=${projectName} not found!`);
+    return project;
+  });
+};
+
+const getProjectFilesInZipBuffer = async (projectName) => {
+  const project = await findProjectByName(projectName, ["contents"]);
   return fsUtils.writeStringifiedContentsToZipBuffer(projectName, project.contents);
 };
 
-module.exports = { createNewProject, getProjectFilesInZipBuffer };
+module.exports = { createNewProject, findProjectByName, getProjectFilesInZipBuffer };

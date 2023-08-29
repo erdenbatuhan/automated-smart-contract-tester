@@ -8,13 +8,13 @@ const HTTPError = require("../errors/http-error");
 
 const readFile = (filename) => fs.readFileSync(filename, "utf-8");
 
-const checkDirectoryContents = async (dirPath) => {
+const checkDirectoryContents = async (dirPath, { requiredFiles, requiredFolders }) => {
   const files = await fs.promises.readdir(dirPath);
   const directories = await fs.promises.readdir(dirPath, { withFileTypes: true })
     .then(entries => entries.filter(entry => entry.isDirectory()).map(entry => entry.name));
   
-  const missingFiles = constantUtils.UPLOAD_REQUIREMENT_FILES.filter(file => !files.includes(file));
-  const missingDirectories = constantUtils.UPLOAD_REQUIREMENT_FOLDERS.filter(directory => !directories.includes(directory));
+  const missingFiles = requiredFiles.filter(file => !files.includes(file));
+  const missingDirectories = requiredFolders.filter(directory => !directories.includes(directory));
 
   // If there are missing files or directories, remove the extracted directory and throw an error
   if (missingFiles.length > 0 || missingDirectories.length > 0) {
@@ -66,7 +66,7 @@ const removeDirectory = async (dirPath) => {
   }
 };
 
-const readFromZipBuffer = async (contentName, zipBuffer, additionalSourcesCopied=[]) => {
+const readFromZipBuffer = async (contentName, zipBuffer, directoryRequirements=null, additionalSourcesCopied=[]) => {
   let tempDirPath;
 
   try {
@@ -81,7 +81,9 @@ const readFromZipBuffer = async (contentName, zipBuffer, additionalSourcesCopied
     const unzippedDirPath = unzip(tempDirPath, zipFilePath);
 
     // Check if the uploaded contents match the required contents
-    await checkDirectoryContents(unzippedDirPath);
+    if (directoryRequirements) {
+      await checkDirectoryContents(unzippedDirPath, directoryRequirements);
+    }
 
     // Get the uploaded contents as a list of strings along with their paths
     const zipBufferContents = await getDirectoryContentsStringified(unzippedDirPath);
