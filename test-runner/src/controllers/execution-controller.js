@@ -5,6 +5,7 @@ const StatusEnum = require("../models/enums/status-enum");
 
 const projectController = require("./project-controller");
 
+const logger = require("../utils/logger-utils");
 const constantUtils = require("../utils/constant-utils");
 const fsUtils = require("../utils/fs-utils");
 const dockerUtils = require("../utils/docker-utils");
@@ -13,24 +14,29 @@ const HTTPError = require("../errors/http-error");
 const runDockerContainer = async (projectName, zipBuffer) => {
   // Save the current execution and attach it to the project
   const project = await projectController.findProjectByName(projectName, ["_id"]);
-  const execution = new Execution({ project: project._id });
-  await execution.save();
+  const execution = await new Execution({ project: project._id }).save();
 
-  // Read the source files from the zip buffer
-  const [tempSrcDirPath, executionContents] = await fsUtils.readFromZipBuffer(
-    `${projectName}_execution_${execution._id}`, zipBuffer);
+  try {
+    // Read the source files from the zip buffer
+    const [tempSrcDirPath, executionContents] = await fsUtils.readFromZipBuffer(`${projectName}_execution_${execution._id}`, zipBuffer);
 
-  // Run the Docker container to execute the tests
-  const [containerName, testOutput] = await dockerUtils.runDockerContainer(projectName, constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS, tempSrcDirPath).finally(async () => {
-    await fsUtils.removeDirectory(tempSrcDirPath); // Remove the temp directory after creating the image
-  });
+    // Run the Docker container to execute the tests
+    const [containerName, testOutput] = await dockerUtils.runDockerContainer(
+      projectName, constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS, tempSrcDirPath
+    ).finally(async () => {
+      await fsUtils.removeDirectory(tempSrcDirPath); // Remove the temp directory after creating the image
+    });
 
-  // Update the execution
-  return await Execution.findOneAndReplace(
-    { _id: execution._id },
-    { project: project._id, status: StatusEnum.SUCCESS, dockerContainerName: containerName, contents: executionContents, results: testOutput },
-    { new: true }
-  )
+    // Update the execution
+    return await Execution.findOneAndReplace(
+      { _id: execution._id },
+      { project: project._id, status: StatusEnum.SUCCESS, dockerContainerName: containerName, contents: executionContents, results: testOutput },
+      { new: true }
+    )
+  } catch (err) {
+    logger.warn(`Test execution for the project '${projectName}' has failed (execution=${execution._id})!`);
+    return execution;
+  }
 };
 
 const getExecutionFilesInZipBuffer = async (executionId) => {
