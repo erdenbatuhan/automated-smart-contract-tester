@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
 
-const TestSchema = require("./schemas/test-schema");
+const DockerImageSchema = require("./schemas/docker-image-schema");
 const ContentSchema = require("./schemas/content-schema");
 
 const ProjectSchema = new mongoose.Schema(
   {
     projectName: { type: String, required: true, unique: true },
-    dockerImageID: { type: String, required: true },
+    dockerImage: { type: DockerImageSchema, required: true, unique: true },
     executorEnvironmentConfig: { type: Object },
-    tests: { type: [TestSchema], required: true },
+    tests: { type: [String], required: true },
     contents: { type: [ContentSchema], required: true }
   }, 
   {

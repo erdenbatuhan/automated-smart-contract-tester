@@ -8,22 +8,22 @@ const HTTPError = require("../errors/http-error");
 
 const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfig) => {
   // Read the project from the zip buffer
-  const [tempProjectDirPath, projectContents] = await fsUtils.readFromZipBuffer(projectName, zipBuffer);
+  const [tempProjectDirPath, projectContents] = await fsUtils.readFromZipBuffer(
+    projectName, zipBuffer, [constantUtils.PATH_PROJECT_TEMPLATE]);
 
   // Create a docker image from the project read from zip buffer
-  const dockerImageID = await dockerUtils.createDockerImage(projectName, tempProjectDirPath).finally(async () => {
+  const dockerImage = await dockerUtils.createDockerImage(projectName, tempProjectDirPath).finally(async () => {
     await fsUtils.removeDirectory(tempProjectDirPath); // Remove the temp directory after creating the image
   });
 
   // Run the Docker container to retrieve the names of the tests from the gas snapshot file and assign an average weight to each test
-  const [_, gasSnapshot] = await dockerUtils.runDockerContainer(
-    projectName, tempProjectDirPath, ["cat", constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
+  const [_, gasSnapshot] = await dockerUtils.runDockerContainer(projectName, ["cat", constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
   const tests = testOutputUtils.getTestNamesFromGasSnapshot(gasSnapshot);
 
   // Save the project in the DB (or update it if it already exists)
   return await Project.findOneAndUpdate(
     { projectName },
-    { dockerImageID, executorEnvironmentConfig, tests, contents: projectContents },
+    { dockerImage, executorEnvironmentConfig, tests, contents: projectContents },
     { upsert: true, new: true }
   );
 };

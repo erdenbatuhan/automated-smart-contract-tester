@@ -3,9 +3,10 @@ const mongoose = require("mongoose");
 const Project = require("./project");
 const ContentSchema = require("./schemas/content-schema");
 
-const SubmissionSchema = new mongoose.Schema(
+const ExecutionSchema = new mongoose.Schema(
   {
     project: { type: mongoose.Schema.Types.ObjectId, ref: Project.name, required: true },
+    dockerContainerName: { type: String, required: true },
     contents: { type: [ContentSchema], required: true },
     results: { type: Object }
   }, 
@@ -15,6 +16,6 @@ const SubmissionSchema = new mongoose.Schema(
   }
 );
 
-const Submission = mongoose.model("Submission", SubmissionSchema);
+const Execution = mongoose.model("Execution", ExecutionSchema);
 
-module.exports = Submission;
+module.exports = Execution;

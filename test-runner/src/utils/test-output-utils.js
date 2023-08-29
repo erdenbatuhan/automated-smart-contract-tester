@@ -10,8 +10,7 @@ const getTestNamesFromGasSnapshot = (gasSnapshotText) => {
     }
   });
 
-  // Return test names with weights (initially set to 1.0)
-  return testNames.map(testName => ({ test: testName, weight: 1.0 }));
+  return testNames;
 }
 
 module.exports = { getTestNamesFromGasSnapshot };

@@ -19,7 +19,7 @@ const getDockerContext = (projectDirPath) => {
   return path.dirname(dockerfilePath);
 };
 
-const extractImageIdFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(/Successfully built ([a-f0-9]+)/)[1];
+const extractImageIDFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream).join("").match(/Successfully built ([a-f0-9]+)/)[1];
 
 const pruneDocker = async (dockerode) => {
   logger.info(`Pruning unused containers and images..`);
@@ -56,7 +56,10 @@ const createDockerImage = (projectName, projectDirPath) => {
           return reject(new Error(streamErr || execErr.error)); // On Error
         }
 
-        resolve(extractImageIdFromStreamResult(streamRes)); // On Success
+        resolve({
+          dockerImageName: projectName,
+          dockerImageID: extractImageIDFromStreamResult(streamRes)
+        }); // On Success
       },
       // The callback function triggered at each step
       ({ stream }) => {
@@ -65,9 +68,9 @@ const createDockerImage = (projectName, projectDirPath) => {
         }
       }
     );
-  }).then((imageId) => {
-    logger.info(`Created the Docker image (${imageId}) for the project ${projectName}!`);
-    return imageId;
+  }).then((imageID) => {
+    logger.info(`Created the Docker image (${imageID}) for the project ${projectName}!`);
+    return imageID;
   }).catch(err => {
     logger.error(`Could not create the Docker image for the project ${projectName}! (Error: ${err.message || null})`);
     throw err;
@@ -76,14 +79,14 @@ const createDockerImage = (projectName, projectDirPath) => {
   });
 };
 
-const runDockerContainer = async (projectName, projectDirPath, cmd, srcFolder=null) => {
+const runDockerContainer = async (projectName, cmd, srcDirPath=null) => {
   logger.info(`Running a Docker container for ${projectName} with the command '${cmd.join(" ")}'..`);
   const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
 
   return new Dockerode().run(projectName, cmd, [stdout, stderr], {
     Tty: false,
     HostConfig: {
-      Binds: srcFolder ? [ `${path.join(projectDirPath, projectName, srcFolder)}:/app/src` ] : []
+      Binds: srcDirPath ? [ `${srcDirPath}:/app/src` ] : []
     }
   }).then(async ([ { StatusCode }, container ]) => {
     const containerName = await container.inspect().then(({ Name }) => Name.substr(1)); // Get the container name without the leading slash

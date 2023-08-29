@@ -56,11 +56,23 @@ const unzip = (tempDirPath, zipFilePath) => {
   return path.join(tempDirPath, firstEntry.entryName);
 };
 
-const readFromZipBuffer = async (contentName, zipBuffer) => {
+const removeDirectory = async (dirPath) => {
+  try {
+    logger.info(`Removing the directory (${dirPath})..`);
+    await fs.remove(dirPath);
+    logger.info(`Removed the directory (${dirPath})!`);
+  } catch (err) {
+    logger.warn(`Could not remove the directory (${dirPath})!`);
+  }
+};
+
+const readFromZipBuffer = async (contentName, zipBuffer, additionalSourcesCopied=[]) => {
+  let tempDirPath;
+
   try {
     logger.info(`Reading ${contentName} from the zip buffer and writing it to a temporary directory..`);
-  
-    const tempDirPath = path.join(constantUtils.PATH_ROOT, `temp_${contentName}_${Date.now()}`);
+
+    tempDirPath = path.join(constantUtils.PATH_ROOT, `temp_${contentName}_${Date.now()}`);
     const zipFilePath = path.join(tempDirPath, `${contentName}_temp.zip`);
 
     // Read from the zip buffer and extract the contents into the temporary directory
@@ -74,28 +86,24 @@ const readFromZipBuffer = async (contentName, zipBuffer) => {
     // Get the uploaded contents as a list of strings along with their paths
     const zipBufferContents = await getDirectoryContentsStringified(unzippedDirPath);
 
-    // Copy (1) and (2) to the temporary directory
-    await Promise.all([
-      fs.copy(unzippedDirPath, tempDirPath), // (1) Uploaded files in the unzipped directory
-      fs.copy(constantUtils.PATH_PROJECT_TEMPLATE, tempDirPath, { overwrite: true }) // (2) Necessary files in the project template (Must overwrite!)
-    ]);
+    // Copy the uploaded files from the unzipped directory to the temporary directory
+    await fs.copy(unzippedDirPath, tempDirPath);
+
+    // Copy additional files if there are any to the temporary directory (overwrites!)
+    if (additionalSourcesCopied && Array.isArray(additionalSourcesCopied)) {
+      for (const src of additionalSourcesCopied) {
+        await fs.copy(src, tempDirPath, { overwrite: true });
+      }
+    }
 
     logger.info(`Read ${contentName} from the zip buffer and wrote it to a temporary directory!`);
     return [tempDirPath, zipBufferContents];
   } catch (err) {
     logger.error(`An error occurred while reading ${contentName} from the zip buffer and writing it to a temporary directory!`);
-    throw new HTTPError(err.statusCode || 500, err.message || "An error occurred.");
-  }
-};
 
-const removeDirectory = async (dirPath) => {
-  try {
-    logger.info(`Removing the directory (${dirPath})..`);
-    await fs.remove(dirPath);
-    logger.info(`Removed the directory (${dirPath})!`);
-  } catch (err) {
-    logger.error(`Could not remove the directory (${dirPath})!`);
-    throw new HTTPError(500, err.message || `An error occurred while removing the directory (${dirPath}).`);
+    // Remove the temporary directory in case of an error and then throw the error
+    await removeDirectory(tempDirPath);
+    throw new HTTPError(err.statusCode || 500, err.message || "An error occurred.");
   }
 };
 

@@ -4,11 +4,11 @@ const router = express.Router();
 const healthCheckRoutes = require("./src/routes/health-check-routes");
 const forgeRoutes = require("./src/routes/forge-routes");
 const projectRoutes = require("./src/routes/project-routes");
-const submissionRoutes = require("./src/routes/submission-routes");
+const executionRoutes = require("./src/routes/execution-routes");
 
 router.use("/", healthCheckRoutes);
 router.use("/forge", forgeRoutes);
 router.use("/project", projectRoutes);
-router.use("/project/:projectName/submission", submissionRoutes);
+router.use("/project/:projectName/execution", executionRoutes);
 
 module.exports = router;
