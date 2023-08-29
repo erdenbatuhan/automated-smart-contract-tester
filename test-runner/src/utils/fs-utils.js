@@ -22,7 +22,27 @@ const checkDirectoryContents = async (extractedPath) => {
   }
 };
 
-const readProjectFromZipBuffer = async (projectName, zipBuffer) => {
+const getDirectoryContents = async (dirPath, basePath="") => {
+  const contents = [];
+  const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const entryPath = path.join(basePath, entry.name);
+
+    if (entry.isDirectory()) {
+      contents.push(...await getDirectoryContents(path.join(dirPath, entry.name), entryPath));
+    } else if (entry.isFile()) {
+      contents.push({
+        path: entryPath,
+        content: await fs.readFile(path.join(dirPath, entry.name), "utf8")
+      });
+    }
+  }
+
+  return contents;
+};
+
+const readFromZipBuffer = async (projectName, zipBuffer) => {
   logger.info(`Reading ${projectName} from the zip buffer and writing it to the projects folder..`);
 
   const tempFolderPath = path.join(constantUtils.PATH_ROOT, `temp_${Date.now()}`);
@@ -38,6 +58,10 @@ const readProjectFromZipBuffer = async (projectName, zipBuffer) => {
 
     // Check if the contents match the required contents
     await checkDirectoryContents(extractedProjectPath);
+
+    // Get directory contents as string
+    const directoryContents = await getDirectoryContents(extractedProjectPath);
+    console.log(directoryContents);
 
     // Write extracted files and folders to the destination
     const destinationPath = path.join(constantUtils.PATH_PROJECTS_DIR, projectName);
@@ -62,4 +86,4 @@ const readProjectFromZipBuffer = async (projectName, zipBuffer) => {
   return projectName;
 };
 
-module.exports = { readFile, readProjectFromZipBuffer };
+module.exports = { readFile, readFromZipBuffer };
