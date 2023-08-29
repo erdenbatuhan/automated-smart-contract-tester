@@ -31,10 +31,10 @@ const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfi
 const getProjectFilesInZipBuffer = async (projectName) => {
   const project = await Project.findOne({ projectName }).select("contents");
   if (!project) {
-    throw new HTTPError(404, `Project with name ${projectName} not found!`);
+    throw new HTTPError(404, `Project with name=${projectName} not found!`);
   }
 
   return fsUtils.writeStringifiedContentsToZipBuffer(projectName, project.contents);
-}
+};
 
 module.exports = { createNewProject, getProjectFilesInZipBuffer };

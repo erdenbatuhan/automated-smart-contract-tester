@@ -97,7 +97,7 @@ const removeDirectory = async (dirPath) => {
     logger.error(`Could not remove the directory (${dirPath})!`);
     throw new HTTPError(500, err.message || `An error occurred while removing the directory (${dirPath}).`);
   }
-}
+};
 
 const writeStringifiedContentsToZipBuffer = (contentName, contents) => {
   try {
@@ -114,6 +114,6 @@ const writeStringifiedContentsToZipBuffer = (contentName, contents) => {
     logger.error(`An error occurred while writing the stringified contents of ${contentName} to zip buffer!`);
     throw new HTTPError(500, err.message || `An error occurred while writing the stringified contents of ${contentName} to zip buffer.`);
   }
-}
+};
 
 module.exports = { readFile, readFromZipBuffer, removeDirectory, writeStringifiedContentsToZipBuffer };
