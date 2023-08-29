@@ -34,7 +34,8 @@ router.post("/", upload.single("srcZip"), async (req, res) => {
  */
 router.get("/:executionId/download", async (req, res) => {
   try {
-    const { projectName, executionId } = routerUtils.extractRequiredParams(req, ["projectName", "executionId"]);
+    const projectName = req.locals.projectName;
+    const { executionId } = routerUtils.extractRequiredParams(req, ["executionId"]);
 
     await executionController.getExecutionFilesInZipBuffer(executionId).then((zipBuffer) => {
       res.setHeader("Content-Disposition", `attachment; filename=${projectName}_execution_${executionId}.zip`);
