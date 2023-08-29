@@ -9,7 +9,7 @@ const HTTPError = require("../errors/http-error");
 const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfig) => {
   // Read the project from the zip buffer
   const [tempProjectDirPath, projectContents] = await fsUtils.readFromZipBuffer(
-    projectName, zipBuffer,
+    `${projectName}_creation`, zipBuffer,
     { requiredFiles: constantUtils.UPLOAD_REQUIREMENT_FILES, requiredFolders: constantUtils.UPLOAD_REQUIREMENT_FOLDERS },
     [constantUtils.PATH_PROJECT_TEMPLATE]
   );
