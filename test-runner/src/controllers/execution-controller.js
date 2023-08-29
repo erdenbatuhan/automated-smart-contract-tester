@@ -9,6 +9,7 @@ const logger = require("../utils/logger-utils");
 const constantUtils = require("../utils/constant-utils");
 const fsUtils = require("../utils/fs-utils");
 const dockerUtils = require("../utils/docker-utils");
+const testOutputUtils = require("../utils/test-output-utils");
 const HTTPError = require("../errors/http-error");
 
 const runDockerContainer = async (projectName, zipBuffer) => {
@@ -20,17 +21,18 @@ const runDockerContainer = async (projectName, zipBuffer) => {
     // Read the source files from the zip buffer
     const [tempSrcDirPath, executionContents] = await fsUtils.readFromZipBuffer(`${projectName}_execution_${execution._id}`, zipBuffer);
 
-    // Run the Docker container to execute the tests
-    const [containerName, testOutput] = await dockerUtils.runDockerContainer(
+    // Run the Docker container to execute the tests and get the execution results
+    const [dockerContainerName, testOutput] = await dockerUtils.runDockerContainer(
       projectName, constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS, tempSrcDirPath
     ).finally(async () => {
       await fsUtils.removeDirectory(tempSrcDirPath); // Remove the temp directory after creating the image
     });
+    const testExecutionResults = testOutputUtils.getTestExecutionResults(testOutput);
 
     // Update the execution
     return await Execution.findOneAndReplace(
       { _id: execution._id },
-      { project: project._id, status: StatusEnum.SUCCESS, dockerContainerName: containerName, contents: executionContents, results: testOutput },
+      { project: project._id, status: StatusEnum.SUCCESS, dockerContainerName, contents: executionContents, results: testExecutionResults },
       { new: true }
     )
   } catch (err) {
