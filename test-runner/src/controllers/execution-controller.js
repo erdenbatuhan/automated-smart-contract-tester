@@ -21,13 +21,19 @@ const runDockerContainer = async (projectName, zipBuffer) => {
     // Read the source files from the zip buffer
     const [tempSrcDirPath, executionContents] = await fsUtils.readFromZipBuffer(`${projectName}_execution_${execution._id}`, zipBuffer);
 
-    // Run the Docker container to execute the tests and get the execution results
-    const [dockerContainerName, testOutput] = await dockerUtils.runDockerContainer(
+    // Run the Docker container to execute the tests
+    const [dockerContainerName, testOutput, elapsedTimeMs] = await dockerUtils.runDockerContainer(
       projectName, constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS, tempSrcDirPath
     ).finally(async () => {
       await fsUtils.removeDirectory(tempSrcDirPath); // Remove the temp directory after creating the image
     });
-    const testExecutionResults = testOutputUtils.getTestExecutionResults(testOutput);
+
+    // Extract the test execution results from the test output
+    const testExecutionResults = {
+      executionTimeMs: elapsedTimeMs,
+      ...testOutputUtils.extractTestExecutionResults(testOutput),
+      ...testOutputUtils.extractGasDiffAnalysis(testOutput)
+    };
 
     // Update the execution
     return await Execution.findOneAndReplace(

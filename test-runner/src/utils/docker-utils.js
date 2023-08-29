@@ -7,6 +7,7 @@ const streams = require("memory-streams");
 
 const logger = require("./logger-utils");
 const constantUtils = require("./constant-utils");
+const conversionUtils = require("./conversion-utils");
 
 const getDockerContext = (projectDirPath) => {
   const dockerfilePath = path.join(projectDirPath, "Dockerfile");
@@ -33,7 +34,9 @@ const pruneDocker = async (dockerode) => {
 
 const createDockerImage = (projectName, projectDirPath) => {
   logger.info(`Creating the Docker image for the project ${projectName}..`);
+
   const dockerode = new Dockerode();
+  const startTime = new Date(); // Record start time
 
   return new Promise(async (resolve, reject) => {
     // Create the Docker image
@@ -56,10 +59,7 @@ const createDockerImage = (projectName, projectDirPath) => {
           return reject(new Error(streamErr || execErr.error)); // On Error
         }
 
-        resolve({
-          dockerImageName: projectName,
-          dockerImageID: extractImageIDFromStreamResult(streamRes)
-        }); // On Success
+        resolve(streamRes); // On Success
       },
       // The callback function triggered at each step
       ({ stream }) => {
@@ -68,9 +68,21 @@ const createDockerImage = (projectName, projectDirPath) => {
         }
       }
     );
-  }).then((imageID) => {
-    logger.info(`Created the Docker image (${imageID}) for the project ${projectName}!`);
-    return imageID;
+  }).then(async (streamRes) => {
+    // Return the docker image info
+    const dockerImageID = extractImageIDFromStreamResult(streamRes);
+    const dockerImageSizeMB = await dockerode.getImage(dockerImageID).inspect()
+      .then(({ Size }) => conversionUtils.convertBytesToMB(Size));
+
+    const elapsedTimeMs = new Date() - startTime; // Calculate elapsed time in milliseconds
+    logger.info(`Created the Docker image (${dockerImageID}) allocating ${dockerImageSizeMB} MB for the project ${projectName}!`);
+
+    return {
+      dockerImageName: projectName,
+      dockerImageID,
+      dockerImageBuildTimeMs: elapsedTimeMs,
+      dockerImageSizeMB
+    };
   }).catch(err => {
     logger.error(`Could not create the Docker image for the project ${projectName}! (Error: ${err.message || null})`);
     throw err;
@@ -81,7 +93,9 @@ const createDockerImage = (projectName, projectDirPath) => {
 
 const runDockerContainer = async (projectName, cmd, srcDirPath=null) => {
   logger.info(`Running a Docker container for ${projectName} with the command '${cmd.join(" ")}'..`);
+
   const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
+  const startTime = new Date(); // Record start time
 
   return new Dockerode().run(projectName, cmd, [stdout, stderr], {
     Tty: false,
@@ -90,15 +104,16 @@ const runDockerContainer = async (projectName, cmd, srcDirPath=null) => {
     }
   }).then(async ([ { StatusCode }, container ]) => {
     const containerName = await container.inspect().then(({ Name }) => Name.substr(1)); // Get the container name without the leading slash
+    const elapsedTimeMs = new Date() - startTime; // Calculate elapsed time in milliseconds
 
     // Remove the container
     await container.remove();
 
     if (StatusCode === 0) {
-      logger.info(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode}`);
-      return [containerName, stdout.toString()];
+      logger.info(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode} (Elapsed time: ${elapsedTimeMs} ms)`);
+      return [containerName, stdout.toString(), elapsedTimeMs];
     } else {
-      logger.error(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode}`);
+      logger.error(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode} (Elapsed time: ${elapsedTimeMs} ms)`);
       throw new Error(stderr.toString());
     }
   }).catch(err => {

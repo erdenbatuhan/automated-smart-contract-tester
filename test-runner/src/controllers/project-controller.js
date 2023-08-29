@@ -20,8 +20,9 @@ const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfi
   });
 
   // Run the Docker container to retrieve the names of the tests from the gas snapshot file
-  const [_, gasSnapshot] = await dockerUtils.runDockerContainer(projectName, ["cat", constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
-  const tests = testOutputUtils.getTestNamesFromGasSnapshot(gasSnapshot);
+  const [dockerContainerName, gasSnapshot, elapsedTimeMs] = await dockerUtils.runDockerContainer(
+    projectName, ["cat", constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
+  const tests = testOutputUtils.extractTestNamesFromGasSnapshot(gasSnapshot);
 
   // Save the project in the DB (or update it if it already exists)
   return await Project.findOneAndUpdate(
