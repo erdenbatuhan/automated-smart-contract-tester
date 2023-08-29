@@ -4,28 +4,37 @@ const constantUtils = require("../utils/constant-utils");
 const fsUtils = require("../utils/fs-utils");
 const dockerUtils = require("../utils/docker-utils");
 const testOutputUtils = require("../utils/test-output-utils");
+const HTTPError = require("../errors/http-error");
 
 const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfig) => {
-  // Read project from zip buffer and create Docker image
-  await fsUtils.readFromZipBuffer(projectName, zipBuffer);
-  const imageId = await dockerUtils.createDockerImage(projectName);
+  // Read the project from the zip buffer
+  const [tempProjectDirPath, projectContents] = await fsUtils.readFromZipBuffer(projectName, zipBuffer);
+
+  // Create a docker image from the project read from zip buffer
+  const dockerImageID = await dockerUtils.createDockerImage(projectName, tempProjectDirPath).finally(async () => {
+    await fsUtils.removeDirectory(tempProjectDirPath); // Remove the temp directory after creating the image
+  });
 
   // Run the Docker container to retrieve the names of the tests from the gas snapshot file and assign an average weight to each test
-  const gasSnapshot = await dockerUtils.runDockerContainer(projectName, ["cat", constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
+  const [_, gasSnapshot] = await dockerUtils.runDockerContainer(
+    projectName, tempProjectDirPath, ["cat", constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
   const tests = testOutputUtils.getTestNamesFromGasSnapshot(gasSnapshot);
-  const averageTestWeight = 1.0 / tests.length;
 
-  // // Save the project in the DB (or update it if it already exists)
-  // return await Project.findOneAndUpdate(
-  //   { projectName },
-  //   {
-  //     dockerImageID: imageId,
-  //     deployer: null,
-  //     executorEnvironmentConfig,
-  //     tests: tests.map(test => ({ test, weight: averageTestWeight }))
-  //   },
-  //   { upsert: true, new: true }
-  // );
+  // Save the project in the DB (or update it if it already exists)
+  return await Project.findOneAndUpdate(
+    { projectName },
+    { dockerImageID, executorEnvironmentConfig, tests, contents: projectContents },
+    { upsert: true, new: true }
+  );
 };
 
-module.exports = { createNewProject };
+const getProjectFilesInZipBuffer = async (projectName) => {
+  const project = await Project.findOne({ projectName }).select("contents");
+  if (!project) {
+    throw new HTTPError(404, `Project with name ${projectName} not found!`);
+  }
+
+  return fsUtils.writeStringifiedContentsToZipBuffer(projectName, project.contents);
+}
+
+module.exports = { createNewProject, getProjectFilesInZipBuffer };

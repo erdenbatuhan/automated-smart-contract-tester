@@ -8,8 +8,8 @@ const streams = require("memory-streams");
 const logger = require("./logger-utils");
 const constantUtils = require("./constant-utils");
 
-const getDockerContext = (projectName) => {
-  const dockerfilePath = path.join(constantUtils.PATH_PROJECTS_DIR, projectName, "Dockerfile");
+const getDockerContext = (projectDirPath) => {
+  const dockerfilePath = path.join(projectDirPath, "Dockerfile");
 
   // Check if the Dockerfile exists before attempting to build the image
   if (!fs.existsSync(dockerfilePath)) {
@@ -31,7 +31,7 @@ const pruneDocker = async (dockerode) => {
   logger.info(`Pruned unused containers and images!`);
 }
 
-const createDockerImage = (projectName) => {
+const createDockerImage = (projectName, projectDirPath) => {
   logger.info(`Creating the Docker image for the project ${projectName}..`);
   const dockerode = new Dockerode();
 
@@ -40,7 +40,7 @@ const createDockerImage = (projectName) => {
     let stream;
     try {
       stream = await dockerode.buildImage({
-        context: getDockerContext(projectName),
+        context: getDockerContext(projectDirPath),
         src: constantUtils.DOCKER_IMAGE_SRC
       }, { t: projectName });
     } catch (err) {
@@ -76,14 +76,14 @@ const createDockerImage = (projectName) => {
   });
 };
 
-const runDockerContainer = async (projectName, cmd, srcFolder=null) => {
+const runDockerContainer = async (projectName, projectDirPath, cmd, srcFolder=null) => {
   logger.info(`Running a Docker container for ${projectName} with the command '${cmd.join(" ")}'..`);
   const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
 
   return new Dockerode().run(projectName, cmd, [stdout, stderr], {
     Tty: false,
     HostConfig: {
-      Binds: srcFolder ? [ `${path.join(constantUtils.PATH_PROJECTS_DIR, projectName, srcFolder)}:/app/src` ] : []
+      Binds: srcFolder ? [ `${path.join(projectDirPath, projectName, srcFolder)}:/app/src` ] : []
     }
   }).then(async ([ { StatusCode }, container ]) => {
     const containerName = await container.inspect().then(({ Name }) => Name.substr(1)); // Get the container name without the leading slash
@@ -93,7 +93,7 @@ const runDockerContainer = async (projectName, cmd, srcFolder=null) => {
 
     if (StatusCode === 0) {
       logger.info(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode}`);
-      return stdout.toString();
+      return [containerName, stdout.toString()];
     } else {
       logger.error(`${projectName}'s Docker container (${containerName}) exited with code: ${StatusCode}`);
       throw new Error(stderr.toString());

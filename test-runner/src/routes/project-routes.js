@@ -32,4 +32,24 @@ router.post("/:projectName/upload", upload.single("projectZip"), async (req, res
   });
 });
 
+/**
+ * Download project files
+ */
+router.get("/:projectName/download", async (req, res) => {
+  let projectName;
+  try {
+    projectName = req.params.projectName;
+  } catch (err) {
+    return res.status(400).json({ error: err.message || "An error occurred while reading the parameters." });
+  }
+
+  projectController.getProjectFilesInZipBuffer(projectName).then((zipBuffer) => {
+    res.setHeader("Content-Disposition", `attachment; filename=${projectName}.zip`);
+    res.setHeader("Content-Type", "application/zip");
+    res.status(200).send(zipBuffer);
+  }).catch(err => {
+    res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
+  });
+});
+
 module.exports = router;
