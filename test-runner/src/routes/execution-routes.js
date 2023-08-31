@@ -23,7 +23,7 @@ router.post("/", upload.single("srcZip"), async (req, res) => {
       res.status(200).json(execution);
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
+    res.status(err.statusCode || 500).json({ error: err ? err.message : "An error occurred." });
   }
 });
 
@@ -43,7 +43,7 @@ router.get("/:executionId/download", async (req, res) => {
       res.status(200).send(zipBuffer);
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
+    res.status(err.statusCode || 500).json({ error: err ? err.message : "An error occurred." });
   }
 });
 

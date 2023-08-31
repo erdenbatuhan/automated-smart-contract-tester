@@ -26,7 +26,7 @@ router.post("/:projectName/upload", upload.single("projectZip"), async (req, res
       res.status(200).json(project);
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
+    res.status(err.statusCode || 500).json({ error: err ? err.message : "An error occurred." });
   }
 });
 
@@ -43,7 +43,7 @@ router.get("/:projectName/download", async (req, res) => {
       res.status(200).send(zipBuffer);
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message || "An error occurred." });
+    res.status(err.statusCode || 500).json({ error: err ? err.message : "An error occurred." });
   }
 });
 

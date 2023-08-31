@@ -4,7 +4,7 @@ const DockerImageSchema = new mongoose.Schema(
   {
     dockerImageName: { type: String, required: true, unique: true },
     dockerImageID: { type: String, required: true, unique: true },
-    dockerImageBuildTimeMs: { type: Number },
+    dockerImageBuildTimeSeconds: { type: Number },
     dockerImageSizeMB: { type: Number, required: true }
   },
   {

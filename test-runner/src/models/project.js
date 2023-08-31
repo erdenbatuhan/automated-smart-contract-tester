@@ -10,7 +10,7 @@ const ProjectSchema = new mongoose.Schema(
     executorEnvironmentConfig: { type: Object },
     tests: { type: [String], required: true },
     contents: { type: [ContentSchema], required: true }
-  }, 
+  },
   {
     timestamps: true,
     optimisticConcurrency: true

@@ -2,9 +2,10 @@ const fs = require("fs-extra");
 const path = require("path");
 const AdmZip = require("adm-zip");
 
-const logger = require("./logger-utils");
-const constantUtils = require("./constant-utils");
+const Logger = require("../logging/logger");
 const HTTPError = require("../errors/http-error");
+
+const constantUtils = require("./constant-utils");
 
 const readFile = (filename) => fs.readFileSync(filename, "utf-8");
 
@@ -60,24 +61,24 @@ const getDirectoryContentsStringified = async (dirPath, basePath="") => {
   return contents;
 };
 
-const removeDirectory = async (dirPath) => {
+const removeDirectorySync = (dirPath) => {
   try {
-    logger.info(`Removing the directory (${dirPath})..`);
-    await fs.remove(dirPath);
-    logger.info(`Removed the directory (${dirPath})!`);
+    Logger.info(`Removing the directory (${dirPath})..`);
+    fs.removeSync(dirPath);
+    Logger.info(`Removed the directory (${dirPath})!`);
   } catch (err) {
-    logger.warn(`Could not remove the directory (${dirPath})!`);
+    Logger.warn(`Could not remove the directory (${dirPath})!`);
   }
 };
 
-const readFromZipBuffer = async (contentName, zipBuffer, directoryRequirements=null, additionalSourcesCopied=[]) => {
+const readFromZipBuffer = async (contextName, zipBuffer, directoryRequirements=null, additionalSourcesCopied=[]) => {
   let tempDirPath;
 
   try {
-    logger.info(`Reading ${contentName} from the zip buffer and writing it to a temporary directory..`);
+    Logger.info(`Reading ${contextName} from the zip buffer and writing it to a temporary directory..`);
 
-    tempDirPath = path.join(constantUtils.PATH_ROOT, `temp_${contentName}_${Date.now()}`);
-    const zipFilePath = path.join(tempDirPath, `${contentName}_temp.zip`);
+    tempDirPath = path.join(constantUtils.PATH_ROOT, `temp_${contextName}_${Date.now()}`);
+    const zipFilePath = path.join(tempDirPath, `${contextName}_temp.zip`);
 
     // Read from the zip buffer and extract the contents into the temporary directory
     await fs.promises.mkdir(tempDirPath, { recursive: true });
@@ -99,32 +100,31 @@ const readFromZipBuffer = async (contentName, zipBuffer, directoryRequirements=n
       }
     }
 
-    logger.info(`Read ${contentName} from the zip buffer and wrote it to a temporary directory!`);
+    Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory!`);
     return [tempDirPath, zipBufferContents];
   } catch (err) {
-    logger.error(`An error occurred while reading ${contentName} from the zip buffer and writing it to a temporary directory!`);
+    removeDirectorySync(tempDirPath);
 
-    // Remove the temporary directory in case of an error and then throw the error
-    await removeDirectory(tempDirPath);
+    Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
     throw new HTTPError(err.statusCode || 500, err.message || "An error occurred.");
   }
 };
 
-const writeStringifiedContentsToZipBuffer = (contentName, contents) => {
+const writeStringifiedContentsToZipBuffer = (contextName, contents) => {
   try {
-    logger.info(`Writing the stringified contents of ${contentName} to zip buffer..`);
+    Logger.info(`Writing the stringified contents of ${contextName} to zip buffer..`);
     const zip = new AdmZip();
 
     contents.forEach(content => {
       zip.addFile(content.path, Buffer.from(content.content, "utf8"));
     });
 
-    logger.info(`Wrote the stringified contents of ${contentName} to zip buffer!`);
+    Logger.info(`Wrote the stringified contents of ${contextName} to zip buffer!`);
     return zip.toBuffer();
   } catch (err) {
-    logger.error(`An error occurred while writing the stringified contents of ${contentName} to zip buffer!`);
-    throw new HTTPError(500, err.message || `An error occurred while writing the stringified contents of ${contentName} to zip buffer.`);
+    Logger.error(`An error occurred while writing the stringified contents of ${contextName} to zip buffer!`);
+    throw new HTTPError(500, err.message || `An error occurred while writing the stringified contents of ${contextName} to zip buffer.`);
   }
 };
 
-module.exports = { readFile, readFromZipBuffer, removeDirectory, writeStringifiedContentsToZipBuffer };
+module.exports = { readFile, readFromZipBuffer, removeDirectorySync, writeStringifiedContentsToZipBuffer };
