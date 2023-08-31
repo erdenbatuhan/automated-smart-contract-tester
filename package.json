@@ -1,0 +1,56 @@
+{
+  "name": "automated-smart-contract-tester",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Batuhan Erden",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erdenbatuhan/automated-smart-contract-tester-service.git"
+  },
+  "bugs": {
+    "url": "https://github.com/erdenbatuhan/automated-smart-contract-tester-service/issues"
+  },
+  "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-tester-service#readme",
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "eslintConfig": {
+    "extends": "airbnb-base",
+    "env": {
+      "es6": true,
+      "browser": true
+    },
+    "rules": {
+      "brace-style": [
+        "error",
+        "stroustrup"
+      ],
+      "comma-dangle": [
+        "error",
+        "never"
+      ],
+      "no-unused-vars": [
+        "warn"
+      ],
+      "no-var": [
+        "off"
+      ],
+      "one-var": [
+        "off"
+      ]
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx}": "eslint --fix",
+    "*.{json,css,md}": "prettier --write --ignore-unknown"
+  },
+  "devDependencies": {
+    "eslint": "^8.48.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.28.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
+    "prettier": "3.0.3"
+  }
+}
