@@ -1,13 +1,13 @@
-const fs = require("fs-extra");
-const path = require("path");
-const AdmZip = require("adm-zip");
+const fs = require('fs-extra');
+const path = require('path');
+const AdmZip = require('adm-zip');
 
-const Logger = require("../logging/logger");
-const HTTPError = require("../errors/http-error");
+const Logger = require('../logging/logger');
+const HTTPError = require('../errors/http-error');
 
-const constantUtils = require("./constant-utils");
+const constantUtils = require('./constant-utils');
 
-const readFile = (filename) => fs.readFileSync(filename, "utf-8");
+const readFile = (filename) => fs.readFileSync(filename, 'utf-8');
 
 const unzip = async (tempDirPath, zipFilePath) => {
   const zip = new AdmZip(zipFilePath);
@@ -16,32 +16,32 @@ const unzip = async (tempDirPath, zipFilePath) => {
   // Get the first entry from the zip (assumed to be a directory)
   const firstEntry = zip.getEntries()[0];
   if (!firstEntry || !firstEntry.isDirectory) {
-    throw new HTTPError(400, "The uploaded zip file is either empty or does not unzip to a directory!");
+    throw new HTTPError(400, 'The uploaded zip file is either empty or does not unzip to a directory!');
   }
 
   // Replace the temporary directory with the unzipped directory
   const unzippedDirPath = path.join(tempDirPath, firstEntry.entryName);
   const swapDirPath = `${tempDirPath}_swap`;
   await fs.move(unzippedDirPath, swapDirPath); // Unzipped Directory -> Swap Directory
-  await fs.remove(tempDirPath);                // Remove: Temporary Directory
-  await fs.move(swapDirPath, tempDirPath);     // Swap -> Temporary Directory
+  await fs.remove(tempDirPath); // Remove: Temporary Directory
+  await fs.move(swapDirPath, tempDirPath); // Swap -> Temporary Directory
 };
 
 const checkDirectoryContents = async (dirPath, { requiredFiles, requiredFolders }) => {
   const files = await fs.promises.readdir(dirPath);
   const directories = await fs.promises.readdir(dirPath, { withFileTypes: true })
-    .then(entries => entries.filter(entry => entry.isDirectory()).map(entry => entry.name));
-  
-  const missingFiles = requiredFiles.filter(file => !files.includes(file));
-  const missingDirectories = requiredFolders.filter(directory => !directories.includes(directory));
+    .then((entries) => entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name));
+
+  const missingFiles = requiredFiles.filter((file) => !files.includes(file));
+  const missingDirectories = requiredFolders.filter((directory) => !directories.includes(directory));
 
   // If there are missing files or directories, remove the extracted directory and throw an error
   if (missingFiles.length > 0 || missingDirectories.length > 0) {
-    throw new HTTPError(400, `Missing required files: ${missingFiles.join(", ")}, Missing required directories: ${missingDirectories.join(", ")}.`)
+    throw new HTTPError(400, `Missing required files: ${missingFiles.join(', ')}, Missing required directories: ${missingDirectories.join(', ')}.`);
   }
 };
 
-const getDirectoryContentsStringified = async (dirPath, basePath="") => {
+const getDirectoryContentsStringified = async (dirPath, basePath = '') => {
   const contents = [];
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
@@ -53,7 +53,7 @@ const getDirectoryContentsStringified = async (dirPath, basePath="") => {
     } else if (entry.isFile()) {
       contents.push({
         path: entryPath,
-        content: await fs.readFile(path.join(dirPath, entry.name), "utf8")
+        content: await fs.readFile(path.join(dirPath, entry.name), 'utf8')
       });
     }
   }
@@ -71,7 +71,9 @@ const removeDirectorySync = (dirPath) => {
   }
 };
 
-const readFromZipBuffer = async (contextName, zipBuffer, directoryRequirements=null, additionalSourcesCopied=[]) => {
+const readFromZipBuffer = async (
+  contextName, zipBuffer, directoryRequirements = null, additionalSourcesCopied = []
+) => {
   let tempDirPath;
 
   try {
@@ -106,7 +108,7 @@ const readFromZipBuffer = async (contextName, zipBuffer, directoryRequirements=n
     removeDirectorySync(tempDirPath);
 
     Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
-    throw new HTTPError(err.statusCode || 500, err.message || "An error occurred.");
+    throw new HTTPError(err.statusCode || 500, err.message || 'An error occurred.');
   }
 };
 
@@ -115,8 +117,8 @@ const writeStringifiedContentsToZipBuffer = (contextName, contents) => {
     Logger.info(`Writing the stringified contents of ${contextName} to zip buffer..`);
     const zip = new AdmZip();
 
-    contents.forEach(content => {
-      zip.addFile(content.path, Buffer.from(content.content, "utf8"));
+    contents.forEach((content) => {
+      zip.addFile(content.path, Buffer.from(content.content, 'utf8'));
     });
 
     Logger.info(`Wrote the stringified contents of ${contextName} to zip buffer!`);
@@ -127,4 +129,6 @@ const writeStringifiedContentsToZipBuffer = (contextName, contents) => {
   }
 };
 
-module.exports = { readFile, readFromZipBuffer, removeDirectorySync, writeStringifiedContentsToZipBuffer };
+module.exports = {
+  readFile, readFromZipBuffer, removeDirectorySync, writeStringifiedContentsToZipBuffer
+};

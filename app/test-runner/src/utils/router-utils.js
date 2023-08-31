@@ -1,8 +1,8 @@
-const HTTPError = require("../errors/http-error");
+const HTTPError = require('../errors/http-error');
 
 const extractRequiredParams = (req, paramNames) => {
   try {
-    return Object.fromEntries(paramNames.map(paramName => [paramName, req.params[paramName]]));
+    return Object.fromEntries(paramNames.map((paramName) => [paramName, req.params[paramName]]));
   } catch (err) {
     throw new HTTPError(400, `An error occurred while reading the request parameters (${paramNames}): ${err.message}`);
   }
@@ -10,7 +10,7 @@ const extractRequiredParams = (req, paramNames) => {
 
 const extractRequiredQuery = (req, paramNames) => {
   try {
-    return Object.fromEntries(paramNames.map(paramName => [paramName, req.query[paramName]]));
+    return Object.fromEntries(paramNames.map((paramName) => [paramName, req.query[paramName]]));
   } catch (err) {
     throw new HTTPError(400, `An error occurred while reading the query string parameters (${paramNames}): ${err.message}`);
   }

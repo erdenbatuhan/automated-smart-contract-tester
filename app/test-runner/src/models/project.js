@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const DockerImageSchema = require("./schemas/docker-image-schema");
-const ContentSchema = require("./schemas/content-schema");
+const DockerImageSchema = require('./schemas/docker-image-schema');
+const ContentSchema = require('./schemas/content-schema');
 
 const ProjectSchema = new mongoose.Schema(
   {
@@ -17,6 +17,6 @@ const ProjectSchema = new mongoose.Schema(
   }
 );
 
-const Project = mongoose.model("Project", ProjectSchema);
+const Project = mongoose.model('Project', ProjectSchema);
 
 module.exports = Project;
