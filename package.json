@@ -15,32 +15,6 @@
   "scripts": {
     "prepare": "husky install"
   },
-  "eslintConfig": {
-    "extends": "airbnb-base",
-    "env": {
-      "es6": true,
-      "browser": true
-    },
-    "rules": {
-      "brace-style": [
-        "error",
-        "stroustrup"
-      ],
-      "comma-dangle": [
-        "error",
-        "never"
-      ],
-      "no-unused-vars": [
-        "warn"
-      ],
-      "no-var": [
-        "off"
-      ],
-      "one-var": [
-        "off"
-      ]
-    }
-  },
   "lint-staged": {
     "*.{js,jsx}": "eslint --fix",
     "*.{json,css,md}": "prettier --write --ignore-unknown"
