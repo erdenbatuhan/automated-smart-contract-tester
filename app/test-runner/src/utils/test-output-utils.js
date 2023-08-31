@@ -19,7 +19,7 @@ const extractTestExecutionResults = (testOutput) => {
   const processTestExecutionResults = (unprocessedTestExecutionResults) => {
     const processedTestExecutionResults = {};
 
-    unprocessedTestExecutionResults.forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(unprocessedTestExecutionResults)) {
       if (key === 'decoded_logs') {
         processedTestExecutionResults.logs = value.join('\n');
       } else if (key === 'kind') {
@@ -29,7 +29,7 @@ const extractTestExecutionResults = (testOutput) => {
       } else if (!['duration', 'counterexample', 'logs', 'traces', 'warning'].includes(key)) {
         processedTestExecutionResults[key] = value;
       }
-    });
+    }
 
     return processedTestExecutionResults;
   };
