@@ -39,12 +39,12 @@ const createNewProject = async (projectName, zipBuffer, executorEnvironmentConfi
     );
 
     // Create a docker image from the project read from zip buffer
-    const dockerImage = await dockerUtils.createDockerImage(projectName, tempProjectDirPath).finally(() => {
+    const dockerImage = await dockerUtils.createImage(projectName, tempProjectDirPath).finally(() => {
       fsUtils.removeDirectorySync(tempProjectDirPath); // Remove the temp directory after creating the image
     });
 
     // Run the Docker container to retrieve the names of the tests from the gas snapshot file
-    const [, gasSnapshot] = await dockerUtils.runDockerContainer(projectName, ['cat', constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
+    const [, gasSnapshot] = await dockerUtils.runContainer(projectName, ['cat', constantUtils.PROJECT_FILES.GAS_SNAPSHOT]);
     const tests = testOutputUtils.extractTestNamesFromGasSnapshot(gasSnapshot);
 
     // Save (or update it if it already exists) the project

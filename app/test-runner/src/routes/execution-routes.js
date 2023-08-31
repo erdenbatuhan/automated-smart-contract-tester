@@ -20,7 +20,7 @@ router.post('/', upload.single('srcZip'), async (req, res) => {
     const { projectName } = req.locals;
     const zipBuffer = routerUtils.extractFileBuffer(req);
 
-    await executionController.runDockerContainer(projectName, zipBuffer).then((execution) => {
+    await executionController.executeTests(projectName, zipBuffer).then((execution) => {
       res.status(200).json(execution);
     });
   } catch (err) {

@@ -14,7 +14,7 @@ const fsUtils = require('../utils/fs-utils');
 const dockerUtils = require('../utils/docker-utils');
 const testOutputUtils = require('../utils/test-output-utils');
 
-const runDockerContainer = async (projectName, zipBuffer) => {
+const executeTests = async (projectName, zipBuffer) => {
   Logger.info(`Executing the tests for the project ${projectName}..`);
   let execution;
 
@@ -29,7 +29,7 @@ const runDockerContainer = async (projectName, zipBuffer) => {
 
     try {
       // Run the Docker container to execute the tests
-      const [dockerContainer, testOutput] = await dockerUtils.runDockerContainer(
+      const [dockerContainer, testOutput] = await dockerUtils.runContainer(
         projectName, constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS, tempSrcDirPath
       ).finally(() => {
         fsUtils.removeDirectorySync(tempSrcDirPath); // Remove the temp directory after creating the image
@@ -77,4 +77,4 @@ const getExecutionFilesInZipBuffer = async (executionId) => {
   return fsUtils.writeStringifiedContentsToZipBuffer(`Execution ${executionId}`, execution.contents);
 };
 
-module.exports = { runDockerContainer, getExecutionFilesInZipBuffer };
+module.exports = { executeTests, getExecutionFilesInZipBuffer };
