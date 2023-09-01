@@ -1,16 +1,12 @@
-### User-defined ignores
-
-# MacOS
-.DS_Store
-
 # Application properties
 application-properties.json
 
 # Temp folders (e.g. projects uploaded)
 temp_*
 
-
-### https://github.com/github/gitignore/blob/main/Node.gitignore
+### ------------------------------------------------------------ ###
+### https://github.com/github/gitignore/blob/main/Node.gitignore ###
+### ------------------------------------------------------------ ###
 
 # Logs
 logs

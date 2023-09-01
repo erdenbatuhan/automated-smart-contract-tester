@@ -1,13 +1,12 @@
-### User-defined ignores
-
 # MacOS
 .DS_Store
 
 # The directory that is never committed :)
 .donotcommit/
 
-
-### https://github.com/github/gitignore/blob/main/Node.gitignore
+### ------------------------------------------------------------ ###
+### https://github.com/github/gitignore/blob/main/Node.gitignore ###
+### ------------------------------------------------------------ ###
 
 # Logs
 logs
