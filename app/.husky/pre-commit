@@ -1,5 +1,11 @@
 #!/usr/bin/env sh
+
+# 1) Run Husky
 . "$(dirname -- "$0")/_/husky.sh"
 
-cd app
+# 2) Navigate to the app directory
+app_dir="$($(dirname -- "$0")/utils/find-app-dir.sh)"
+cd "$app_dir"
+
+# 3) Run lint-staged
 npx lint-staged
