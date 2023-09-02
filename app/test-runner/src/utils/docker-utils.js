@@ -10,6 +10,8 @@ const Logger = require('../logging/logger');
 const constantUtils = require('./constant-utils');
 const conversionUtils = require('./conversion-utils');
 
+const DOCKER_SOCKET_PATH = process.env.DOCKER_SOCKET_PATH || constantUtils.DEFAULT_DOCKER_SOCKET_PATH;
+
 const getDockerContext = (dirPath) => {
   const dockerfilePath = path.join(dirPath, 'Dockerfile');
 
@@ -55,7 +57,7 @@ const followImageProgressAndRetrieveImageID = async (dockerode, buildStream) => 
 const createImage = async (imageName, dirPath) => {
   // Record start time and start Dockerode
   const startTime = new Date();
-  const dockerode = new Dockerode();
+  const dockerode = new Dockerode({ socketPath: DOCKER_SOCKET_PATH });
 
   try {
     Logger.info(`Creating a Docker image named ${imageName}.`);
@@ -88,7 +90,7 @@ const createImage = async (imageName, dirPath) => {
 const runContainer = async (imageName, cmd, srcDirPath = null) => {
   // Record start time and start Dockerode
   const startTime = new Date();
-  const dockerode = new Dockerode();
+  const dockerode = new Dockerode({ socketPath: DOCKER_SOCKET_PATH });
 
   try {
     Logger.info(`Running a Docker container from '${imageName}' image with the command '${cmd}'.`);
