@@ -91,7 +91,7 @@ const runContainer = async (imageName, cmd, srcDirPath = null) => {
   const dockerode = new Dockerode();
 
   try {
-    Logger.info(`Running a Docker container from '${imageName}' image with the command ${cmd}.`);
+    Logger.info(`Running a Docker container from '${imageName}' image with the command '${cmd}'.`);
 
     // Run the docker container
     const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
@@ -112,7 +112,7 @@ const runContainer = async (imageName, cmd, srcDirPath = null) => {
     Logger.info(`The Docker container '${dockerContainer.containerName}' running from the '${imageName}' image exited with code ${StatusCode} (Elapsed time: ${dockerContainer.executionTimeSeconds} seconds).`);
     return { ...dockerContainer, output: StatusCode === 0 ? stdout.toString() : { error: stderr.toString() } };
   } catch (err) {
-    Logger.error(`Could not run a Docker container from '${imageName}' image with the command '${cmd.join(' ')}'!`);
+    Logger.error(`Could not run a Docker container from '${imageName}' image with the command '${cmd}'!`);
     throw err;
   } finally {
     // Prune unused containers and images

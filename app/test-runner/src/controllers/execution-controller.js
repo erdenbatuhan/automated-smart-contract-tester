@@ -44,12 +44,12 @@ const executeTests = async (imageName, zipBuffer) => {
     dockerContainerExecutionInfo.output = extractTestResultsFromExecutionOutput(dockerContainerExecutionInfo);
 
     // Update the Docker container history with the execution results
-    Logger.info(`Executed the tests with the command ${commandExecuted} in the ${imageName} image.`);
+    Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${imageName} image.`);
     dockerContainerHistory = dockerContainerHistoryService.create(dockerImage, dockerContainerExecutionInfo);
   } catch (err) {
     const errMessage = err && err.message;
 
-    Logger.warn(`Failed to execute the tests with the command ${commandExecuted} in the ${imageName} image! (Error: ${errMessage})`);
+    Logger.warn(`Failed to execute the tests with the command '${commandExecuted}' in the ${imageName} image! (Error: ${errMessage})`);
     dockerContainerHistory.output = { error: errMessage };
   }
 
