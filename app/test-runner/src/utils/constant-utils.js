@@ -1,6 +1,6 @@
 const path = require('path');
 
-module.exports.DEFAULT_DOCKER_SOCKET_PATH = '/var/run/docker.sock';
+module.exports.DEFAULT_DOCKER_SOCKET_PATH = path.join('/', 'var', 'run', 'docker.sock');
 
 module.exports.PATH_ROOT = path.dirname(require.main.filename);
 module.exports.PATH_PROJECT_TEMPLATE = path.join(this.PATH_ROOT, 'templates', 'project');
