@@ -10,7 +10,7 @@ const DockerContainerHistorySchema = new mongoose.Schema(
     commandExecuted: { type: String, required: true },
     status: { type: String, enum: Status, required: true, default: Status.ERROR },
     statusCode: { type: Number },
-    containerExecutionTimeSeconds: { type: Number },
+    executionTimeSeconds: { type: Number },
     output: { type: Object }
   },
   {

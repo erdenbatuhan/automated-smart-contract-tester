@@ -98,13 +98,13 @@ const runContainer = async (imageName, cmd, srcDirPath = null) => {
       commandExecuted: cmd,
       status: StatusCode === 0 ? Status.SUCCESS : Status.FAILURE, // Status code being 0 means a successful execution
       statusCode: StatusCode,
-      containerExecutionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(new Date() - startTime) // Calculate elapsed time in seconds
+      executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(new Date() - startTime) // Calculate elapsed time in seconds
     };
 
     // Remove the container
     await container.remove();
 
-    Logger.info(`The Docker container '${dockerContainer.containerName}' running from the '${imageName}' image exited with code ${StatusCode} (Elapsed time: ${dockerContainer.containerExecutionTimeSeconds} seconds).`);
+    Logger.info(`The Docker container '${dockerContainer.containerName}' running from the '${imageName}' image exited with code ${StatusCode} (Elapsed time: ${dockerContainer.executionTimeSeconds} seconds).`);
     return { ...dockerContainer, output: StatusCode === 0 ? stdout.toString() : { error: stderr.toString() } };
   }).catch((err) => {
     Logger.error(`Could not run a Docker container from '${imageName}' image with the command '${cmd.join(' ')}'!`);
