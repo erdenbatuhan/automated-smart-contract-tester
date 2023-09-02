@@ -53,12 +53,12 @@ const followImageProgressAndRetrieveImageID = async (dockerode, buildStream) => 
 });
 
 const createImage = async (imageName, dirPath) => {
+  // Record start time and start Dockerode
+  const startTime = new Date();
+  const dockerode = new Dockerode();
+
   try {
     Logger.info(`Creating a Docker image named ${imageName}.`);
-
-    // Record start time and start Dockerode
-    const startTime = new Date();
-    const dockerode = new Dockerode();
 
     // Build the Docker image
     const buildStream = await dockerode.buildImage({
@@ -71,28 +71,36 @@ const createImage = async (imageName, dirPath) => {
     const imageSizeMB = await dockerode.getImage(imageID).inspect()
       .then(({ Size }) => conversionUtils.convertBytesToMB(Size));
 
-    // Calculate elapsed time in seconds and prune unused containers and images
+    // Calculate elapsed time in seconds
     const imageBuildTimeSeconds = conversionUtils.convertMillisecondsToSeconds(new Date() - startTime);
-    await pruneDocker(dockerode);
 
     Logger.info(`Created a Docker image named '${imageName}' using ${imageSizeMB} MB of disk space (ID: ${imageID}).`);
     return { imageID, imageName, imageBuildTimeSeconds, imageSizeMB };
   } catch (err) {
     Logger.error(`Could not create a Docker image named '${imageName}'! (Error: ${err.message || null})`);
     throw err;
+  } finally {
+    // Prune unused containers and images
+    await pruneDocker(dockerode);
   }
 };
 
 const runContainer = async (imageName, cmd, srcDirPath = null) => {
-  Logger.info(`Running a Docker container from '${imageName}' image with the command ${cmd}.`);
+  // Record start time and start Dockerode
+  const startTime = new Date();
+  const dockerode = new Dockerode();
 
-  const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
-  const startTime = new Date(); // Record start time
+  try {
+    Logger.info(`Running a Docker container from '${imageName}' image with the command ${cmd}.`);
 
-  return new Dockerode().run(imageName, cmd.split(' '), [stdout, stderr], {
-    Tty: false,
-    HostConfig: { Binds: srcDirPath ? [`${srcDirPath}:/app/src`] : [] }
-  }).then(async ([{ StatusCode }, container]) => {
+    // Run the docker container
+    const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
+    const [{ StatusCode }, container] = await dockerode.run(imageName, cmd.split(' '), [stdout, stderr], {
+      Tty: false,
+      HostConfig: { Binds: srcDirPath ? [`${srcDirPath}:/app/src`] : [] }
+    });
+
+    // Extract the results
     const dockerContainer = {
       containerName: await container.inspect().then(({ Name }) => Name.substr(1)), // Get the container name without the leading slash
       commandExecuted: cmd,
@@ -101,15 +109,15 @@ const runContainer = async (imageName, cmd, srcDirPath = null) => {
       executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(new Date() - startTime) // Calculate elapsed time in seconds
     };
 
-    // Remove the container
-    await container.remove();
-
     Logger.info(`The Docker container '${dockerContainer.containerName}' running from the '${imageName}' image exited with code ${StatusCode} (Elapsed time: ${dockerContainer.executionTimeSeconds} seconds).`);
     return { ...dockerContainer, output: StatusCode === 0 ? stdout.toString() : { error: stderr.toString() } };
-  }).catch((err) => {
+  } catch (err) {
     Logger.error(`Could not run a Docker container from '${imageName}' image with the command '${cmd.join(' ')}'!`);
     throw err;
-  });
+  } finally {
+    // Prune unused containers and images
+    await pruneDocker(dockerode);
+  }
 };
 
 module.exports = { createImage, runContainer };
