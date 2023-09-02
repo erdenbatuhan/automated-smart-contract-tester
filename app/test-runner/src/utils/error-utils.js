@@ -1,10 +1,10 @@
 const Logger = require('../logging/logger');
 
-const throwErrorWithoutDetails = (abstractErrorMessage, fullError) => {
+const getErrorWithoutDetails = (abstractErrorMessage, fullError) => {
   Logger.error(`${abstractErrorMessage} (${fullError ? fullError.message : 'null'})`);
-  fullError.message = abstractErrorMessage;
 
+  fullError.message = abstractErrorMessage;
   throw fullError;
 };
 
-module.exports = { throwErrorWithoutDetails };
+module.exports = { getErrorWithoutDetails };

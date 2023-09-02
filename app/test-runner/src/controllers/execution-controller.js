@@ -1,12 +1,9 @@
-const mongoose = require('mongoose');
+const dockerImageService = require('../services/docker-image-service');
+const dockerContainerHistoryService = require('../services/docker-container-history-service');
 
-const Execution = require('../models/execution');
-const StatusEnum = require('../models/enums/status-enum');
-
+const Status = require('../models/enums/status');
 const Logger = require('../logging/logger');
 const HTTPError = require('../errors/http-error');
-
-const projectController = require('./project-controller');
 
 const constantUtils = require('../utils/constant-utils');
 const errorUtils = require('../utils/error-utils');
@@ -14,67 +11,54 @@ const fsUtils = require('../utils/fs-utils');
 const dockerUtils = require('../utils/docker-utils');
 const testOutputUtils = require('../utils/test-output-utils');
 
-const executeTests = async (projectName, zipBuffer) => {
-  Logger.info(`Executing the tests for the project ${projectName}..`);
-  let execution;
+const findDockerImageByName = async (imageName) => dockerImageService.findDockerImageByName(imageName).catch((err) => {
+  if (err instanceof HTTPError) {
+    Logger.error(err.message);
+    throw err;
+  }
+
+  throw errorUtils.getErrorWithoutDetails(`An error occurred while finding the docker image with the name=${imageName}!`, err);
+});
+
+const extractTestResultsFromExecutionOutput = ({ status, output }) => ((status === Status.SUCCESS)
+  ? { ...testOutputUtils.extractTestExecutionResults(output), ...testOutputUtils.extractGasDiffAnalysis(output) }
+  : output);
+
+const executeTests = async (imageName, zipBuffer) => {
+  const commandExecuted = constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS;
+  const dockerImage = await findDockerImageByName(imageName);
+  let dockerContainerHistory = dockerContainerHistoryService.create(dockerImage, { commandExecuted });
 
   try {
-    // Save the current execution and attach it to the project
-    const project = await projectController.findProjectByName(projectName, ['_id']);
-    execution = new Execution({ project: project._id });
+    Logger.info(`Running the tests using the following command in the ${imageName} image: ${commandExecuted}.`);
 
     // Read the source files from the zip buffer
-    const contextName = `${projectName}_execution_${execution._id}`;
-    const [tempSrcDirPath, executionContents] = await fsUtils.readFromZipBuffer(contextName, zipBuffer);
+    const contextName = `${imageName}_execution_${dockerContainerHistory._id}`;
+    const tempSrcDirPath = await fsUtils.readFromZipBuffer(contextName, zipBuffer);
 
-    try {
-      // Run the Docker container to execute the tests
-      const [dockerContainer, testOutput] = await dockerUtils.runContainer(
-        projectName, constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS, tempSrcDirPath
-      ).finally(() => {
-        fsUtils.removeDirectorySync(tempSrcDirPath); // Remove the temp directory after creating the image
-      });
+    // Run the Docker container to execute the tests
+    const dockerContainerExecutionInfo = await dockerUtils.runContainer(imageName, commandExecuted, tempSrcDirPath)
+      .finally(() => { fsUtils.removeDirectorySync(tempSrcDirPath); }); // Remove the temp directory after creating the image
 
-      // Extract the test execution results from the test output
-      const testExecutionResults = {
-        executionTimeSeconds: dockerContainer.elapsedTimeSeconds,
-        ...testOutputUtils.extractTestExecutionResults(testOutput),
-        ...testOutputUtils.extractGasDiffAnalysis(testOutput)
-      };
+    // Extract the test execution results from the test output and update the Docker container execution output
+    dockerContainerExecutionInfo.output = extractTestResultsFromExecutionOutput(dockerContainerExecutionInfo);
 
-      // Update the execution fields
-      execution.status = testExecutionResults.overall.passed ? StatusEnum.SUCCESS : StatusEnum.FAILURE;
-      execution.dockerContainerName = dockerContainer.containerName;
-      execution.contents = executionContents;
-      execution.results = testExecutionResults;
-    } catch (err) {
-      Logger.warn(`Test execution for the project '${projectName}' has failed while running the docker container and extracting the results! `
-        + `(execution=${execution._id}) (${err ? err.message : 'null'})`);
-    }
-
-    // Save the execution
-    execution = await execution.save();
+    // Update the Docker container history with the execution results
+    Logger.info(`Executed the tests with the command ${commandExecuted} in the ${imageName} image.`);
+    dockerContainerHistory = dockerContainerHistoryService.create(dockerImage, dockerContainerExecutionInfo);
   } catch (err) {
-    errorUtils.throwErrorWithoutDetails(`An error occurred while executing the tests for the project ${projectName}!`, err);
+    const errMessage = err && err.message;
+
+    Logger.warn(`Failed to execute the tests with the command ${commandExecuted} in the ${imageName} image! (Error: ${errMessage})`);
+    dockerContainerHistory.output = { error: errMessage };
   }
 
-  Logger.info(`Executed the tests for the project ${projectName}!`);
-  return execution;
+  return dockerContainerHistoryService.save(dockerContainerHistory).then((dockerContainerHistorySaved) => {
+    Logger.info(`Execution history for the Docker container created from the image '${imageName}' has been successfully saved.`);
+    return dockerContainerHistorySaved;
+  }).catch((err) => {
+    throw errorUtils.getErrorWithoutDetails(`Failed to save execution history for the Docker container created from the image '${imageName}'!`, err);
+  });
 };
 
-const getExecutionFilesInZipBuffer = async (executionId) => {
-  let execution;
-  try {
-    execution = await Execution.findById(new mongoose.Types.ObjectId(executionId)).select('contents');
-  } catch (err) {
-    errorUtils.throwErrorWithoutDetails(`An error occurred while finding the execution with the ID=${executionId}!`, err);
-  }
-
-  if (!execution) {
-    throw new HTTPError(404, `Execution with ID=${executionId} not found!`);
-  }
-
-  return fsUtils.writeStringifiedContentsToZipBuffer(`Execution ${executionId}`, execution.contents);
-};
-
-module.exports = { executeTests, getExecutionFilesInZipBuffer };
+module.exports = { executeTests };

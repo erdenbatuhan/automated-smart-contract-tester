@@ -63,7 +63,7 @@ const getDirectoryContentsStringified = async (dirPath, basePath = '') => {
 
 const removeDirectorySync = (dirPath) => {
   try {
-    Logger.info(`Removing the directory (${dirPath})..`);
+    Logger.info(`Removing the directory (${dirPath}).`);
     fs.removeSync(dirPath);
     Logger.info(`Removed the directory (${dirPath})!`);
   } catch (err) {
@@ -77,7 +77,7 @@ const readFromZipBuffer = async (
   let tempDirPath;
 
   try {
-    Logger.info(`Reading ${contextName} from the zip buffer and writing it to a temporary directory..`);
+    Logger.info(`Reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
 
     tempDirPath = path.join(constantUtils.PATH_ROOT, `temp_${contextName}_${Date.now()}`);
     const zipFilePath = path.join(tempDirPath, `${contextName}_temp.zip`);
@@ -92,8 +92,8 @@ const readFromZipBuffer = async (
       await checkDirectoryContents(tempDirPath, directoryRequirements);
     }
 
-    // Get the uploaded contents as a list of strings along with their paths
-    const zipBufferContents = await getDirectoryContentsStringified(tempDirPath);
+    // // Get the uploaded contents as a list of strings along with their paths
+    // const zipBufferContents = await getDirectoryContentsStringified(tempDirPath);
 
     // Copy additional files if there are any to the temporary directory (overwrites!)
     if (additionalSourcesCopied && Array.isArray(additionalSourcesCopied)) {
@@ -103,7 +103,7 @@ const readFromZipBuffer = async (
     }
 
     Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory!`);
-    return [tempDirPath, zipBufferContents];
+    return tempDirPath;
   } catch (err) {
     removeDirectorySync(tempDirPath);
 
@@ -114,7 +114,7 @@ const readFromZipBuffer = async (
 
 const writeStringifiedContentsToZipBuffer = (contextName, contents) => {
   try {
-    Logger.info(`Writing the stringified contents of ${contextName} to zip buffer..`);
+    Logger.info(`Writing the stringified contents of ${contextName} to zip buffer.`);
     const zip = new AdmZip();
 
     contents.forEach((content) => {
@@ -129,6 +129,4 @@ const writeStringifiedContentsToZipBuffer = (contextName, contents) => {
   }
 };
 
-module.exports = {
-  readFile, readFromZipBuffer, removeDirectorySync, writeStringifiedContentsToZipBuffer
-};
+module.exports = { readFromZipBuffer, removeDirectorySync };

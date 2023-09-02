@@ -22,8 +22,8 @@ module.exports.DOCKER_IMAGE_SRC = [
 ];
 
 module.exports.FORGE_COMMANDS = {
-  LIST_TEST_NAMES: ['forge', 'test', '--list', '--json'],
-  RUN_TESTS: ['forge', 'test', '-vv', '--allow-failure', '--json'],
-  GENERATE_GAS_SNAPSHOT: ['forge', 'snapshot', '--snap', this.PROJECT_FILES.GAS_SNAPSHOT, '--json'],
-  COMPARE_SNAPSHOTS: ['forge', 'snapshot', '--diff', this.PROJECT_FILES.GAS_SNAPSHOT, '--allow-failure', '--json']
+  LIST_TEST_NAMES: 'forge test --list --json',
+  RUN_TESTS: 'forge test -vv --allow-failure --json',
+  GENERATE_GAS_SNAPSHOT: `forge snapshot --snap ${this.PROJECT_FILES.GAS_SNAPSHOT} --json`,
+  COMPARE_SNAPSHOTS: `forge snapshot --diff ${this.PROJECT_FILES.GAS_SNAPSHOT} --allow-failure --json`
 };
