@@ -1,12 +1,14 @@
 const path = require('path');
 
-module.exports.DEFAULT_DOCKER_SOCKET_PATH = path.join('/', 'var', 'run', 'docker.sock');
+module.exports.DOCKER_SOCKET_PATH = process.env.DOCKER_SOCKET_PATH || '/var/run/docker.sock';
+module.exports.DOCKER_WORK_DIR = process.env.DOCKER_WORK_DIR || '/app';
 
 module.exports.PATH_ROOT = path.dirname(require.main.filename);
+module.exports.PATH_TEMP = path.join(this.PATH_ROOT, 'temp');
 module.exports.PATH_PROJECT_TEMPLATE = path.join(this.PATH_ROOT, 'templates', 'project');
 
 module.exports.PROJECT_FOLDERS = {
-  TEST: 'test', /* SRC: "src", */ SOLUTION: 'solution'
+  TEST: 'test', SRC: 'src', SOLUTION: 'solution'
 };
 
 module.exports.PROJECT_FILES = {
@@ -14,7 +16,7 @@ module.exports.PROJECT_FILES = {
 };
 
 module.exports.REQUIRED_FILES = ['remappings.txt', '.gitmodules'];
-module.exports.REQUIRED_FOLDERS = Object.values(this.PROJECT_FOLDERS);
+module.exports.REQUIRED_FOLDERS = [this.PROJECT_FOLDERS.TEST, this.PROJECT_FOLDERS.SOLUTION];
 
 module.exports.DOCKER_IMAGE_SRC = [
   'Dockerfile',
