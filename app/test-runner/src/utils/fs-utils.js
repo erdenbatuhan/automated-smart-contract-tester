@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const AdmZip = require('adm-zip');
+const tar = require('tar');
 
 const Logger = require('../logging/logger');
 const HTTPError = require('../errors/http-error');
@@ -8,6 +9,10 @@ const HTTPError = require('../errors/http-error');
 const constantUtils = require('./constant-utils');
 
 const readFile = (filename) => fs.readFileSync(filename, 'utf-8');
+
+const checkIfFileExists = (dirPath, filename) => {
+  if (!fs.existsSync(path.join(dirPath, filename))) throw new Error(`${filename} not found in ${dirPath}!`);
+};
 
 const unzip = async (tempDirPath, zipFilePath) => {
   const zip = new AdmZip(zipFilePath);
@@ -74,41 +79,44 @@ const removeDirectorySync = (dirPath) => {
 const readFromZipBuffer = async (
   contextName, zipBuffer, directoryRequirements = null, additionalSourcesCopied = []
 ) => {
-  const tempDirPath = path.join(constantUtils.PATH_TEMP_DIR, `temp_${contextName}_${Date.now()}`);
-  const zipFilePath = path.join(tempDirPath, `${contextName}_temp.zip`);
+  const dirPath = path.join(constantUtils.PATH_TEMP_DIR, contextName);
+  const zipFilePath = path.join(dirPath, `${contextName}.zip`);
 
   try {
     Logger.info(`Reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
 
     // Read from the zip buffer and extract the contents into the temporary directory
-    await fs.promises.mkdir(tempDirPath, { recursive: true });
+    await fs.promises.mkdir(dirPath, { recursive: true });
     await fs.promises.writeFile(zipFilePath, zipBuffer);
-    await unzip(tempDirPath, zipFilePath);
+    await unzip(dirPath, zipFilePath);
 
     // Check if the uploaded contents match the required contents
     if (directoryRequirements) {
-      await checkDirectoryContents(tempDirPath, directoryRequirements);
+      await checkDirectoryContents(dirPath, directoryRequirements);
     }
 
     // // Get the uploaded contents as a list of strings along with their paths
-    // const zipBufferContents = await getDirectoryContentsStringified(tempDirPath);
+    // const zipBufferContents = await getDirectoryContentsStringified(dirPath);
 
     // Copy additional files if there are any to the temporary directory (overwrites!)
     if (additionalSourcesCopied && Array.isArray(additionalSourcesCopied)) {
       for (const src of additionalSourcesCopied) {
-        await fs.copy(src, tempDirPath, { overwrite: true });
+        await fs.copy(src, dirPath, { overwrite: true });
       }
     }
 
     Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory!`);
-    return tempDirPath;
+    return dirPath;
   } catch (err) {
-    removeDirectorySync(tempDirPath);
+    removeDirectorySync(dirPath);
 
     Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
     throw new HTTPError(err.statusCode || 500, err.message || 'An error occurred.');
   }
 };
+
+// Create a tarball, a readable tar stream
+const createTarball = (cwd) => tar.c({ gzip: false, file: null, cwd }, ['.']);
 
 const writeStringifiedContentsToZipBuffer = (contextName, contents) => {
   try {
@@ -127,4 +135,4 @@ const writeStringifiedContentsToZipBuffer = (contextName, contents) => {
   }
 };
 
-module.exports = { readFromZipBuffer, removeDirectorySync };
+module.exports = { checkIfFileExists, removeDirectorySync, readFromZipBuffer, createTarball };

@@ -16,10 +16,11 @@ const extractTestsFromExecutionOutput = ({ status, output }) => ((status === Sta
 const createNewProject = async (projectName, zipBuffer) => {
   try {
     Logger.info(`Creating the ${projectName} project.`);
+    const execName = `${projectName}_creation_${Date.now()}`;
 
     // Read the project from the zip buffer
     const tempProjectDirPath = await fsUtils.readFromZipBuffer(
-      `${projectName}_creation`,
+      execName,
       zipBuffer,
       { requiredFiles: constantUtils.REQUIRED_FILES, requiredFolders: constantUtils.REQUIRED_FOLDERS },
       [constantUtils.PATH_PROJECT_TEMPLATE]
@@ -30,7 +31,8 @@ const createNewProject = async (projectName, zipBuffer) => {
       .finally(() => { fsUtils.removeDirectorySync(tempProjectDirPath); }); // Remove the temp directory after creating the image
 
     // Run the Docker container to get the gas snapshot file
-    const dockerContainerExecutionInfo = await dockerUtils.runContainer(projectName, `cat ${constantUtils.PROJECT_FILES.GAS_SNAPSHOT}`);
+    const dockerContainerExecutionInfo = await dockerUtils.runContainer(
+      execName, projectName, `cat ${constantUtils.PROJECT_FILES.GAS_SNAPSHOT}`);
 
     // Retrieve the names of the tests from the gas snapshot output and update the Docker container execution output
     dockerContainerExecutionInfo.output = extractTestsFromExecutionOutput(dockerContainerExecutionInfo);

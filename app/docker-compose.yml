@@ -9,13 +9,8 @@ services:
     environment:
       - PORT=${TESTRUNNER_PORT}
       - MONGO_DB_URI=${TESTRUNNER_MONGO_DB_URI}
-      - DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket of the Docker daemon running on the host machine
-      - DOCKER_SHARED_TEMP_VOLUME=shared_temp_volume # Defined after "services" with "volumes" key!
-      - PATH_TEMP_DIR=/app/temp # The temporary folder containing uploads (e.g., projects, smart contracts, etc.)
+      - DOCKER_SOCKET_PATH=${DOCKER_SOCKET_PATH} # The Docker socket on the host machine
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # Mount the Docker socket from the host machine into the Docker container
-      - shared_temp_volume:/app/temp # Mount the shared temp volume from the host machine to the temporary folder in the Docker container
+      - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
     ports:
       - ${TESTRUNNER_PORT}:${TESTRUNNER_PORT} # Remove later; it should only be accessible via services (use depends-on)!
-volumes:
-  shared_temp_volume: # Define the shared_temp_volume here

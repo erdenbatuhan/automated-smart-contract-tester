@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const Dockerode = require('dockerode'); // https://github.com/apocas/dockerode
 const streams = require('memory-streams'); // Streams to capture stdout and stderr
 
@@ -9,17 +7,7 @@ const Logger = require('../logging/logger');
 
 const constantUtils = require('./constant-utils');
 const conversionUtils = require('./conversion-utils');
-
-const getDockerContext = (dirPath) => {
-  const dockerfilePath = path.join(dirPath, 'Dockerfile');
-
-  // Check if the Dockerfile exists before attempting to build the image
-  if (!fs.existsSync(dockerfilePath)) {
-    throw new Error(`Dockerfile not found at ${dockerfilePath}`);
-  }
-
-  return path.dirname(dockerfilePath);
-};
+const fsUtils = require('./fs-utils');
 
 const extractImageIDFromStreamResult = (streamRes) => streamRes.map(({ stream }) => stream)
   .join('').match(/Successfully built ([a-f0-9]+)/)[1];
@@ -62,7 +50,10 @@ const createImage = async (imageName, dirPath) => {
 
     // Build the Docker image
     const buildStream = await dockerode.buildImage({
-      context: getDockerContext(dirPath),
+      context: (() => {
+        fsUtils.checkIfFileExists(dirPath, 'Dockerfile'); // Check if the Dockerfile exists before attempting to build the image
+        return dirPath;
+      })(),
       src: constantUtils.DOCKER_IMAGE_SRC
     }, { t: imageName });
 
@@ -85,24 +76,29 @@ const createImage = async (imageName, dirPath) => {
   }
 };
 
-const getVolumeBindings = (srcDirPath) => {
-  let newSrcDirPath;
+const createSharedVolume = async (dockerode, { execName, srcDirPath }) => {
+  // Create a shared volume
+  const sharedVolumeName = `sharedvolume_${execName}`;
+  await dockerode.createVolume({ Name: sharedVolumeName });
 
-  // In the source directory path directly, replace the temp directory path with the Docker shared temp volume path
-  // If no Docker shared temp volume is specified, use the source directory path directly
-  if (constantUtils.DOCKER_SHARED_TEMP_VOLUME) {
-    newSrcDirPath = srcDirPath.replace(constantUtils.PATH_TEMP_DIR, constantUtils.DOCKER_SHARED_TEMP_VOLUME);
-  } else {
-    newSrcDirPath = srcDirPath;
-  }
+  // Create the copy container
+  const copyContainer = await dockerode.createContainer({
+    Image: 'ubuntu', WorkingDir: '/app', HostConfig: { Binds: [`${sharedVolumeName}:/app`] }
+  });
 
-  return [`${newSrcDirPath}:${constantUtils.PROJECT_DIR}/${constantUtils.PROJECT_FOLDERS.SRC}`];
+  // Move source files into the copy container
+  await copyContainer.putArchive(fsUtils.createTarball(srcDirPath), { path: '/app' });
+
+  return sharedVolumeName;
 };
 
-const runContainer = async (imageName, cmd, srcDirPath = undefined) => {
+const runContainer = async (execName, imageName, cmd, srcDirPath = undefined) => {
   // Record start time and start Dockerode
   const startTime = new Date();
   const dockerode = new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
+
+  // Create a shared volume for binding the src directory
+  const sharedVolume = srcDirPath && await createSharedVolume(dockerode, { execName, srcDirPath });
 
   try {
     Logger.info(`Running a Docker container from '${imageName}' image with the command '${cmd}'.`);
@@ -111,7 +107,7 @@ const runContainer = async (imageName, cmd, srcDirPath = undefined) => {
     const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
     const [{ StatusCode }, container] = await dockerode.run(imageName, cmd.split(' '), [stdout, stderr], {
       Tty: false,
-      HostConfig: { Binds: srcDirPath && getVolumeBindings(srcDirPath) }
+      HostConfig: { Binds: srcDirPath && [`${sharedVolume}:${constantUtils.PROJECT_DIR}/${constantUtils.PROJECT_FOLDERS.SRC}`] }
     });
 
     // Extract the results
@@ -129,8 +125,11 @@ const runContainer = async (imageName, cmd, srcDirPath = undefined) => {
     Logger.error(`Could not run a Docker container from '${imageName}' image with the command '${cmd}'!`);
     throw err;
   } finally {
-    // Prune unused containers and images
-    await pruneDocker(dockerode);
+    await pruneDocker(dockerode); // Prune unused containers and images
+
+    if (sharedVolume) {
+      await dockerode.getVolume(sharedVolume).remove(); // Remove the shared volume
+    }
   }
 };
 

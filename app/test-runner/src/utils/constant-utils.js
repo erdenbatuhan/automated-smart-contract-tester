@@ -1,7 +1,6 @@
 const path = require('path');
 
 module.exports.DOCKER_SOCKET_PATH = process.env.DOCKER_SOCKET_PATH || '/var/run/docker.sock';
-module.exports.DOCKER_SHARED_TEMP_VOLUME = process.env.DOCKER_SHARED_TEMP_VOLUME;
 
 module.exports.PATH_ROOT = path.dirname(require.main.filename);
 module.exports.PATH_TEMP_DIR = process.env.PATH_TEMP_DIR || path.join(this.PATH_ROOT, 'temp');

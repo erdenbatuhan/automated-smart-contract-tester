@@ -31,14 +31,15 @@ const executeTests = async (imageName, zipBuffer) => {
 
   try {
     Logger.info(`Running the tests using the following command in the ${imageName} image: ${commandExecuted}.`);
+    const execName = `${imageName}_execution_${dockerContainerHistory._id}_${Date.now()}`;
 
     // Read the source files from the zip buffer
-    const contextName = `${imageName}_execution_${dockerContainerHistory._id}`;
-    const tempSrcDirPath = await fsUtils.readFromZipBuffer(contextName, zipBuffer);
+    const tempSrcDirPath = await fsUtils.readFromZipBuffer(execName, zipBuffer);
 
     // Run the Docker container to execute the tests
-    const dockerContainerExecutionInfo = await dockerUtils.runContainer(imageName, commandExecuted, tempSrcDirPath)
-      .finally(() => { fsUtils.removeDirectorySync(tempSrcDirPath); }); // Remove the temp directory after creating the image
+    const dockerContainerExecutionInfo = await dockerUtils.runContainer(
+      execName, imageName, commandExecuted, tempSrcDirPath
+    ).finally(() => { fsUtils.removeDirectorySync(tempSrcDirPath); }); // Remove the temp directory after creating the image
 
     // Extract the test execution results from the test output and update the Docker container execution output
     dockerContainerExecutionInfo.output = extractTestResultsFromExecutionOutput(dockerContainerExecutionInfo);
