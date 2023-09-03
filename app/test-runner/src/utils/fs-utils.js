@@ -74,13 +74,11 @@ const removeDirectorySync = (dirPath) => {
 const readFromZipBuffer = async (
   contextName, zipBuffer, directoryRequirements = null, additionalSourcesCopied = []
 ) => {
-  let tempDirPath;
+  const tempDirPath = path.join(constantUtils.PATH_TEMP_DIR, `temp_${contextName}_${Date.now()}`);
+  const zipFilePath = path.join(tempDirPath, `${contextName}_temp.zip`);
 
   try {
     Logger.info(`Reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
-
-    tempDirPath = path.join(constantUtils.PATH_ROOT, `temp_${contextName}_${Date.now()}`);
-    const zipFilePath = path.join(tempDirPath, `${contextName}_temp.zip`);
 
     // Read from the zip buffer and extract the contents into the temporary directory
     await fs.promises.mkdir(tempDirPath, { recursive: true });

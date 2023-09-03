@@ -85,7 +85,21 @@ const createImage = async (imageName, dirPath) => {
   }
 };
 
-const runContainer = async (imageName, cmd, srcDirPath = null) => {
+const getVolumeBindings = (srcDirPath) => {
+  let newSrcDirPath;
+
+  // In the source directory path directly, replace the temp directory path with the Docker shared temp volume path
+  // If no Docker shared temp volume is specified, use the source directory path directly
+  if (constantUtils.DOCKER_SHARED_TEMP_VOLUME) {
+    newSrcDirPath = srcDirPath.replace(constantUtils.PATH_TEMP_DIR, constantUtils.DOCKER_SHARED_TEMP_VOLUME);
+  } else {
+    newSrcDirPath = srcDirPath;
+  }
+
+  return [`${newSrcDirPath}:${constantUtils.PROJECT_DIR}/${constantUtils.PROJECT_FOLDERS.SRC}`];
+};
+
+const runContainer = async (imageName, cmd, srcDirPath = undefined) => {
   // Record start time and start Dockerode
   const startTime = new Date();
   const dockerode = new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
@@ -97,11 +111,7 @@ const runContainer = async (imageName, cmd, srcDirPath = null) => {
     const [stdout, stderr] = [new streams.WritableStream(), new streams.WritableStream()];
     const [{ StatusCode }, container] = await dockerode.run(imageName, cmd.split(' '), [stdout, stderr], {
       Tty: false,
-      HostConfig: {
-        Binds: srcDirPath
-          ? [`${srcDirPath}:${constantUtils.DOCKER_WORK_DIR}/${constantUtils.PROJECT_FOLDERS.SRC}`]
-          : []
-      }
+      HostConfig: { Binds: srcDirPath && getVolumeBindings(srcDirPath) }
     });
 
     // Extract the results

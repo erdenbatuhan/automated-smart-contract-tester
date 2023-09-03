@@ -1,19 +1,15 @@
 const path = require('path');
 
 module.exports.DOCKER_SOCKET_PATH = process.env.DOCKER_SOCKET_PATH || '/var/run/docker.sock';
-module.exports.DOCKER_WORK_DIR = process.env.DOCKER_WORK_DIR || '/app';
+module.exports.DOCKER_SHARED_TEMP_VOLUME = process.env.DOCKER_SHARED_TEMP_VOLUME;
 
 module.exports.PATH_ROOT = path.dirname(require.main.filename);
-module.exports.PATH_TEMP = path.join(this.PATH_ROOT, 'temp');
+module.exports.PATH_TEMP_DIR = process.env.PATH_TEMP_DIR || path.join(this.PATH_ROOT, 'temp');
 module.exports.PATH_PROJECT_TEMPLATE = path.join(this.PATH_ROOT, 'templates', 'project');
 
-module.exports.PROJECT_FOLDERS = {
-  TEST: 'test', SRC: 'src', SOLUTION: 'solution'
-};
-
-module.exports.PROJECT_FILES = {
-  GAS_SNAPSHOT: '.gas-snapshot'
-};
+module.exports.PROJECT_DIR = '/app'; // Must match the WORKDIR in ./templates/project/Dockerfile
+module.exports.PROJECT_FOLDERS = { TEST: 'test', SRC: 'src', SOLUTION: 'solution' };
+module.exports.PROJECT_FILES = { GAS_SNAPSHOT: '.gas-snapshot' };
 
 module.exports.REQUIRED_FILES = ['remappings.txt', '.gitmodules'];
 module.exports.REQUIRED_FOLDERS = [this.PROJECT_FOLDERS.TEST, this.PROJECT_FOLDERS.SOLUTION];

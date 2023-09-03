@@ -1,11 +1,8 @@
 # MacOS
 .DS_Store
 
-# Application properties
-application-properties.json
-
-# Temp folders (e.g. projects uploaded)
-temp_*
+# The temporary folder containing uploads (e.g., projects, smart contracts, etc.)
+temp/
 
 ### ------------------------------------------------------------ ###
 ### https://github.com/github/gitignore/blob/main/Node.gitignore ###
