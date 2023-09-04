@@ -11,7 +11,7 @@ const fsUtils = require('../utils/fs-utils');
 const dockerUtils = require('../utils/docker-utils');
 const testOutputUtils = require('../utils/test-output-utils');
 
-const findDockerImageByName = async (imageName) => dockerImageService.findDockerImageByName(imageName).catch((err) => {
+const findDockerImageByName = async (imageName) => dockerImageService.findByName(imageName).catch((err) => {
   if (err instanceof HTTPError) {
     Logger.error(err.message);
     throw err;

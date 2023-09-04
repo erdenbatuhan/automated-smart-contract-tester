@@ -5,7 +5,7 @@ const HTTPError = require('../errors/http-error');
 
 const dockerContainerHistoryService = require('./docker-container-history-service');
 
-const findDockerImageByName = async (imageName, arg = null) => {
+const findByName = async (imageName, arg = null) => {
   const dockerImage = !arg
     ? await DockerImage.findOne({ imageName })
     : await DockerImage.findOne({ imageName }).select(arg.join(' '));
@@ -51,4 +51,4 @@ const upsertWithDockerContainerHistory = async (dockerImage, dockerContainerExec
   }
 };
 
-module.exports = { findDockerImageByName, upsertWithDockerContainerHistory };
+module.exports = { findByName, upsertWithDockerContainerHistory };
