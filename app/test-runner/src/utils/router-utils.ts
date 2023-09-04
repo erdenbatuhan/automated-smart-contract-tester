@@ -13,7 +13,7 @@ import HTTPError from '../errors/http-error';
 const extractRequiredParams = (req: Request, paramNames: string[]): Record<string, string> => {
   try {
     return Object.fromEntries(paramNames.map((paramName) => [paramName, req.params[paramName]]));
-  } catch (err: HTTPError | Error | any) {
+  } catch (err: HTTPError | any) {
     throw new HTTPError(400, `An error occurred while reading the request parameters (${paramNames}): ${err.message}`);
   }
 };
@@ -29,7 +29,7 @@ const extractRequiredParams = (req: Request, paramNames: string[]): Record<strin
 const extractRequiredQuery = (req: Request, paramNames: string[]): Record<string, string> => {
   try {
     return Object.fromEntries(paramNames.map((paramName) => [paramName, (req as any).query[paramName]]));
-  } catch (err: HTTPError | Error | any) {
+  } catch (err: HTTPError | any) {
     throw new HTTPError(400, `An error occurred while reading the query string parameters (${paramNames}): ${err.message}`);
   }
 };
@@ -44,7 +44,7 @@ const extractRequiredQuery = (req: Request, paramNames: string[]): Record<string
 const extractFileBuffer = (req: Request): Buffer => {
   try {
     return (req as any).file.buffer;
-  } catch (err: HTTPError | Error | any) {
+  } catch (err: HTTPError | any) {
     throw new HTTPError(400, `An error occurred while reading the file buffer: ${err.message}`);
   }
 };
