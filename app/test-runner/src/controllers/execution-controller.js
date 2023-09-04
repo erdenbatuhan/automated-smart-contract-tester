@@ -1,9 +1,9 @@
-const dockerImageService = require('../services/docker-image-service');
-const dockerContainerHistoryService = require('../services/docker-container-history-service');
-
 const Status = require('../models/enums/status');
 const Logger = require('../logging/logger');
 const HTTPError = require('../errors/http-error');
+
+const dockerImageService = require('../services/docker-image-service');
+const dockerContainerHistoryService = require('../services/docker-container-history-service');
 
 const constantUtils = require('../utils/constant-utils');
 const errorUtils = require('../utils/error-utils');
