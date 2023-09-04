@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    /*
-     * NEVER EDIT HERE!
-     *
-     * PLEASE SEE THE 'tsconfig.json' FILE OF THE RESPECTIVE PROJECT.
-     */
+    // Do not edit this section directly.
+    // Refer to the 'tsconfig.json' file in the respective project.
   }
 }
