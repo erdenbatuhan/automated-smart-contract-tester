@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "local": "node --loader ts-node/esm -r dotenv/config index.ts dotenv_config_path=./.env.local | npx pino-pretty",
-    "build": "tsc",
+    "build": "tsc && cp -r templates dist/templates",
     "serve": "npm run build && node dist/index.js | npx pino-pretty",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
