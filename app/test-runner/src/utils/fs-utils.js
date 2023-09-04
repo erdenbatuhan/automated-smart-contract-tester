@@ -8,8 +8,6 @@ const HTTPError = require('../errors/http-error');
 
 const constantUtils = require('./constant-utils');
 
-const readFile = (filename) => fs.readFileSync(filename, 'utf-8');
-
 const checkIfFileExists = (dirPath, filename) => {
   if (!fs.existsSync(path.join(dirPath, filename))) throw new Error(`${filename} not found in ${dirPath}!`);
 };
@@ -46,26 +44,6 @@ const checkDirectoryContents = async (dirPath, { requiredFiles, requiredFolders 
   }
 };
 
-const getDirectoryContentsStringified = async (dirPath, basePath = '') => {
-  const contents = [];
-  const entries = await fs.readdir(dirPath, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const entryPath = path.join(basePath, entry.name);
-
-    if (entry.isDirectory()) {
-      contents.push(...await getDirectoryContentsStringified(path.join(dirPath, entry.name), entryPath));
-    } else if (entry.isFile()) {
-      contents.push({
-        path: entryPath,
-        content: await fs.readFile(path.join(dirPath, entry.name), 'utf8')
-      });
-    }
-  }
-
-  return contents;
-};
-
 const removeDirectorySync = (dirPath) => {
   try {
     Logger.info(`Removing the directory (${dirPath}).`);
@@ -95,9 +73,6 @@ const readFromZipBuffer = async (
       await checkDirectoryContents(dirPath, directoryRequirements);
     }
 
-    // // Get the uploaded contents as a list of strings along with their paths
-    // const zipBufferContents = await getDirectoryContentsStringified(dirPath);
-
     // Copy additional files if there are any to the temporary directory (overwrites!)
     if (additionalSourcesCopied && Array.isArray(additionalSourcesCopied)) {
       for (const src of additionalSourcesCopied) {
@@ -117,22 +92,5 @@ const readFromZipBuffer = async (
 
 // Create a tarball, a readable tar stream
 const createTarball = (cwd) => tar.c({ gzip: false, file: null, cwd }, ['.']);
-
-const writeStringifiedContentsToZipBuffer = (contextName, contents) => {
-  try {
-    Logger.info(`Writing the stringified contents of ${contextName} to zip buffer.`);
-    const zip = new AdmZip();
-
-    contents.forEach((content) => {
-      zip.addFile(content.path, Buffer.from(content.content, 'utf8'));
-    });
-
-    Logger.info(`Wrote the stringified contents of ${contextName} to zip buffer!`);
-    return zip.toBuffer();
-  } catch (err) {
-    Logger.error(`An error occurred while writing the stringified contents of ${contextName} to zip buffer!`);
-    throw new HTTPError(500, err.message || `An error occurred while writing the stringified contents of ${contextName} to zip buffer.`);
-  }
-};
 
 module.exports = { checkIfFileExists, removeDirectorySync, readFromZipBuffer, createTarball };
