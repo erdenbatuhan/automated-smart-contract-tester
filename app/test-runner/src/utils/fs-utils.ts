@@ -1,32 +1,35 @@
-const fs = require('fs-extra');
-const path = require('path');
-const AdmZip = require('adm-zip');
-const tar = require('tar');
+import fs from 'fs-extra';
+import path from 'path';
+import AdmZip from 'adm-zip';
+import tar from 'tar';
 
-const Logger = require('../logging/logger');
-const HTTPError = require('../errors/http-error');
+import Logger from '../logging/logger';
+import HTTPError from '../errors/http-error';
 
-const constantUtils = require('./constant-utils');
+import constantUtils from './constant-utils';
 
 /**
  * Check if a file exists within a directory.
  *
- * @param {String} dirPath - The directory path.
- * @param {String} filename - The name of the file to check.
+ * @param {string} dirPath - The directory path.
+ * @param {string} filename - The name of the file to check.
  * @throws {Error} If the file does not exist in the directory.
  */
-const checkIfFileExists = (dirPath, filename) => {
-  if (!fs.existsSync(path.join(dirPath, filename))) throw new Error(`${filename} not found in ${dirPath}!`);
+const checkIfFileExists = (dirPath: string, filename: string): void => {
+  if (!fs.existsSync(path.join(dirPath, filename))) {
+    throw new Error(`${filename} not found in ${dirPath}.`);
+  }
 };
 
 /**
  * Unzip a file to a specified directory.
  *
- * @param {String} tempDirPath - The path to the temporary directory.
- * @param {String} zipFilePath - The path to the zip file to extract.
+ * @param {string} tempDirPath - The path to the temporary directory.
+ * @param {string} zipFilePath - The path to the zip file to extract.
+ * @returns {Promise<void>} A promise that resolves once the unzipping is complete.
  * @throws {HTTPError} If the zip file is empty or does not unzip to a directory.
  */
-const unzip = async (tempDirPath, zipFilePath) => {
+const unzip = async (tempDirPath: string, zipFilePath: string): Promise<void> => {
   const zip = new AdmZip(zipFilePath);
   zip.extractAllTo(tempDirPath, true); // Extract with overwrite
 
@@ -47,13 +50,14 @@ const unzip = async (tempDirPath, zipFilePath) => {
 /**
  * Check the contents of a directory against required files and folders.
  *
- * @param {String} dirPath - The path to the directory.
- * @param {Object} requirements - An object containing requiredFiles and requiredFolders arrays.
- * @param {String[]} requirements.requiredFiles - An array of required file names.
- * @param {String[]} requirements.requiredFolders - An array of required folder names.
+ * @param {string} dirPath - The path to the directory.
+ * @param {{ requiredFiles: string[]; requiredFolders: string[] }} requirements - An object containing requiredFiles and requiredFolders arrays.
+ * @returns {Promise<void>} A promise that resolves once the directory contents are checked.
  * @throws {HTTPError} If required files or folders are missing in the directory.
  */
-const checkDirectoryContents = async (dirPath, { requiredFiles, requiredFolders }) => {
+const checkDirectoryContents = async (
+  dirPath: string, { requiredFiles, requiredFolders }: { requiredFiles: string[], requiredFolders: string[] }
+): Promise<void> => {
   const files = await fs.promises.readdir(dirPath);
   const directories = await fs.promises.readdir(dirPath, { withFileTypes: true })
     .then((entries) => entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name));
@@ -70,31 +74,34 @@ const checkDirectoryContents = async (dirPath, { requiredFiles, requiredFolders 
 /**
  * Remove a directory synchronously.
  *
- * @param {String} dirPath - The path to the directory to remove.
+ * @param {string} dirPath - The path to the directory to remove.
  */
-const removeDirectorySync = (dirPath) => {
+const removeDirectorySync = (dirPath: string): void => {
   try {
     Logger.info(`Removing the directory (${dirPath}).`);
     fs.removeSync(dirPath);
-    Logger.info(`Removed the directory (${dirPath})!`);
-  } catch (err) {
-    Logger.warn(`Could not remove the directory (${dirPath})!`);
+    Logger.info(`Removed the directory (${dirPath}).`);
+  } catch (err: Error | any) {
+    Logger.warn(`Could not remove the directory (${dirPath}).`);
   }
 };
 
 /**
  * Read data from a zip buffer and write it to a temporary directory.
  *
- * @param {String} contextName - The name of the context for logging purposes.
+ * @param {string} contextName - The name of the context for logging purposes.
  * @param {Buffer} zipBuffer - The zip buffer to read from.
- * @param {Object|null} directoryRequirements - An optional object containing requiredFiles and requiredFolders arrays.
- * @param {String[]} additionalSourcesCopied - An optional array of additional sources to copy to the temporary directory.
- * @returns {Promise<String>} A promise that resolves to the path of the temporary directory.
+ * @param {object|null} [directoryRequirements=null] - An optional object containing requiredFiles and requiredFolders arrays.
+ * @param {string[]} [additionalSourcesCopied=[]] - An optional array of additional sources to copy to the temporary directory.
+ * @returns {Promise<string>} A promise that resolves to the path of the temporary directory.
  * @throws {HTTPError} If an error occurs while reading or validating the zip buffer.
  */
 const readFromZipBuffer = async (
-  contextName, zipBuffer, directoryRequirements = null, additionalSourcesCopied = []
-) => {
+  contextName: string,
+  zipBuffer: Buffer,
+  directoryRequirements: { requiredFiles: string[], requiredFolders: string[] } | null = null,
+  additionalSourcesCopied: string[] = []
+): Promise<string> => {
   const dirPath = path.join(constantUtils.PATH_TEMP_DIR, contextName);
   const zipFilePath = path.join(dirPath, `${contextName}.zip`);
 
@@ -118,12 +125,12 @@ const readFromZipBuffer = async (
       }
     }
 
-    Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory!`);
+    Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory.`);
     return dirPath;
-  } catch (err) {
+  } catch (err: Error | any) {
     removeDirectorySync(dirPath);
 
-    Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
+    Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
     throw new HTTPError(err.statusCode || 500, err.message || 'An error occurred.');
   }
 };
@@ -131,9 +138,9 @@ const readFromZipBuffer = async (
 /**
  * Create a tarball (a readable tar stream) from a specified directory.
  *
- * @param {String} cwd - The current working directory for creating the tarball.
- * @returns {ReadStream} A readable tar stream.
+ * @param {string} cwd - The current working directory for creating the tarball.
+ * @returns {NodeJS.ReadableStream | any} A readable tar stream.
  */
-const createTarball = (cwd) => tar.c({ gzip: false, file: null, cwd }, ['.']);
+const createTarball = (cwd: string): NodeJS.ReadableStream | any => tar.c({ gzip: false, file: '', cwd }, ['.']);
 
-module.exports = { checkIfFileExists, removeDirectorySync, readFromZipBuffer, createTarball };
+export default { checkIfFileExists, removeDirectorySync, readFromZipBuffer, createTarball };

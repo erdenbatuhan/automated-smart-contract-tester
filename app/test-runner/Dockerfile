@@ -6,12 +6,14 @@ WORKDIR /app
 
 # Install the project dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
+ARG STAGING
+RUN NODE_ENV=$STAGING npm install
 
 # Bundle the app source
 COPY . .
 
 # Expose the port
+ARG PORT
 EXPOSE $PORT
 
 # Start the app

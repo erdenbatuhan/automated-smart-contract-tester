@@ -1,19 +1,19 @@
 /**
  * Remove ANSI color codes from a string.
  *
- * @param {String} str - The input string containing color codes.
- * @returns {String} A new string with color codes removed.
+ * @param {string} str - The input string containing color codes.
+ * @returns {string} A new string with color codes removed.
  */
-const removeColorCodes = (str) => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+const removeColorCodes = (str: string): string => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
 
 /**
  * Extract test names from a gas snapshot text.
  *
- * @param {String} gasSnapshotText - The gas snapshot text to extract test names from.
- * @returns {String[]} An array of test names.
+ * @param {string} gasSnapshotText - The gas snapshot text to extract test names from.
+ * @returns {string[]} An array of test names.
  */
-const extractTestNamesFromGasSnapshot = (gasSnapshotText) => {
-  const testNames = [];
+const extractTestNamesFromGasSnapshot = (gasSnapshotText: string): string[] => {
+  const testNames: string[] = [];
 
   gasSnapshotText.split('\n').forEach((line) => {
     const match = line.match(/^([^()]+)/); // Use regex to extract text before ()
@@ -30,12 +30,12 @@ const extractTestNamesFromGasSnapshot = (gasSnapshotText) => {
 /**
  * Extract test execution results from test output.
  *
- * @param {String} testOutput - The test output JSON string.
- * @returns {Object} An object containing the extracted test execution results.
+ * @param {string} testOutput - The test output JSON string.
+ * @returns {Record<string, any>} An object containing the extracted test execution results.
  */
-const extractTestExecutionResults = (testOutput) => {
-  const processTestExecutionResults = (unprocessedTestExecutionResults) => {
-    const processedTestExecutionResults = {};
+const extractTestExecutionResults = (testOutput: string): Record<string, any> => {
+  const processTestExecutionResults = (unprocessedTestExecutionResults: Record<string, any>): Record<string, any> => {
+    const processedTestExecutionResults: Record<string, any> = {};
 
     for (const [key, value] of Object.entries(unprocessedTestExecutionResults)) {
       if (key === 'decoded_logs') {
@@ -52,18 +52,19 @@ const extractTestExecutionResults = (testOutput) => {
     return processedTestExecutionResults;
   };
 
-  const countPassingStatus = (data, status) => Object.values(data).reduce((count, value) => {
-    if (value.hasOwnProperty('test_results')) {
-      const testResults = Object.values(value.test_results);
-      const statusCount = testResults.filter((test) => test.status === status).length;
+  const countPassingStatus = (data: any, status: string): number => Object.values(data)
+    .reduce((count: number, value: any) => {
+      if (value.hasOwnProperty('test_results')) {
+        const testResults = Object.values(value.test_results);
+        const statusCount = testResults.filter((test: any) => test.status === status).length;
 
-      return count + statusCount;
-    } if (typeof value === 'object') {
-      return count + countPassingStatus(value, status);
-    }
+        return count + statusCount;
+      } if (typeof value === 'object') {
+        return count + countPassingStatus(value, status);
+      }
 
-    return count;
-  }, 0);
+      return count;
+    }, 0);
 
   const [jsonStart, jsonEnd] = [testOutput.indexOf('{'), testOutput.lastIndexOf('}')]; // Start and end of the JSON
 
@@ -79,11 +80,11 @@ const extractTestExecutionResults = (testOutput) => {
 /**
  * Extract gas difference analysis from test output.
  *
- * @param {String} testOutput - The test output text.
- * @returns {Object} An object containing the extracted gas difference analysis.
+ * @param {string} testOutput - The test output text.
+ * @returns {Record<string, any>} An object containing the extracted gas difference analysis.
  */
-const extractGasDiffAnalysis = (testOutput) => {
-  const extractGasDiffNumbersFromGasParts = (gasParts) => {
+const extractGasDiffAnalysis = (testOutput: string): Record<string, any> => {
+  const extractGasDiffNumbersFromGasParts = (gasParts: string): [number, number] => {
     const [gasDiff, gasDiffPercentage] = gasParts.split(' ');
     return [parseInt(gasDiff, 10), parseFloat(gasDiffPercentage.replace('(', '').replace('%)', ''))];
   };
@@ -108,4 +109,4 @@ const extractGasDiffAnalysis = (testOutput) => {
   return { gasDiffAnalysis: { overallGasDiff, overallGasDiffPercentage, testGasDiffs } };
 };
 
-module.exports = { extractTestNamesFromGasSnapshot, extractTestExecutionResults, extractGasDiffAnalysis };
+export default { extractTestNamesFromGasSnapshot, extractTestExecutionResults, extractGasDiffAnalysis };

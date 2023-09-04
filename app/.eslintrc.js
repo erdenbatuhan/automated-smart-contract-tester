@@ -1,14 +1,17 @@
 module.exports = {
-  extends: 'airbnb-base',
   env: {
     es6: true,
+    node: true,
     browser: true
   },
+  plugins: ['import'],
+  extends: ['eslint:recommended', 'plugin:import/recommended', 'airbnb-base'],
+  ignorePatterns: ['node_modules', 'dist'],
   rules: {
-    'brace-style': ['error'],
-    'comma-dangle': ['error', 'never'],
-    'no-unused-vars': ['warn'],
     'max-len': ['error', 120, { ignoreComments: true, ignoreTrailingComments: true, ignoreUrls: true, ignoreStrings: true, ignoreTemplateLiterals: true, ignoreRegExpLiterals: true }],
+    'brace-style': ['error'],
+    'no-unused-vars': ['warn'],
+    'comma-dangle': ['error', 'never'],
     'no-var': ['off'],
     'one-var': ['off'],
     'object-curly-newline': ['off'],
@@ -21,5 +24,22 @@ module.exports = {
     'array-callback-return': ['off'],
     'no-promise-executor-return': ['off'],
     'no-restricted-syntax': ['error', 'ForInStatement']
-  }
+  },
+  overrides: [
+    {
+      files: ['**/*.{ts,tsx}'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        // tsconfigRootDir: __dirname,
+        project: 'tsconfig.json'
+      },
+      plugins: ['@typescript-eslint'],
+      extends: ['plugin:@typescript-eslint/recommended', 'plugin:import/typescript', 'airbnb-typescript/base'],
+      rules: {
+        '@typescript-eslint/no-unused-vars': ['warn'],
+        '@typescript-eslint/comma-dangle': ['error', 'never'],
+        '@typescript-eslint/no-explicit-any': ['off']
+      }
+    }
+  ]
 };

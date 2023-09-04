@@ -1,2 +1,11 @@
-node_modules/
+# Built ts files
+dist/
+
+# Logs
 npm-debug.log
+
+# Local environment file
+.env.local
+
+# Dependency directories
+node_modules/

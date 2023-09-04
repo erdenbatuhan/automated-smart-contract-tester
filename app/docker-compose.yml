@@ -7,9 +7,11 @@ services:
     build:
       context: ./services
       dockerfile: Dockerfile
-    environment:
-      - PORT=${SERVICES_PORT}
-      - MONGO_DB_URI=${SERVICES_MONGO_DB_URI}
+      args:
+        STAGING: ${STAGING}
+        PORT: ${SERVICES_PORT}
+    env_file:
+      - .env
     ports:
       - ${SERVICES_PORT}:${SERVICES_PORT}
     depends_on:
@@ -18,10 +20,11 @@ services:
     build:
       context: ./test-runner
       dockerfile: Dockerfile
-    environment:
-      - PORT=${TESTRUNNER_PORT}
-      - MONGO_DB_URI=${TESTRUNNER_MONGO_DB_URI}
-      - DOCKER_SOCKET_PATH=${DOCKER_SOCKET_PATH} # The Docker socket on the host machine
+      args:
+        STAGING: ${STAGING}
+        PORT: ${TESTRUNNER_PORT}
+    env_file:
+      - .env
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
     ports:
