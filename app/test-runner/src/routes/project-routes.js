@@ -11,13 +11,18 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 /**
- * Uploads a new project
+ * Uploads a new project or updated an existing one.
  *
- * The folder must contain:
- *  - Files: "remappings.txt", ".gitmodules"
- *  - Folders: "test", "solution"
+ * The uploaded ZIP file should contain the necessary files and folders.
+ *
+ * @param {String} projectName.path.required - The name of the project.
+ * @consumes multipart/form-data
+ * @param {file} projectZip.formData.required - The ZIP file containing project files and folders.
+ * @returns {Object} 200 - The created project.
+ * @throws {HTTPError} 400 - If required parameters are missing or if the ZIP file is invalid.
+ * @throws {HTTPError} 500 - If there's a server error.
  */
-router.post('/:projectName/upload', upload.single('projectZip'), async (req, res) => {
+router.put('/:projectName/upload', upload.single('projectZip'), async (req, res) => {
   try {
     const { projectName } = routerUtils.extractRequiredParams(req, ['projectName']);
     const zipBuffer = routerUtils.extractFileBuffer(req);

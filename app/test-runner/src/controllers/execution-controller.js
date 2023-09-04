@@ -11,6 +11,14 @@ const fsUtils = require('../utils/fs-utils');
 const dockerUtils = require('../utils/docker-utils');
 const testOutputUtils = require('../utils/test-output-utils');
 
+/**
+ * Find a Docker image by name.
+ *
+ * @param {String} imageName - The name of the Docker image to find.
+ * @returns {Promise<import('../models/docker-image')>} A promise that resolves to the found Docker image.
+ * @throws {HTTPError} If an HTTP error occurs during the request.
+ * @throws {Error} If any other error occurs.
+ */
 const findDockerImageByName = async (imageName) => dockerImageService.findByName(imageName).catch((err) => {
   if (err instanceof HTTPError) {
     Logger.error(err.message);
@@ -20,10 +28,24 @@ const findDockerImageByName = async (imageName) => dockerImageService.findByName
   throw errorUtils.getErrorWithoutDetails(`An error occurred while finding the docker image with the name=${imageName}!`, err);
 });
 
+/**
+ * Extract test results from execution output based on the status.
+ *
+ * @param {{ status: import('../models/enums/status'), output: any }} param - An object containing the status and output.
+ * @returns {Object} The extracted test results or the original output if the status is not SUCCESS.
+ */
 const extractTestResultsFromExecutionOutput = ({ status, output }) => ((status === Status.SUCCESS)
   ? { ...testOutputUtils.extractTestExecutionResults(output), ...testOutputUtils.extractGasDiffAnalysis(output) }
   : output);
 
+/**
+ * Execute tests in a Docker container using the specified image and zip buffer.
+ *
+ * @param {String} imageName - The name of the Docker image.
+ * @param {Buffer} zipBuffer - The zip buffer containing source files.
+ * @returns {Promise<import('../models/docker-container-history')>} A promise that resolves to the Docker container history.
+ * @throws {Error} If any error occurs during the execution.
+ */
 const executeTests = async (imageName, zipBuffer) => {
   const commandExecuted = constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS;
   const dockerImage = await findDockerImageByName(imageName);
