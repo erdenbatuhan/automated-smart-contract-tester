@@ -23,7 +23,7 @@ app.use(cors()); // CORS
 app.use(bodyParser.json({ limit: '50mb' })); // Parses the text as JSON and exposes the resulting object on req.body
 
 // Use the modular routes with the common prefix
-app.use('/test-runner/api/v1', require('./api-routes'));
+app.use('/automated-smart-contract-tester/test-runner/api/v1', require('./api-routes'));
 
 // Listen on the port specified
 app.listen(PORT, () => {

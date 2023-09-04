@@ -1,5 +1,5 @@
 {
-  "name": "test-runner",
+  "name": "smart-contract-test-runner",
   "version": "1.0.0",
   "description": "",
   "author": "Batuhan Erden",
@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.10",
-    "axios": "^1.4.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dockerode": "^3.3.5",
