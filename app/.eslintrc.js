@@ -37,7 +37,8 @@ module.exports = {
       extends: ['plugin:@typescript-eslint/recommended', 'plugin:import/typescript', 'airbnb-typescript/base'],
       rules: {
         '@typescript-eslint/no-unused-vars': ['warn'],
-        '@typescript-eslint/comma-dangle': ['error', 'never']
+        '@typescript-eslint/comma-dangle': ['error', 'never'],
+        '@typescript-eslint/return-await': ['off']
       }
     }
   ]
