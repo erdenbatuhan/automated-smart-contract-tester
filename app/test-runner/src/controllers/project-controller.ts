@@ -45,7 +45,10 @@ const createNewProject = async (
     const execName = `${projectName}_creation_${Date.now()}`;
 
     // Read the project from the zip buffer
-    const tempProjectDirPath = await fsUtils.readFromZipBuffer(
+    const {
+      dirPath: tempDirPath,
+      extractedPath: tempProjectDirPath
+    } = await fsUtils.readFromZipBuffer(
       execName,
       zipBuffer,
       { requiredFiles: constantUtils.REQUIRED_FILES, requiredFolders: constantUtils.REQUIRED_FOLDERS },
@@ -54,7 +57,7 @@ const createNewProject = async (
 
     // Create a Docker image from the project read from the zip buffer
     const dockerImage = await dockerUtils.createImage(projectName, tempProjectDirPath)
-      .finally(() => fsUtils.removeDirectorySync(tempProjectDirPath)); // Remove the temp directory after creating the image
+      .finally(() => fsUtils.removeDirectorySync(tempDirPath)); // Remove the temp directory after creating the image
 
     // Run the Docker container to get the gas snapshot file
     const commandExecuted = `cat ${constantUtils.PROJECT_FILES.GAS_SNAPSHOT}`;

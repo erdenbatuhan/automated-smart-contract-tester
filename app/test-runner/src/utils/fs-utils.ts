@@ -22,30 +22,38 @@ const checkIfFileExists = (dirPath: string, filename: string): void => {
 };
 
 /**
- * Unzip a file to a specified directory.
+ * Unzips a file to a specified directory.
  *
- * @param {string} tempDirPath - The path to the temporary directory.
- * @param {string} zipFilePath - The path to the zip file to extract.
- * @returns {Promise<void>} A promise that resolves once the unzipping is complete.
+ * @param {string} dirPath - The path to the temporary directory where the zip file will be extracted.
+ * @param {string} zipFilePath - The path to the zip file to be extracted.
+ * @param {Buffer} zipBuffer - The buffer containing the contents of the zip file.
+ * @param {string[]} [requiredFolders=[]] - An optional array of folder names that must exist in the zip file.
  * @throws {HTTPError} If the zip file is empty or does not unzip to a directory.
+ * @returns {Promise<string>} A promise that resolves to the path of the directory where the contents were extracted.
  */
-const unzip = async (tempDirPath: string, zipFilePath: string): Promise<void> => {
-  const zip = new AdmZip(zipFilePath);
-  zip.extractAllTo(tempDirPath, true); // Extract with overwrite
+const unzip = async (
+  dirPath: string, zipFilePath: string, zipBuffer: Buffer, requiredFolders: string[] = []
+): Promise<string> => {
+  // Create the temporary directory and write zip file in it
+  await fs.promises.mkdir(dirPath, { recursive: true });
+  await fs.promises.writeFile(zipFilePath, zipBuffer);
 
-  // Get the first entry from the zip (assumed to be a directory)
-  const firstEntry = zip.getEntries()[0];
-  if (!firstEntry || !firstEntry.isDirectory) {
-    throw new HTTPError(400, 'The uploaded zip file is either empty or does not unzip to a directory!');
+  const zip = new AdmZip(zipFilePath);
+  zip.extractAllTo(dirPath, true); // Extract with overwrite
+
+  const firstEntry = zip.getEntries()[0]; // First entry is the first file/directory extracted
+  let extractedDirPath = dirPath;
+
+  // If it is a directory, update the extracted path; otherwise, it stays the same
+  if (!firstEntry || !firstEntry.entryName) {
+    throw new HTTPError(400, 'The uploaded zip file is probably empty!');
+  } else if (firstEntry.isDirectory && !requiredFolders.includes(firstEntry.entryName)) {
+    extractedDirPath = path.join(dirPath, firstEntry.entryName);
   }
 
-  // Replace the temporary directory with the unzipped directory
-  const unzippedDirPath = path.join(tempDirPath, firstEntry.entryName);
-  const swapDirPath = `${tempDirPath}_swap`;
-
-  await fs.move(unzippedDirPath, swapDirPath); // Unzipped Directory -> Swap Directory
-  await fs.remove(tempDirPath); // Remove: Temporary Directory
-  await fs.move(swapDirPath, tempDirPath); // Swap -> Temporary Directory
+  // Remove the zip file and return the new temporary directory path, if changed
+  fs.removeSync(zipFilePath);
+  return extractedDirPath;
 };
 
 /**
@@ -94,7 +102,7 @@ const removeDirectorySync = (dirPath: string): void => {
  * @param {Buffer} zipBuffer - The zip buffer to read from.
  * @param {object|null} [directoryRequirements=null] - An optional object containing requiredFiles and requiredFolders arrays.
  * @param {string[]} [additionalSourcesCopied=[]] - An optional array of additional sources to copy to the temporary directory.
- * @returns {Promise<string>} A promise that resolves to the path of the temporary directory.
+ * @returns {Promise<{ dirPath: string, extractedPath: string }>} A promise that resolves to the temporary directory paths.
  * @throws {HTTPError} If an error occurs while reading or validating the zip buffer.
  */
 const readFromZipBuffer = async (
@@ -102,32 +110,29 @@ const readFromZipBuffer = async (
   zipBuffer: Buffer,
   directoryRequirements: { requiredFiles: string[], requiredFolders: string[] } | null = null,
   additionalSourcesCopied: string[] = []
-): Promise<string> => {
+): Promise<{ dirPath: string, extractedPath: string }> => {
   const dirPath = path.join(constantUtils.PATH_TEMP_DIR, contextName);
   const zipFilePath = path.join(dirPath, `${contextName}.zip`);
 
   try {
-    Logger.info(`Reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
-
     // Read from the zip buffer and extract the contents into the temporary directory
-    await fs.promises.mkdir(dirPath, { recursive: true });
-    await fs.promises.writeFile(zipFilePath, zipBuffer);
-    await unzip(dirPath, zipFilePath);
+    Logger.info(`Reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
+    const extractedPath = await unzip(dirPath, zipFilePath, zipBuffer, directoryRequirements?.requiredFolders);
 
     // Check if the uploaded contents match the required contents
     if (directoryRequirements) {
-      await checkDirectoryContents(dirPath, directoryRequirements);
+      await checkDirectoryContents(extractedPath, directoryRequirements);
     }
 
     // Copy additional files if there are any to the temporary directory (overwrites!)
     if (additionalSourcesCopied && Array.isArray(additionalSourcesCopied)) {
       for (const src of additionalSourcesCopied) {
-        await fs.copy(src, dirPath, { overwrite: true });
+        await fs.copy(src, extractedPath, { overwrite: true });
       }
     }
 
     Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory.`);
-    return dirPath;
+    return { dirPath, extractedPath };
   } catch (err: HTTPError | Error | unknown) {
     removeDirectorySync(dirPath);
 

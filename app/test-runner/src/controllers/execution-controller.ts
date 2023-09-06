@@ -71,13 +71,16 @@ const executeTests = async (imageName: string, zipBuffer: Buffer): Promise<IDock
     const execName = `${imageName}_execution_${dockerContainerHistory._id}_${Date.now()}`;
 
     // Read the source files from the zip buffer
-    const tempSrcDirPath = await fsUtils.readFromZipBuffer(execName, zipBuffer);
+    const {
+      dirPath: tempDirPath,
+      extractedPath: tempSrcDirPath
+    } = await fsUtils.readFromZipBuffer(execName, zipBuffer);
 
     // Run the Docker container to execute the tests and update the docker container history
     dockerContainerHistory = await dockerUtils.runImage(
       execName, dockerImage.imageName, dockerContainerHistory, tempSrcDirPath
     ).finally(() => {
-      fsUtils.removeDirectorySync(tempSrcDirPath); // Remove the temp directory after running the container
+      fsUtils.removeDirectorySync(tempDirPath); // Remove the temp directory after running the container
       Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${imageName} image.`);
     });
   } catch (err: Error | unknown) {
