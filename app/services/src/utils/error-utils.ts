@@ -1,4 +1,4 @@
-import Logger from '../logging/logger';
+import Logger from '@logging/logger';
 
 /**
  * Logs an error message and throws an error with an abstract error message.

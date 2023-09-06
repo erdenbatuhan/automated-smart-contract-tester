@@ -1,8 +1,8 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-import type { IProject } from './project';
-import type { IUpload } from './upload';
-import Status from './enums/status';
+import type { IProject } from '@models/project';
+import type { IUpload } from '@models/upload';
+import Status from '@models/enums/status';
 
 export interface ISubmission extends Document {
   _id: Schema.Types.ObjectId;

@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-import type { IUpload } from './upload';
+import type { IUpload } from '@models/upload';
 
 export interface ITest {
   test: string;

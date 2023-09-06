@@ -1,9 +1,9 @@
 import type { ClientSession } from 'mongoose';
 
+import HTTPError from '@/errors/http-error';
+
 import Upload from '@/models/upload';
 import type { IUpload } from '@/models/upload';
-
-import HTTPError from '@/errors/http-error';
 
 /**
  * Finds an upload by its ID.

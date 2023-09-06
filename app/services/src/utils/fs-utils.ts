@@ -2,12 +2,12 @@ import fs from 'fs-extra';
 import path from 'path';
 import AdmZip from 'adm-zip';
 
+import Logger from '@logging/logger';
+import HTTPError from '@errors/http-error';
+
 import { IFile, IUpload } from '@models/upload';
 
-import Logger from '../logging/logger';
-import HTTPError from '../errors/http-error';
-
-import constantUtils from './constant-utils';
+import constantUtils from '@utils/constant-utils';
 
 /**
  * Extracts the contents of a zip file to a specified directory.
@@ -107,7 +107,7 @@ const getUploadedFilesFromZipBuffer = async (
       Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory!`);
       return uploadFiles;
     });
-  } catch (err: Error | unknown) {
+  } catch (err: HTTPError | Error | unknown) {
     Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
     throw new HTTPError((err as HTTPError)?.statusCode || 500, (err as Error)?.message || 'An error occurred.');
   } finally {

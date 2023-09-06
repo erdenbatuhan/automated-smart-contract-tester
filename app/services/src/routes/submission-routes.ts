@@ -2,9 +2,10 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
 
+import HTTPError from '@errors/http-error';
+
 import uploadController from '@controllers/upload-controller';
 
-import HTTPError from '@errors/http-error';
 import routerUtils from '@utils/router-utils';
 import type { IMulterRequest, IModifiedRequest } from '@utils/router-utils';
 

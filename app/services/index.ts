@@ -3,9 +3,9 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 
-import apiRoutes from './api-routes';
+import Logger from '@logging/logger';
 
-import Logger from './src/logging/logger';
+import apiRoutes from './api-routes';
 
 // Read environment variables
 const {

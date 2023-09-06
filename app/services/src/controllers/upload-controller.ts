@@ -1,9 +1,10 @@
+import Logger from '@logging/logger';
+import HTTPError from '@/errors/http-error';
+
 import Upload from '@models/upload';
 import type { IUpload } from '@models/upload';
 
 import uploadService from '@services/upload-service';
-
-import Logger from '@logging/logger';
 
 import fsUtils from '@utils/fs-utils';
 import errorUtils from '@utils/error-utils';
@@ -27,7 +28,12 @@ const uploadZipBuffer = async (name: string, zipBuffer: Buffer): Promise<IUpload
       Logger.info(`Successfully uploaded the zip buffer for ${name}.`);
       return uploadSaved;
     });
-  } catch (err: Error | unknown) {
+  } catch (err: HTTPError | Error | unknown) {
+    if (err instanceof HTTPError) {
+      Logger.error(err.message);
+      throw err;
+    }
+
     throw errorUtils.getErrorWithoutDetails(`An error occurred while uploading the zip buffer for ${name}!`, err);
   }
 };
@@ -46,7 +52,12 @@ const getUploadedFilesInZipBuffer = async (name: string, uploadId: string): Prom
   return uploadService.findById(uploadId).then((upload) => {
     Logger.info(`Successfully downloaded the uploaded files for ${name} (Upload ID = ${uploadId}).`);
     return fsUtils.writeUploadedFilesToZipBuffer(upload);
-  }).catch((err: Error | unknown) => {
+  }).catch((err: HTTPError | Error | unknown) => {
+    if (err instanceof HTTPError) {
+      Logger.error(err.message);
+      throw err;
+    }
+
     throw errorUtils.getErrorWithoutDetails(`An error occurred while downloading the uploaded files for ${name} (Upload ID = ${uploadId}).`, err);
   });
 };
