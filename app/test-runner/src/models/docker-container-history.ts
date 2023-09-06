@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-import type { IDockerImage } from './docker-image';
-import Status from './enums/status';
+import type { IDockerImage } from '@models/docker-image';
+import Status from '@models/enums/status';
 
 export interface TestExecutionResults {
   status: Status;

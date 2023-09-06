@@ -6,7 +6,7 @@ import tar from 'tar';
 import Logger from '@logging/logger';
 import HTTPError from '@errors/http-error';
 
-import constantUtils from './constant-utils';
+import constantUtils from '@utils/constant-utils';
 
 /**
  * Check if a file exists within a directory.

@@ -1,13 +1,12 @@
+import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 
-import express from 'express';
+import healthCheckRoutes from '@routes/health-check-routes';
+import forgeRoutes from '@routes/forge-routes';
+import projectRoutes from '@routes/project-routes';
+import executionRoutes from '@routes/execution-routes';
 
-import routerUtils, { IModifiedRequest } from './src/utils/router-utils';
-
-import healthCheckRoutes from './src/routes/health-check-routes';
-import forgeRoutes from './src/routes/forge-routes';
-import projectRoutes from './src/routes/project-routes';
-import executionRoutes from './src/routes/execution-routes';
+import routerUtils, { IModifiedRequest } from '@utils/router-utils';
 
 const router = express.Router();
 

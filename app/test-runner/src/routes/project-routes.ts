@@ -1,9 +1,10 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
 
+import HTTPError from '@errors/http-error';
+
 import projectController from '@controllers/project-controller';
 
-import HTTPError from '@errors/http-error';
 import routerUtils from '@utils/router-utils';
 import type { IMulterRequest } from '@utils/router-utils';
 

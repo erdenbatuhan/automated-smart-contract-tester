@@ -1,10 +1,10 @@
+import Logger from '@logging/logger';
+import HTTPError from '@errors/http-error';
+
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
 import type { DockerContainerExecutionOutput, IDockerContainerHistory } from '@models/docker-container-history';
-
 import Status from '@models/enums/status';
-import Logger from '@logging/logger';
-import HTTPError from '@errors/http-error';
 
 import dockerImageService from '@services/docker-image-service';
 import dockerContainerHistoryService from '@services/docker-container-history-service';

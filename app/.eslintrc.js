@@ -39,7 +39,8 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': ['warn'],
         '@typescript-eslint/comma-dangle': ['error', 'never'],
         '@typescript-eslint/return-await': ['off'],
-        'import/extensions': ['off']
+        'import/extensions': ['off'],
+        'import/order': ['off']
       }
     }
   ]

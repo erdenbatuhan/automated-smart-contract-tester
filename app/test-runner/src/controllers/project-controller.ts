@@ -1,9 +1,9 @@
+import Logger from '@logging/logger';
+
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
 import type { DockerContainerExecutionOutput } from '@models/docker-container-history';
-
 import Status from '@models/enums/status';
-import Logger from '@logging/logger';
 
 import dockerImageService from '@services/docker-image-service';
 
