@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 import type { ClientSession } from 'mongoose';
 
-import DockerImage from '../models/docker-image';
-import type { IDockerImage } from '../models/docker-image';
-import type { IDockerContainerHistory } from '../models/docker-container-history';
+import DockerImage from '@models/docker-image';
+import type { IDockerImage } from '@models/docker-image';
+import type { IDockerContainerHistory } from '@models/docker-container-history';
 
-import HTTPError from '../errors/http-error';
+import HTTPError from '@errors/http-error';
+
 import dockerContainerHistoryService from './docker-container-history-service';
 
 /**

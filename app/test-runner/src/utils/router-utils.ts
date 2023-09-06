@@ -1,7 +1,7 @@
 import type { Request } from 'express';
 import type { ParsedQs } from 'qs';
 
-import HTTPError from '../errors/http-error';
+import HTTPError from '@errors/http-error';
 
 export interface IMulterRequest extends Request {
   file: Express.Multer.File;

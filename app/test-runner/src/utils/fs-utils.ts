@@ -3,8 +3,8 @@ import path from 'path';
 import AdmZip from 'adm-zip';
 import tar from 'tar';
 
-import Logger from '../logging/logger';
-import HTTPError from '../errors/http-error';
+import Logger from '@logging/logger';
+import HTTPError from '@errors/http-error';
 
 import constantUtils from './constant-utils';
 
@@ -81,9 +81,9 @@ const removeDirectorySync = (dirPath: string): void => {
   try {
     Logger.info(`Removing the directory (${dirPath}).`);
     fs.removeSync(dirPath);
-    Logger.info(`Removed the directory (${dirPath}).`);
+    Logger.info(`Removed the directory (${dirPath})!`);
   } catch (err: Error | unknown) {
-    Logger.warn(`Could not remove the directory (${dirPath}).`);
+    Logger.warn(`Could not remove the directory (${dirPath}). (Error: ${(err as Error)?.message})`);
   }
 };
 

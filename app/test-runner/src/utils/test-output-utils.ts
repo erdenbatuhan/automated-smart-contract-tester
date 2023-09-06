@@ -2,7 +2,7 @@ import type {
   TestExecutionResults as ProcessedTestExecutionResults,
   GasDiffAnalysis,
   DockerContainerExecutionOutput
-} from '../models/docker-container-history';
+} from '@models/docker-container-history';
 
 interface UnprocessedTestExecutionResults extends ProcessedTestExecutionResults {
   counterexample?: string;

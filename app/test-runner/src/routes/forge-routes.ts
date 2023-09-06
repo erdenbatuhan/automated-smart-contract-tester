@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response } from 'express';
 
-import executorEnvironmentConfig from '../../data/forge/executor-environment-config.json';
+import executorEnvironmentConfig from 'data/forge/executor-environment-config.json';
 
 const router = express.Router();
 

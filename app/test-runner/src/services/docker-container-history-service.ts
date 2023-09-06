@@ -1,6 +1,6 @@
 import type { ClientSession } from 'mongoose';
 
-import type { IDockerContainerHistory } from '../models/docker-container-history';
+import type { IDockerContainerHistory } from '@models/docker-container-history';
 
 /**
  * Saves a DockerContainerHistory document.

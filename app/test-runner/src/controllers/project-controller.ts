@@ -1,17 +1,17 @@
-import type { IDockerImage } from '../models/docker-image';
-import DockerContainerHistory from '../models/docker-container-history';
-import type { DockerContainerExecutionOutput } from '../models/docker-container-history';
+import type { IDockerImage } from '@models/docker-image';
+import DockerContainerHistory from '@models/docker-container-history';
+import type { DockerContainerExecutionOutput } from '@models/docker-container-history';
 
-import Status from '../models/enums/status';
-import Logger from '../logging/logger';
+import Status from '@models/enums/status';
+import Logger from '@logging/logger';
 
-import dockerImageService from '../services/docker-image-service';
+import dockerImageService from '@services/docker-image-service';
 
-import constantUtils from '../utils/constant-utils';
-import errorUtils from '../utils/error-utils';
-import fsUtils from '../utils/fs-utils';
-import dockerUtils from '../utils/docker-utils';
-import testOutputUtils from '../utils/test-output-utils';
+import constantUtils from '@utils/constant-utils';
+import errorUtils from '@utils/error-utils';
+import fsUtils from '@utils/fs-utils';
+import dockerUtils from '@utils/docker-utils';
+import testOutputUtils from '@utils/test-output-utils';
 
 /**
  * Extracts test names from execution output based on the status.

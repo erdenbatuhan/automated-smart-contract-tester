@@ -1,19 +1,19 @@
-import type { IDockerImage } from '../models/docker-image';
-import DockerContainerHistory from '../models/docker-container-history';
-import type { DockerContainerExecutionOutput, IDockerContainerHistory } from '../models/docker-container-history';
+import type { IDockerImage } from '@models/docker-image';
+import DockerContainerHistory from '@models/docker-container-history';
+import type { DockerContainerExecutionOutput, IDockerContainerHistory } from '@models/docker-container-history';
 
-import Status from '../models/enums/status';
-import Logger from '../logging/logger';
-import HTTPError from '../errors/http-error';
+import Status from '@models/enums/status';
+import Logger from '@logging/logger';
+import HTTPError from '@errors/http-error';
 
-import dockerImageService from '../services/docker-image-service';
-import dockerContainerHistoryService from '../services/docker-container-history-service';
+import dockerImageService from '@services/docker-image-service';
+import dockerContainerHistoryService from '@services/docker-container-history-service';
 
-import constantUtils from '../utils/constant-utils';
-import errorUtils from '../utils/error-utils';
-import fsUtils from '../utils/fs-utils';
-import dockerUtils from '../utils/docker-utils';
-import testOutputUtils from '../utils/test-output-utils';
+import constantUtils from '@utils/constant-utils';
+import errorUtils from '@utils/error-utils';
+import fsUtils from '@utils/fs-utils';
+import dockerUtils from '@utils/docker-utils';
+import testOutputUtils from '@utils/test-output-utils';
 
 /**
  * Find a Docker image by name.
@@ -23,18 +23,16 @@ import testOutputUtils from '../utils/test-output-utils';
  * @throws {HTTPError} If an HTTP error occurs during the request.
  * @throws {Error} If any other error occurs.
  */
-const findDockerImageByName = async (imageName: string): Promise<IDockerImage> => {
-  try {
-    return await dockerImageService.findByName(imageName);
-  } catch (err: HTTPError | Error | unknown) {
-    if (err instanceof HTTPError) {
-      Logger.error(err.message);
-      throw err;
-    }
-
-    throw errorUtils.getErrorWithoutDetails(`An error occurred while finding the docker image with the name=${imageName}.`, err);
+const findDockerImageByName = async (
+  imageName: string
+): Promise<IDockerImage> => dockerImageService.findByName(imageName).catch((err: HTTPError | Error | unknown) => {
+  if (err instanceof HTTPError) {
+    Logger.error(err.message);
+    throw err;
   }
-};
+
+  throw errorUtils.getErrorWithoutDetails(`An error occurred while finding the docker image with the name=${imageName}.`, err);
+});
 
 /**
  * Extract test results from execution output based on the status.

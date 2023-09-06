@@ -3,11 +3,11 @@ import Dockerode from 'dockerode';
 import type { Container as ContainerType } from 'dockerode';
 import { WritableStream } from 'memory-streams'; // Streams to capture stdout and stderr
 
-import Status from '../models/enums/status';
-import type { IDockerImage } from '../models/docker-image';
-import type { IDockerContainerHistory } from '../models/docker-container-history';
+import Status from '@models/enums/status';
+import type { IDockerImage } from '@models/docker-image';
+import type { IDockerContainerHistory } from '@models/docker-container-history';
 
-import Logger from '../logging/logger';
+import Logger from '@logging/logger';
 
 import constantUtils from './constant-utils';
 import conversionUtils from './conversion-utils';
