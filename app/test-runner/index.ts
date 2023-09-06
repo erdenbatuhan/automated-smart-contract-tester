@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 
@@ -26,6 +27,7 @@ const app = express();
 
 // The express app settings
 app.use(cors()); // CORS
+app.use(helmet()); // Initializes helmet to mitigate common web vulnerabilities
 app.use(bodyParser.json({ limit: '50mb' })); // Parses the text as JSON and exposes the resulting object on req.body
 
 // Use the modular routes with the common prefix
