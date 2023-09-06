@@ -1,0 +1,20 @@
+# MacOS
+.DS_Store
+
+# The temporary folder containing uploads (e.g., projects, smart contracts, etc.)
+temp/
+
+# Built ts files
+dist/
+
+# Example inputs
+data/example-inputs/
+
+# Logs
+npm-debug.log
+
+# Local environment file
+.env.local
+
+# Dependency directories
+node_modules/
