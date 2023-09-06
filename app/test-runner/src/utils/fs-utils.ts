@@ -28,7 +28,7 @@ const checkIfFileExists = (dirPath: string, filename: string): void => {
  * @param {string} zipFilePath - The path to the zip file to be extracted.
  * @param {Buffer} zipBuffer - The buffer containing the contents of the zip file.
  * @param {string[]} [requiredFolders=[]] - An optional array of folder names that must exist in the zip file.
- * @throws {HTTPError} If the zip file is empty or does not unzip to a directory.
+ * @throws {HTTPError} Throws an HTTP error with status code 400 if the zip file is empty or does not unzip to a directory.
  * @returns {Promise<string>} A promise that resolves to the path of the directory where the contents were extracted.
  */
 const unzip = async (
