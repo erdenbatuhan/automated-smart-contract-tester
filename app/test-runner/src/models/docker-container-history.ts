@@ -40,7 +40,7 @@ const DockerContainerHistorySchema = new Schema<IDockerContainerHistory>(
     dockerImage: { type: Schema.Types.ObjectId, ref: 'DockerImage', required: true },
     containerName: { type: String },
     commandExecuted: { type: String, required: true },
-    status: { type: String, enum: Object.values(Status), required: true, default: Status.ERROR },
+    status: { type: String, enum: Status, required: true, default: Status.ERROR },
     statusCode: { type: Number },
     executionTimeSeconds: { type: Number },
     output: { type: Object }

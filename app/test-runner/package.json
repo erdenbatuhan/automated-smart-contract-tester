@@ -24,6 +24,7 @@
     "@controllers": "dist/src/controllers",
     "@errors": "dist/src/errors",
     "@logging": "dist/src/logging",
+    "@middleware": "dist/src/middleware",
     "@models": "dist/src/models",
     "@routes": "dist/src/routes",
     "@services": "dist/src/services",
@@ -31,7 +32,7 @@
     "data": "dist/data"
   },
   "scripts": {
-    "local": "node --loader ts-node/esm -r dotenv/config index.ts dotenv_config_path=./.env.local | npx pino-pretty",
+    "dev": "node --loader ts-node/esm -r dotenv/config index.ts dotenv_config_path=./.env.local | npx pino-pretty",
     "build": "rm -rf dist && tsc && cp -r templates dist/templates",
     "serve": "npm run build && node -r module-alias/register dist/index.js | npx pino-pretty",
     "test": "echo \"Error: no test specified\" && exit 1"

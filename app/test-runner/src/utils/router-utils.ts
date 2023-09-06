@@ -46,13 +46,13 @@ const extractRequiredQuery = (req: Request, paramNames: string[]): ParsedQs => {
 /**
  * Extract a file buffer from the request object.
  *
- * @param {Request} req - The Express.js request object.
+ * @param {IMulterRequest} req - The Express.js request object.
  * @returns {Buffer | undefined} The extracted file buffer.
  * @throws {HTTPError} If there's an error while extracting the file buffer.
  */
-const extractFileBuffer = (req: Request): Buffer => {
+const extractFileBuffer = (req: IMulterRequest): Buffer => {
   try {
-    return (req as IMulterRequest).file.buffer;
+    return req.file.buffer;
   } catch (err: HTTPError | unknown) {
     throw new HTTPError(400, `An error occurred while reading the file buffer: ${(err as Error)?.message}`);
   }

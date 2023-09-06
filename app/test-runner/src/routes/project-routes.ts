@@ -5,6 +5,7 @@ import projectController from '@controllers/project-controller';
 
 import HTTPError from '@errors/http-error';
 import routerUtils from '@utils/router-utils';
+import type { IMulterRequest } from '@utils/router-utils';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -14,9 +15,9 @@ const upload = multer({ storage: multer.memoryStorage() });
  *
  * The uploaded ZIP file should contain the necessary files and folders.
  *
- * @param {string} projectName.path.required - The name of the project.
+ * @param {string} projectName - The name of the project.
  * @consumes multipart/form-data
- * @param {file} projectZip.formData.required - The ZIP file containing project files and folders.
+ * @param {file} projectZip - The ZIP file containing project files and folders.
  * @returns {object} 200 - The created project.
  * @throws {object} 400 - If required parameters are missing or if the ZIP file is invalid.
  * @throws {object} 500 - If there's a server error.
@@ -24,7 +25,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.put('/:projectName/upload', upload.single('projectZip'), async (req: Request, res: Response) => {
   try {
     const { projectName } = routerUtils.extractRequiredParams(req, ['projectName']);
-    const zipBuffer = routerUtils.extractFileBuffer(req);
+    const zipBuffer = routerUtils.extractFileBuffer(req as IMulterRequest);
 
     const project = await projectController.createNewProject(projectName, zipBuffer);
     res.status(200).json(project);
