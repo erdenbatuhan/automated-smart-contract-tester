@@ -1,5 +1,5 @@
 import Logger from '@logging/logger';
-import HTTPError from '@/errors/http-error';
+import HTTPError from '@errors/http-error';
 
 import Upload from '@models/upload';
 import type { IUpload } from '@models/upload';
