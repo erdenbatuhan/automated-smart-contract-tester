@@ -9,10 +9,11 @@ import Logger from './src/logging/logger';
 
 // Read environment variables
 const {
+  TESTNUMMER_APP_NAME: APP_NAME,
   TESTRUNNER_PORT: PORT,
   TESTRUNNER_MONGO_DB_URI: MONGO_DB_URI
 } = process.env;
-if (!PORT || !MONGO_DB_URI) throw new Error('Missing environment variables!');
+if (!APP_NAME || !PORT || !MONGO_DB_URI) throw new Error('Missing environment variables!');
 
 // Connect to MongoDB
 mongoose
@@ -28,7 +29,7 @@ app.use(cors()); // CORS
 app.use(bodyParser.json({ limit: '50mb' })); // Parses the text as JSON and exposes the resulting object on req.body
 
 // Use the modular routes with the common prefix
-app.use('/automated-smart-contract-tester/test-runner/api/v1', apiRoutes);
+app.use(`/automated-smart-contract-tester/${APP_NAME}/api/v1`, apiRoutes);
 
 // Listen on the port specified
 app.listen(PORT, () => {
