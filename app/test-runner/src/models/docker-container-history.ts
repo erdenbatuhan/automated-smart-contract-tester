@@ -1,7 +1,28 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-import { IDockerImage } from './docker-image';
+import type { IDockerImage } from './docker-image';
 import Status from './enums/status';
+
+export interface TestExecutionResults {
+  status: Status;
+  reason: string;
+  logs?: string;
+  gas?: number;
+}
+
+export interface GasDiffAnalysis {
+  overallGasDiff: number;
+  overallGasDiffPercentage: number;
+  testGasDiffs: { test: string; gasDiff: number; gasDiffPercentage: number; }[];
+}
+
+export interface DockerContainerExecutionOutput {
+  data?: string;
+  error?: string;
+  overall?: { passed: boolean; numPassed: number; numFailed: number; };
+  tests?: string[] | { [contract: string]: { [test: string]: TestExecutionResults } };
+  gasDiffAnalysis?: GasDiffAnalysis
+}
 
 export interface IDockerContainerHistory extends Document {
   _id: Schema.Types.ObjectId;
@@ -11,7 +32,7 @@ export interface IDockerContainerHistory extends Document {
   status: Status;
   statusCode?: number;
   executionTimeSeconds?: number;
-  output?: Record<string, any>;
+  output?: DockerContainerExecutionOutput;
 }
 
 const DockerContainerHistorySchema = new Schema<IDockerContainerHistory>(

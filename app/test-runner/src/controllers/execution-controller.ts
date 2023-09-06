@@ -1,5 +1,6 @@
-import { IDockerImage } from '../models/docker-image';
-import DockerContainerHistory, { IDockerContainerHistory } from '../models/docker-container-history';
+import type { IDockerImage } from '../models/docker-image';
+import DockerContainerHistory from '../models/docker-container-history';
+import type { DockerContainerExecutionOutput, IDockerContainerHistory } from '../models/docker-container-history';
 
 import Status from '../models/enums/status';
 import Logger from '../logging/logger';
@@ -25,7 +26,7 @@ import testOutputUtils from '../utils/test-output-utils';
 const findDockerImageByName = async (imageName: string): Promise<IDockerImage> => {
   try {
     return await dockerImageService.findByName(imageName);
-  } catch (err: HTTPError | Error | any) {
+  } catch (err: HTTPError | Error | unknown) {
     if (err instanceof HTTPError) {
       Logger.error(err.message);
       throw err;
@@ -38,19 +39,20 @@ const findDockerImageByName = async (imageName: string): Promise<IDockerImage> =
 /**
  * Extract test results from execution output based on the status.
  *
- * @param {IDockerContainerHistory['status']} dockerContainerExecutionInfo - Docker container execution info
- * @returns {IDockerContainerHistory['output']} The extracted test results or the original output if the status is not SUCCESS.
+ * @param {DockerContainerExecutionOutput | undefined} output - The execution output
+ * @returns {DockerContainerExecutionOutput} The extracted test results
  */
-const extractTestResultsFromExecutionOutput = (dockerContainerExecutionInfo: IDockerContainerHistory): IDockerContainerHistory['output'] => {
-  const { status, output } = dockerContainerExecutionInfo;
-  if (status === Status.SUCCESS) {
+const extractTestResultsFromExecutionOutput = (
+  output: DockerContainerExecutionOutput | undefined
+): DockerContainerExecutionOutput => {
+  if (output?.data) {
     return {
-      ...testOutputUtils.extractTestExecutionResults(output?.data),
-      ...testOutputUtils.extractGasDiffAnalysis(output?.data)
-    } as IDockerContainerHistory['output'];
+      ...testOutputUtils.extractTestExecutionResults(output.data),
+      ...testOutputUtils.extractGasDiffAnalysis(output.data)
+    } as DockerContainerExecutionOutput;
   }
 
-  return { error: output };
+  return { data: 'No execution data found!' };
 };
 
 /**
@@ -80,24 +82,24 @@ const executeTests = async (imageName: string, zipBuffer: Buffer): Promise<IDock
       fsUtils.removeDirectorySync(tempSrcDirPath); // Remove the temp directory after running the container
       Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${imageName} image.`);
     });
-  } catch (err: Error | any) {
-    const errMessage = err && err.message;
-
-    dockerContainerHistory.output = { error: errMessage };
-    Logger.warn(`Failed to execute the tests with the command '${commandExecuted}' in the ${imageName} image! (Error: ${errMessage})`);
+  } catch (err: Error | unknown) {
+    dockerContainerHistory.output = { error: (err as Error)?.message };
+    Logger.warn(`Failed to execute the tests with the command '${commandExecuted}' in the ${imageName} image! (Error: ${(err as Error)?.message})`);
   }
 
-  // Extract the test execution results from the test output and update the Docker container history with the execution results
+  // Extract the test execution results from the test output (if the execution has been successful) and update the Docker container history with the execution results
   try {
-    dockerContainerHistory.output = extractTestResultsFromExecutionOutput(dockerContainerHistory);
-  } catch (err: Error | any) {
+    if (dockerContainerHistory.status === Status.SUCCESS) {
+      dockerContainerHistory.output = extractTestResultsFromExecutionOutput(dockerContainerHistory.output);
+    }
+  } catch (err: Error | unknown) {
     throw errorUtils.getErrorWithoutDetails(`An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`, err);
   }
 
   return dockerContainerHistoryService.save(dockerContainerHistory).then((dockerContainerHistorySaved) => {
     Logger.info(`Execution history for the Docker container created from the image '${imageName}' has been successfully saved.`);
     return dockerContainerHistorySaved;
-  }).catch((err) => {
+  }).catch((err: Error | unknown) => {
     throw errorUtils.getErrorWithoutDetails(`Failed to save execution history for the Docker container created from the image '${imageName}'.`, err);
   });
 };

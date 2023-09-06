@@ -42,6 +42,7 @@ const unzip = async (tempDirPath: string, zipFilePath: string): Promise<void> =>
   // Replace the temporary directory with the unzipped directory
   const unzippedDirPath = path.join(tempDirPath, firstEntry.entryName);
   const swapDirPath = `${tempDirPath}_swap`;
+
   await fs.move(unzippedDirPath, swapDirPath); // Unzipped Directory -> Swap Directory
   await fs.remove(tempDirPath); // Remove: Temporary Directory
   await fs.move(swapDirPath, tempDirPath); // Swap -> Temporary Directory
@@ -81,7 +82,7 @@ const removeDirectorySync = (dirPath: string): void => {
     Logger.info(`Removing the directory (${dirPath}).`);
     fs.removeSync(dirPath);
     Logger.info(`Removed the directory (${dirPath}).`);
-  } catch (err: Error | any) {
+  } catch (err: Error | unknown) {
     Logger.warn(`Could not remove the directory (${dirPath}).`);
   }
 };
@@ -127,11 +128,11 @@ const readFromZipBuffer = async (
 
     Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory.`);
     return dirPath;
-  } catch (err: Error | any) {
+  } catch (err: HTTPError | Error | unknown) {
     removeDirectorySync(dirPath);
 
     Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
-    throw new HTTPError(err.statusCode || 500, err.message || 'An error occurred.');
+    throw new HTTPError((err as HTTPError)?.statusCode || 500, (err as Error)?.message || 'An error occurred.');
   }
 };
 
@@ -141,6 +142,6 @@ const readFromZipBuffer = async (
  * @param {string} cwd - The current working directory for creating the tarball.
  * @returns {NodeJS.ReadableStream | any} A readable tar stream.
  */
-const createTarball = (cwd: string): NodeJS.ReadableStream | any => tar.c({ gzip: false, file: '', cwd }, ['.']);
+const createTarball = (cwd: string): NodeJS.ReadableStream => tar.create({ gzip: false, cwd }, ['.']); // may need to add { file: '' }
 
 export default { checkIfFileExists, removeDirectorySync, readFromZipBuffer, createTarball };

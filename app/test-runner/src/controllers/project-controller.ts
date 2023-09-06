@@ -1,5 +1,6 @@
-import { IDockerImage } from '../models/docker-image';
-import DockerContainerHistory, { IDockerContainerHistory } from '../models/docker-container-history';
+import type { IDockerImage } from '../models/docker-image';
+import DockerContainerHistory from '../models/docker-container-history';
+import type { DockerContainerExecutionOutput } from '../models/docker-container-history';
 
 import Status from '../models/enums/status';
 import Logger from '../logging/logger';
@@ -15,17 +16,17 @@ import testOutputUtils from '../utils/test-output-utils';
 /**
  * Extracts test names from execution output based on the status.
  *
- * @param {IDockerContainerHistory} dockerContainerExecutionInfo - Docker container execution info
- * @returns {IDockerContainerHistory['output']} An array of test names or the original output if the status is not SUCCESS.
+ * @param {DockerContainerExecutionOutput | undefined} output - The execution output
+ * @returns {DockerContainerExecutionOutput} An array of test names
  */
-const extractTestsFromExecutionOutput = (dockerContainerExecutionInfo: IDockerContainerHistory): IDockerContainerHistory['output'] => {
-  const { status, output } = dockerContainerExecutionInfo;
-
-  if (status === Status.SUCCESS) {
-    return { tests: testOutputUtils.extractTestNamesFromGasSnapshot(output?.data) } as IDockerContainerHistory['output'];
+const extractTestsFromExecutionOutput = (
+  output: DockerContainerExecutionOutput | undefined
+): DockerContainerExecutionOutput => {
+  if (output?.data) {
+    return { tests: testOutputUtils.extractTestNamesFromGasSnapshot(output?.data) };
   }
 
-  return { error: output };
+  return { data: 'No execution data found!' };
 };
 
 /**
@@ -33,12 +34,12 @@ const extractTestsFromExecutionOutput = (dockerContainerExecutionInfo: IDockerCo
  *
  * @param {string} projectName - The name of the new project.
  * @param {Buffer} zipBuffer - The ZIP buffer containing the project files.
- * @returns {Promise<{ image: IDockerImage | null, output: string[] | any }>} A promise that resolves to an object containing the created Docker image and the extracted test names.
+ * @returns {Promise<{ image: IDockerImage, output: DockerContainerExecutionOutput | undefined }>} A promise that resolves to an object containing the created Docker image and the extracted test names.
  * @throws {Error} If any error occurs during project creation.
  */
 const createNewProject = async (
   projectName: string, zipBuffer: Buffer
-): Promise<{ image: IDockerImage | null, output: string[] | any }> => {
+): Promise<{ image: IDockerImage, output: DockerContainerExecutionOutput | undefined }> => {
   try {
     Logger.info(`Creating the ${projectName} project.`);
     const execName = `${projectName}_creation_${Date.now()}`;
@@ -60,8 +61,15 @@ const createNewProject = async (
     const dockerContainerHistory = await dockerUtils.runImage(
       execName, dockerImage.imageName, new DockerContainerHistory({ commandExecuted }));
 
-    // Retrieve the names of the tests from the gas snapshot output and update the Docker container execution output
-    dockerContainerHistory.output = extractTestsFromExecutionOutput(dockerContainerHistory);
+    // Retrieve the names of the tests from the gas snapshot output (if the execution has been successful) and update the Docker container history with the execution results
+    try {
+      if (dockerContainerHistory.status === Status.SUCCESS) {
+        dockerContainerHistory.output = extractTestsFromExecutionOutput(dockerContainerHistory.output);
+      }
+    } catch (err: Error | unknown) {
+      const errMessage = (err as Error)?.message;
+      throw new Error(`An error occurred while extracting the test results from the executed Docker container created from the image '${dockerImage.imageName}'. (Error: ${errMessage}})`);
+    }
 
     // Save (or update it if it already exists) the Docker image with the Docker container history for the executed container
     return await dockerImageService.upsertWithDockerContainerHistory(dockerImage, dockerContainerHistory)
@@ -69,7 +77,7 @@ const createNewProject = async (
         Logger.info(`Created the ${projectName} project with the Docker image (${dockerImage.imageID}).`);
         return { image: dockerImageSaved, output: dockerContainerHistorySaved.output };
       });
-  } catch (err: Error | any) {
+  } catch (err: Error | unknown) {
     throw errorUtils.getErrorWithoutDetails(`An error occurred while creating the ${projectName} project.`, err);
   }
 };

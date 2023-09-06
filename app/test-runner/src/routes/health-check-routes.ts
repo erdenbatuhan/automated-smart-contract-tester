@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 
 const router = express.Router();
 
@@ -16,8 +17,8 @@ router.post('/', async (req: Request, res: Response) => {
     });
 
     res.status(200).send(await healthCheckPromise);
-  } catch (err: Error | any) {
-    res.status(500).send(err.message);
+  } catch (err: Error | unknown) {
+    res.status(500).send((err as Error)?.message);
   }
 });
 

@@ -1,7 +1,9 @@
-import mongoose, { ClientSession } from 'mongoose';
+import mongoose from 'mongoose';
+import type { ClientSession } from 'mongoose';
 
-import DockerImage, { IDockerImage } from '../models/docker-image';
-import { IDockerContainerHistory } from '../models/docker-container-history';
+import DockerImage from '../models/docker-image';
+import type { IDockerImage } from '../models/docker-image';
+import type { IDockerContainerHistory } from '../models/docker-container-history';
 
 import HTTPError from '../errors/http-error';
 import dockerContainerHistoryService from './docker-container-history-service';
@@ -49,7 +51,7 @@ const upsert = async (
  * @param {IDockerImage} dockerImage - The DockerImage document to upsert.
  * @param {IDockerContainerHistory} dockerContainerHistory - Associated Docker container history.
  * @returns {Promise<{ dockerImageSaved: IDockerImage, dockerContainerHistorySaved: IDockerContainerHistory }>} A promise that resolves to an object containing the upserted DockerImage document and the saved Docker container history.
- * @throws {Error} If an error occurs during the upsert or saving of the Docker container history.
+ * @throws {Error | unknown} If an error occurs during the upsert or saving of the Docker container history.
  */
 const upsertWithDockerContainerHistory = async (
   dockerImage: IDockerImage,
@@ -70,10 +72,10 @@ const upsertWithDockerContainerHistory = async (
     await session.commitTransaction();
 
     return { dockerImageSaved, dockerContainerHistorySaved };
-  } catch (error) {
+  } catch (err: Error | unknown) {
     // Handle any errors and abort the transaction
     await session.abortTransaction();
-    throw error;
+    throw err;
   } finally {
     session.endSession();
   }

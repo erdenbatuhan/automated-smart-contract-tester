@@ -3,6 +3,7 @@ import multer from 'multer';
 
 import projectController from '../controllers/project-controller';
 
+import HTTPError from '../errors/http-error';
 import routerUtils from '../utils/router-utils';
 
 const router = express.Router();
@@ -27,8 +28,8 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
 
     const project = await projectController.createNewProject(projectName, zipBuffer);
     res.status(200).json(project);
-  } catch (err: Error | any) {
-    res.status(err.statusCode || 500).json({ error: err ? err.message : 'An error occurred.' });
+  } catch (err: HTTPError | Error | unknown) {
+    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
   }
 });
 

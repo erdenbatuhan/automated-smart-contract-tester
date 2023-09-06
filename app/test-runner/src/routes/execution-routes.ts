@@ -1,9 +1,12 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import multer from 'multer';
 
 import executionController from '../controllers/execution-controller';
 
+import HTTPError from '../errors/http-error';
 import routerUtils from '../utils/router-utils';
+import type { IModifiedRequest } from '../utils/router-utils';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -21,14 +24,14 @@ const upload = multer({ storage: multer.memoryStorage() });
  */
 router.post('/', upload.single('srcZip'), async (req: Request, res: Response) => {
   try {
-    const { projectName } = (req as any).locals;
+    const { projectName } = (req as IModifiedRequest).locals;
     const zipBuffer = routerUtils.extractFileBuffer(req);
 
     await executionController.executeTests(projectName, zipBuffer).then((execution) => {
       res.status(200).json(execution);
     });
-  } catch (err: Error | any) {
-    res.status(err.statusCode || 500).json({ error: err ? err.message : 'An error occurred.' });
+  } catch (err: HTTPError | Error | unknown) {
+    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
   }
 });
 
