@@ -7,9 +7,6 @@ temp/
 # Built ts files
 dist/
 
-# Example inputs
-data/example-inputs/
-
 # Logs
 npm-debug.log
 

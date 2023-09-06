@@ -1,6 +1,12 @@
 # MacOS
 .DS_Store
 
+# The temporary folder containing uploads (e.g., projects, smart contracts, etc.)
+temp/
+
+# Built ts files
+dist/
+
 ### ------------------------------------------------------------ ###
 ### https://github.com/github/gitignore/blob/main/Node.gitignore ###
 ### ------------------------------------------------------------ ###
@@ -93,10 +99,6 @@ web_modules/
 # Next.js build output
 .next
 out
-
-# Nuxt.js build / generate output
-.nuxt
-dist
 
 # Gatsby files
 .cache/
