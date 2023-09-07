@@ -15,9 +15,10 @@ services:
       args:
         STAGING: ${STAGING}
         PORT: ${SERVICES_PORT}
+    restart: on-failure
     networks:
-      - isolated-network-runner
       - isolated-network-mongo
+      - isolated-network-runner
     ports:
       - ${SERVICES_PORT}:${SERVICES_PORT}
     environment:
@@ -27,6 +28,7 @@ services:
       MONGO_DB_URI: mongodb://${APP_NAME}-${MONGO_REPL_1}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_2}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_3}:${MONGO_PORT}/${SERVICES_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
       TESTRUNNER_HOST: ${APP_NAME}-${TESTRUNNER_SERVICE_NAME}:${TESTRUNNER_PORT} # app name + service name
     depends_on:
+      - mongo-manager
       - runner
   # test runner
   runner:
@@ -37,9 +39,10 @@ services:
       args:
         STAGING: ${STAGING}
         PORT: ${TESTRUNNER_PORT}
+    restart: on-failure
     networks:
-      - isolated-network-runner
       - isolated-network-mongo
+      - isolated-network-runner
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
     ports:
@@ -50,6 +53,7 @@ services:
       PORT: ${TESTRUNNER_PORT}
       MONGO_DB_URI: mongodb://${APP_NAME}-${MONGO_REPL_1}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_2}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_3}:${MONGO_PORT}/${TESTRUNNER_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
     depends_on:
+      - mongo-manager
       - ubuntu
   # ubuntu image (needed in the test runner service)
   ubuntu:
