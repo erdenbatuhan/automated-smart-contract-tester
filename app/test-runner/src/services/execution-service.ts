@@ -6,8 +6,8 @@ import DockerContainerHistory from '@models/docker-container-history';
 import type { DockerContainerExecutionOutput, IDockerContainerHistory } from '@models/docker-container-history';
 import Status from '@models/enums/status';
 
-import dockerImageService from '@services/docker-image-service';
-import dockerContainerHistoryService from '@services/docker-container-history-service';
+import dockerImageRepository from '@repositories/docker-image-repository';
+import dockerContainerHistoryRepository from '@repositories/docker-container-history-repository';
 
 import constantUtils from '@utils/constant-utils';
 import errorUtils from '@utils/error-utils';
@@ -25,7 +25,7 @@ import testOutputUtils from '@utils/test-output-utils';
  */
 const findDockerImageByName = async (
   imageName: string
-): Promise<IDockerImage> => dockerImageService.findByName(imageName).catch((err: HTTPError | Error | unknown) => {
+): Promise<IDockerImage> => dockerImageRepository.findByName(imageName).catch((err: HTTPError | Error | unknown) => {
   if (err instanceof HTTPError) {
     Logger.error(err.message);
     throw err;
@@ -97,7 +97,7 @@ const executeTests = async (imageName: string, zipBuffer: Buffer): Promise<IDock
     throw errorUtils.getErrorWithoutDetails(`An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`, err);
   }
 
-  return dockerContainerHistoryService.save(dockerContainerHistory).then((dockerContainerHistorySaved) => {
+  return dockerContainerHistoryRepository.save(dockerContainerHistory).then((dockerContainerHistorySaved) => {
     Logger.info(`Execution history for the Docker container created from the image '${imageName}' has been successfully saved.`);
     return dockerContainerHistorySaved;
   }).catch((err: Error | unknown) => {

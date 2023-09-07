@@ -7,7 +7,7 @@ import DockerImage from '@models/docker-image';
 import type { IDockerImage } from '@models/docker-image';
 import type { IDockerContainerHistory } from '@models/docker-container-history';
 
-import dockerContainerHistoryService from '@services/docker-container-history-service';
+import dockerContainerHistoryRepository from '@repositories/docker-container-history-repository';
 
 /**
  * Find a Docker image by its name.
@@ -67,7 +67,7 @@ const upsertWithDockerContainerHistory = async (
 
     // Save the docker container history for the executed container within the transaction
     dockerContainerHistory.dockerImage = dockerImageSaved;
-    const dockerContainerHistorySaved = await dockerContainerHistoryService.save(dockerContainerHistory, session);
+    const dockerContainerHistorySaved = await dockerContainerHistoryRepository.save(dockerContainerHistory, session);
 
     // Commit the transaction
     await session.commitTransaction();

@@ -21,11 +21,11 @@
     "README.md"
   ],
   "_moduleAliases": {
-    "@controllers": "dist/src/controllers",
     "@errors": "dist/src/errors",
     "@logging": "dist/src/logging",
     "@middleware": "dist/src/middleware",
     "@models": "dist/src/models",
+    "@repositories": "dist/src/repositories",
     "@routes": "dist/src/routes",
     "@services": "dist/src/services",
     "@utils": "dist/src/utils"

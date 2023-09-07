@@ -4,7 +4,7 @@ import multer from 'multer';
 
 import HTTPError from '@errors/http-error';
 
-import uploadController from '@controllers/upload-controller';
+import uploadService from '@services/upload-service';
 
 import routerUtils from '@utils/router-utils';
 import type { IMulterRequest, IModifiedRequest } from '@utils/router-utils';
@@ -28,7 +28,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
     const { projectName } = (req as IModifiedRequest).locals;
     const zipBuffer = routerUtils.extractFileBuffer(req as IMulterRequest);
 
-    const uploadSaved = await uploadController.uploadZipBuffer(projectName, zipBuffer);
+    const uploadSaved = await uploadService.uploadZipBuffer(projectName, zipBuffer);
     res.status(200).json(uploadSaved);
   } catch (err: HTTPError | Error | unknown) {
     res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
@@ -47,7 +47,7 @@ router.get('/:submissionId/download', async (req: Request, res: Response) => {
     const { projectName } = (req as IModifiedRequest).locals;
     const { submissionId } = req.params;
 
-    const zipBuffer = await uploadController.getUploadedFilesInZipBuffer(projectName, submissionId);
+    const zipBuffer = await uploadService.getUploadedFilesInZipBuffer(projectName, submissionId);
 
     res.setHeader('Content-Disposition', `attachment; filename=project_${projectName}_submission_${submissionId}.zip`);
     res.setHeader('Content-Type', 'application/zip');

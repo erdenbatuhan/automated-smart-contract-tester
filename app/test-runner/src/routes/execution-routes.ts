@@ -4,7 +4,7 @@ import multer from 'multer';
 
 import HTTPError from '@errors/http-error';
 
-import executionController from '@controllers/execution-controller';
+import executionService from '@services/execution-service';
 
 import routerUtils from '@utils/router-utils';
 import type { IMulterRequest, IModifiedRequest } from '@utils/router-utils';
@@ -28,7 +28,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
     const { projectName } = (req as IModifiedRequest).locals;
     const zipBuffer = routerUtils.extractFileBuffer(req as IMulterRequest);
 
-    await executionController.executeTests(projectName, zipBuffer).then((execution) => {
+    await executionService.executeTests(projectName, zipBuffer).then((execution) => {
       res.status(200).json(execution);
     });
   } catch (err: HTTPError | Error | unknown) {

@@ -21,15 +21,15 @@
     "README.md"
   ],
   "_moduleAliases": {
-    "@controllers": "dist/src/controllers",
+    "~data": "dist/data",
     "@errors": "dist/src/errors",
     "@logging": "dist/src/logging",
     "@middleware": "dist/src/middleware",
     "@models": "dist/src/models",
+    "@repositories": "dist/src/repositories",
     "@routes": "dist/src/routes",
     "@services": "dist/src/services",
-    "@utils": "dist/src/utils",
-    "data": "dist/data"
+    "@utils": "dist/src/utils"
   },
   "scripts": {
     "prepare": "cd .. && if [ -f \"./package.json\" ] && [ -d './.husky' ]; then npm install; fi",

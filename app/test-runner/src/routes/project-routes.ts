@@ -3,7 +3,7 @@ import multer from 'multer';
 
 import HTTPError from '@errors/http-error';
 
-import projectController from '@controllers/project-controller';
+import projectService from '@services/project-service';
 
 import routerUtils from '@utils/router-utils';
 import type { IMulterRequest } from '@utils/router-utils';
@@ -28,7 +28,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
     const { projectName } = routerUtils.extractRequiredParams(req, ['projectName']);
     const zipBuffer = routerUtils.extractFileBuffer(req as IMulterRequest);
 
-    const project = await projectController.createNewProject(projectName, zipBuffer);
+    const project = await projectService.createNewProject(projectName, zipBuffer);
     res.status(200).json(project);
   } catch (err: HTTPError | Error | unknown) {
     res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });

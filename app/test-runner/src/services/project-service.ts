@@ -5,7 +5,7 @@ import DockerContainerHistory from '@models/docker-container-history';
 import type { DockerContainerExecutionOutput } from '@models/docker-container-history';
 import Status from '@models/enums/status';
 
-import dockerImageService from '@services/docker-image-service';
+import dockerImageRepository from '@repositories/docker-image-repository';
 
 import constantUtils from '@utils/constant-utils';
 import errorUtils from '@utils/error-utils';
@@ -75,7 +75,7 @@ const createNewProject = async (
     }
 
     // Save (or update it if it already exists) the Docker image with the Docker container history for the executed container
-    return await dockerImageService.upsertWithDockerContainerHistory(dockerImage, dockerContainerHistory)
+    return await dockerImageRepository.upsertWithDockerContainerHistory(dockerImage, dockerContainerHistory)
       .then(({ dockerImageSaved, dockerContainerHistorySaved }) => {
         Logger.info(`Created the ${projectName} project with the Docker image (${dockerImage.imageID}).`);
         return { image: dockerImageSaved, output: dockerContainerHistorySaved.output };
