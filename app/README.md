@@ -1,1 +1,1 @@
-# Automated Smart Contract Tester
+# Automated Smart Contract Testing
