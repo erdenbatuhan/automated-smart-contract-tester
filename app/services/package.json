@@ -31,7 +31,7 @@
     "@utils": "dist/src/utils"
   },
   "scripts": {
-    "prepare": "cd .. && npm install",
+    "prepare": "cd .. && if [ -f \"./package.json\" ] && [ -d './.husky' ]; then npm install; fi",
     "dev": "node --loader ts-node/esm -r dotenv/config index.ts dotenv_config_path=./.env.development.local | npx pino-pretty",
     "build": "rm -rf dist && tsc",
     "serve": "npm run build && node -r module-alias/register dist/index.js | npx pino-pretty",

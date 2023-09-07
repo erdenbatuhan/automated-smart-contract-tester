@@ -49,3 +49,8 @@ services:
       SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
       PORT: ${TESTRUNNER_PORT}
       MONGO_DB_URI: mongodb://${APP_NAME}-${MONGO_REPL_1}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_2}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_3}:${MONGO_PORT}/${TESTRUNNER_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
+    depends_on:
+      - ubuntu
+  # ubuntu image (needed in the test runner service)
+  ubuntu:
+    image: ubuntu:latest
