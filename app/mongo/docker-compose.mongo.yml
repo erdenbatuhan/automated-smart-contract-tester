@@ -1,0 +1,75 @@
+# Docker Compose Configuration (Mongo)
+
+version: "3"
+name: ${APP_NAME}
+networks:
+  isolated-network-mongo:
+    name: ${APP_NAME}-isolated-network-mongo
+volumes:
+  volume-mongo1.db:
+    name: ${APP_NAME}-volume-${MONGO_REPL_1}.db
+  volume-mongo2.db:
+    name: ${APP_NAME}-volume-${MONGO_REPL_2}.db
+  volume-mongo3.db:
+    name: ${APP_NAME}-volume-${MONGO_REPL_3}.db
+services:
+  # mongo replica manager
+  mongo-manager:
+    container_name: ${APP_NAME}-${MONGO_REPL_MANAGER}
+    image: mongo:latest
+    entrypoint:
+      - /app/init-replica-set.sh
+    networks:
+      - isolated-network-mongo
+    volumes:
+      - ./init-replica-set.sh:/app/init-replica-set.sh
+    env_file:
+      - ./mongo.properties
+    environment:
+      APP_NAME: ${APP_NAME}
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+  # mongo replica 1
+  mongo1:
+    container_name: ${APP_NAME}-${MONGO_REPL_1}
+    image: mongo:latest
+    command: --port ${MONGO_PORT} --bind_ip_all --replSet ${MONGO_REPL_ID}
+    restart: unless-stopped
+    networks:
+      - isolated-network-mongo
+    volumes:
+      - volume-mongo1.db:/data/db
+    ports:
+      - 27300:${MONGO_PORT} # Remove later; it should only be accessible through runner-isolated-network!
+    environment:
+      MONGO_INITDB_DATABASE: ${SERVICES_DB},${TESTRUNNER_DB}
+  # mongo replica 2
+  mongo2:
+    container_name: ${APP_NAME}-${MONGO_REPL_2}
+    image: mongo:latest
+    command: --port ${MONGO_PORT} --bind_ip_all --replSet ${MONGO_REPL_ID}
+    restart: unless-stopped
+    networks:
+      - isolated-network-mongo
+    volumes:
+      - volume-mongo2.db:/data/db
+    ports:
+      - 27301:${MONGO_PORT} # Remove later; it should only be accessible through runner-isolated-network!
+    environment:
+      MONGO_INITDB_DATABASE: ${SERVICES_DB},${TESTRUNNER_DB}
+  # mongo replica 3
+  mongo3:
+    container_name: ${APP_NAME}-${MONGO_REPL_3}
+    image: mongo:latest
+    command: --port ${MONGO_PORT} --bind_ip_all --replSet ${MONGO_REPL_ID}
+    restart: unless-stopped
+    networks:
+      - isolated-network-mongo
+    volumes:
+      - volume-mongo3.db:/data/db
+    ports:
+      - 27302:${MONGO_PORT} # Remove later; it should only be accessible through runner-isolated-network!
+    environment:
+      MONGO_INITDB_DATABASE: ${SERVICES_DB},${TESTRUNNER_DB}

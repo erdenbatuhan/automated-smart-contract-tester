@@ -1,9 +1,12 @@
-# Docker Compose Configuration
+# Docker Compose Configuration (To be run with ./mongo/docker-compose.mongo.yml)
 
 version: "3"
 name: ${APP_NAME}
+networks:
+  isolated-network-runner:
+    name: ${APP_NAME}-isolated-network-runner
 services:
-  # Service: services
+  # services
   services:
     container_name: ${APP_NAME}-${SERVICES_SERVICE_NAME}
     build:
@@ -12,19 +15,20 @@ services:
       args:
         STAGING: ${STAGING}
         PORT: ${SERVICES_PORT}
+    networks:
+      - isolated-network-runner
+      - isolated-network-mongo
+    ports:
+      - ${SERVICES_PORT}:${SERVICES_PORT}
     environment:
       APP_NAME: ${APP_NAME}
       SERVICE_NAME: ${SERVICES_SERVICE_NAME}
       PORT: ${SERVICES_PORT}
-      MONGO_DB_URI: ${SERVICES_MONGO_DB_URI}
+      MONGO_DB_URI: mongodb://${APP_NAME}-${MONGO_REPL_1}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_2}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_3}:${MONGO_PORT}/${SERVICES_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
       TESTRUNNER_HOST: ${APP_NAME}-${TESTRUNNER_SERVICE_NAME}:${TESTRUNNER_PORT} # app name + service name
-    networks:
-      - runner-isolated-network
-    ports:
-      - ${SERVICES_PORT}:${SERVICES_PORT}
     depends_on:
       - runner
-  # Service: test-runner
+  # test runner
   runner:
     container_name: ${APP_NAME}-${TESTRUNNER_SERVICE_NAME}
     build:
@@ -33,16 +37,15 @@ services:
       args:
         STAGING: ${STAGING}
         PORT: ${TESTRUNNER_PORT}
-    environment:
-      APP_NAME: ${APP_NAME}
-      SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
-      PORT: ${TESTRUNNER_PORT}
-      MONGO_DB_URI: ${TESTRUNNER_MONGO_DB_URI}
     networks:
-      - runner-isolated-network
+      - isolated-network-runner
+      - isolated-network-mongo
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
     ports:
       - ${TESTRUNNER_PORT}:${TESTRUNNER_PORT} # Remove later; it should only be accessible through runner-isolated-network!
-networks:
-  runner-isolated-network:
+    environment:
+      APP_NAME: ${APP_NAME}
+      SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
+      PORT: ${TESTRUNNER_PORT}
+      MONGO_DB_URI: mongodb://${APP_NAME}-${MONGO_REPL_1}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_2}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_3}:${MONGO_PORT}/${TESTRUNNER_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
