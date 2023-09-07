@@ -8,7 +8,7 @@ Enhance project code quality using packages like _ESLint_ and _Prettier_. To set
 npm i
 ```
 
-_Husky's pre-commit hooks_ and _lint-staged_ ensure that _ESLint_ and _Prettier_ run before each commit to enforce code quality rules defined in [.eslintrc.js](./eslintrc.js). You can find the list of files linted by these pre-commit hooks in [package.json](./package.json).
+_Husky's pre-commit hooks_ and _lint-staged_ ensure that _ESLint_ and _Prettier_ run before each commit to enforce code quality rules defined in [.eslintrc.js](./.eslintrc.js). You can find the list of files linted by these pre-commit hooks in [package.json](./package.json).
 
 **Bonus:** To get real-time linting warnings and errors, install _ESLint_ in your preferred IDE.
 
@@ -69,6 +69,6 @@ docker volume rm $(docker volume ls -q)
 
 Refer to the respective service's README:
 
-- [Test Runner](../test-runner/README.md)
-- [Services](../services/README.md)
-- [Web](../web/README.md)
+- [Test Runner](./test-runner/README.md)
+- [Services](./services/README.md)
+- [Web](./web/README.md)
