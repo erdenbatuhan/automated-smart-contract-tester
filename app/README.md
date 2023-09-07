@@ -1,4 +1,4 @@
-# Automated Smart Contract Testing
+## Automated Smart Contract Testing
 
 ### Setting up the Development Environment
 
