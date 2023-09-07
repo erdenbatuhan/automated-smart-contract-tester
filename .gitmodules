@@ -1,9 +1,9 @@
 [submodule "framework-comparison"]
 	path = submodules/framework-comparison
-	url = git@github.com:erdenbatuhan/automated-smart-contract-tester-comparison.git
-[submodule "thesis-docs"]
-	path = submodules/thesis-docs
-	url = git@github.com:erdenbatuhan/automated-smart-contract-tester-docs.git
+	url = git@github.com:erdenbatuhan/automated-smart-contract-testing-comparison.git
+[submodule "docs"]
+	path = submodules/docs
+	url = git@github.com:erdenbatuhan/automated-smart-contract-testing-docs.git
 [submodule "bbse-bank-2.0"]
 	path = submodules/example-projects/bbse-bank-2.0
 	url = git@github.com:erdenbatuhan/bbse-bank-2.0.git
