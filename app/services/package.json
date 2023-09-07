@@ -1,17 +1,17 @@
 {
-  "name": "automated-smart-contract-tester-services",
+  "name": "automated-smart-contract-testing-services",
   "version": "1.0.0",
   "description": "",
   "author": "Batuhan Erden",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/erdenbatuhan/automated-smart-contract-tester-service.git"
+    "url": "git+https://github.com/erdenbatuhan/automated-smart-contract-testing-app.git"
   },
   "bugs": {
-    "url": "https://github.com/erdenbatuhan/automated-smart-contract-tester-service/issues"
+    "url": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app/issues"
   },
-  "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-tester-service#readme",
+  "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

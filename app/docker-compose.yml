@@ -1,7 +1,7 @@
 # Docker Compose Configuration
 
-version: '3'
-name: automated-smart-contract-tester
+version: "3"
+name: automated-smart-contract-testing
 services:
   # Service: services
   services:
@@ -14,14 +14,14 @@ services:
     env_file:
       - .env
     environment:
-      TESTRUNNER_CONTAINER_NAME: automated-smart-contract-tester-runner # app name + service name
+      TESTRUNNER_CONTAINER_NAME: automated-smart-contract-testing-runner # app name + service name
     networks:
       - runner-isolated-network
     ports:
       - ${SERVICES_PORT}:${SERVICES_PORT}
     depends_on:
       - runner
-  # Service: runner
+  # Service: test-runner
   runner:
     build:
       context: ./test-runner

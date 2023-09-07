@@ -1,14 +1,17 @@
 # MacOS
 .DS_Store
 
+# ESLint configs
+.eslintrc.*
+
+# Example inputs
+data/example-inputs/
+
 # The temporary folder containing uploads (e.g., projects, smart contracts, etc.)
 temp/
 
 # Built ts files
 dist/
-
-# Example inputs
-data/example-inputs/
 
 # Logs
 npm-debug.log

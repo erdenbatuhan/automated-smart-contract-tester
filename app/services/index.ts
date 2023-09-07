@@ -16,24 +16,14 @@ const {
 } = process.env;
 if (!APP_NAME || !PORT || !MONGO_DB_URI) throw new Error('Missing environment variables!');
 
-// Connect to MongoDB
-mongoose
-  .connect(MONGO_DB_URI)
-  .then(() => Logger.info('Connected to the DB!'))
-  .catch((err: Error) => Logger.error(err ? err.message : 'An error occurred while connecting to the DB!'));
-
-// Start the express app
+// Initialize the Express app with middleware configurations
 const app = express();
+app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
+app.use(helmet()); // Enhance security using Helmet middleware
+app.use(bodyParser.json({ limit: '50mb' })); // Parse JSON requests and set body size limit
+app.use(`/app/${APP_NAME}/api/v1`, apiRoutes); // Mount modular routes with the common prefix
 
-// The express app settings
-app.use(cors()); // CORS
-app.use(helmet()); // Initializes helmet to mitigate common web vulnerabilities
-app.use(bodyParser.json({ limit: '50mb' })); // Parses the text as JSON and exposes the resulting object on req.body
-
-// Use the modular routes with the common prefix
-app.use(`/automated-smart-contract-tester/${APP_NAME}/api/v1`, apiRoutes);
-
-// Listen on the port specified
-app.listen(PORT, () => {
-  Logger.info(`Server is running on port ${PORT}`);
-});
+// Establish a connection to MongoDB and start the application server on the specified port
+mongoose.connect(MONGO_DB_URI)
+  .then(() => { app.listen(PORT, () => { Logger.info(`${APP_NAME} is running on port ${PORT}!`); }); })
+  .catch((err: Error | unknown) => { Logger.error((err as Error)?.message || 'Could not connect to the DB!'); });

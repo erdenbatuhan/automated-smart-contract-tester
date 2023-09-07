@@ -1,23 +1,23 @@
 {
-  "name": "automated-smart-contract-tester",
+  "name": "automated-smart-contract-testing",
   "version": "1.0.0",
   "description": "",
   "author": "Batuhan Erden",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/erdenbatuhan/automated-smart-contract-tester-service.git"
+    "url": "git+https://github.com/erdenbatuhan/automated-smart-contract-testing-app.git"
   },
   "bugs": {
-    "url": "https://github.com/erdenbatuhan/automated-smart-contract-tester-service/issues"
+    "url": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app/issues"
   },
-  "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-tester-service#readme",
+  "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app#readme",
   "scripts": {
     "prepare": "cd .. && husky install app/.husky"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
-    "*.{json,css,md}": "prettier --write --ignore-unknown"
+    "*.{json,yml,css,md}": "prettier --write --ignore-unknown"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.5.0",

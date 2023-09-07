@@ -1,6 +1,9 @@
 # MacOS
 .DS_Store
 
+# ESLint configs
+.eslintrc.*
+
 # The temporary folder containing uploads (e.g., projects, smart contracts, etc.)
 temp/
 

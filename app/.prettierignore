@@ -1,0 +1,17 @@
+# TS config file
+tsconfig.json
+
+# All source files
+*.ts
+*.tsx
+*.js
+*.jsx
+
+# The temporary folder
+temp/
+
+# Built ts files
+dist/
+
+# Dependency directories
+node_modules/
