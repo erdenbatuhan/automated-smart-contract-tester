@@ -1,20 +1,23 @@
 # Docker Compose Configuration
 
 version: "3"
-name: automated-smart-contract-testing
+name: ${APP_NAME}
 services:
   # Service: services
   services:
+    container_name: ${APP_NAME}-${SERVICES_SERVICE_NAME}
     build:
       context: ./services
       dockerfile: Dockerfile
       args:
         STAGING: ${STAGING}
         PORT: ${SERVICES_PORT}
-    env_file:
-      - .env
     environment:
-      TESTRUNNER_CONTAINER_NAME: automated-smart-contract-testing-runner # app name + service name
+      APP_NAME: ${APP_NAME}
+      SERVICE_NAME: ${SERVICES_SERVICE_NAME}
+      PORT: ${SERVICES_PORT}
+      MONGO_DB_URI: ${SERVICES_MONGO_DB_URI}
+      TESTRUNNER_HOST: ${APP_NAME}-${TESTRUNNER_SERVICE_NAME}:${TESTRUNNER_PORT} # app name + service name
     networks:
       - runner-isolated-network
     ports:
@@ -23,19 +26,23 @@ services:
       - runner
   # Service: test-runner
   runner:
+    container_name: ${APP_NAME}-${TESTRUNNER_SERVICE_NAME}
     build:
       context: ./test-runner
       dockerfile: Dockerfile
       args:
         STAGING: ${STAGING}
         PORT: ${TESTRUNNER_PORT}
-    env_file:
-      - .env
+    environment:
+      APP_NAME: ${APP_NAME}
+      SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
+      PORT: ${TESTRUNNER_PORT}
+      MONGO_DB_URI: ${TESTRUNNER_MONGO_DB_URI}
     networks:
       - runner-isolated-network
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
     ports:
-      - ${TESTRUNNER_PORT}:${TESTRUNNER_PORT} # Remove later; it should only be accessible via 'services' through 'runner-isolated-network'!
+      - ${TESTRUNNER_PORT}:${TESTRUNNER_PORT} # Remove later; it should only be accessible through runner-isolated-network!
 networks:
   runner-isolated-network:
