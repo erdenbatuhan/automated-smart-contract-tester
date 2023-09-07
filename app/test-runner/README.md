@@ -2,7 +2,7 @@
 
 ### Running the entire application with Docker
 
-For instructions on running the entire application using Docker, please refer to the [README](../README.md) located in the parent directory.
+For instructions on running the entire application using _Docker_, please refer to the [README](../README.md) located in the parent directory.
 
 ### Running the service separately
 

@@ -19,11 +19,11 @@ Before running the application, create a **.env** file and set the following env
 ```bash
 # The staging environment (dev, qa, prod, etc.)
 STAGING=dev
-# The socket that the Docker Daemon runs on
+# The socket that the Host's Docker Daemon runs on
 DOCKER_SOCKET_PATH=/var/run/docker.sock
 ```
 
-To run the application with Docker Compose, use the following commands:
+To run the application with _Docker Compose_, use the following commands:
 
 ##### Building the image(s):
 
