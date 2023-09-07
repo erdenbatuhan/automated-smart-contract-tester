@@ -14,18 +14,16 @@ _Husky's pre-commit hooks_ and _lint-staged_ ensure that _ESLint_ and _Prettier_
 
 ### Running the Entire Application with Docker
 
-Before running the application, create a **.env** file and set the following environment variables:
+Before running the application, create the **.env** file and set the following environment variables:
 
 ```bash
-# The staging environment (dev, qa, prod, etc.)
-STAGING=dev
-# The socket that the Host's Docker Daemon runs on
-DOCKER_SOCKET_PATH=/var/run/docker.sock
+STAGING=dev # The staging environment (dev, qa, prod, etc.)
+DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on
 ```
 
 To run the application with _Docker Compose_, use the following commands:
 
-##### Building the image(s):
+##### Building or rebuilding service(s):
 
 ```bash
 docker-compose \
@@ -33,7 +31,7 @@ docker-compose \
     -f mongo/docker-compose.mongo.yml -f docker-compose.yml build
 ```
 
-##### Running the container(s):
+##### Creating and starting container(s):
 
 ```bash
 docker-compose \
@@ -41,7 +39,7 @@ docker-compose \
     -f mongo/docker-compose.mongo.yml -f docker-compose.yml up
 ```
 
-##### Stoping the container(s):
+##### Stopping and removing container(s), network(s):
 
 ```bash
 docker-compose \

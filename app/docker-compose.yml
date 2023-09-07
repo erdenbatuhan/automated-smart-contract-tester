@@ -6,7 +6,7 @@ networks:
   isolated-network-runner:
     name: ${APP_NAME}-isolated-network-runner
 services:
-  # services
+  # Service: Services
   services:
     container_name: ${APP_NAME}-${SERVICES_SERVICE_NAME}
     build:
@@ -30,7 +30,7 @@ services:
     depends_on:
       - mongo-manager
       - runner
-  # test runner
+  # Service: Test Runner
   runner:
     container_name: ${APP_NAME}-${TESTRUNNER_SERVICE_NAME}
     build:
