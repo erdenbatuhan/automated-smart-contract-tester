@@ -26,7 +26,6 @@
     "@logging": "dist/src/logging",
     "@middlewares": "dist/src/middlewares",
     "@models": "dist/src/models",
-    "@repositories": "dist/src/repositories",
     "@routes": "dist/src/routes",
     "@services": "dist/src/services",
     "@utils": "dist/src/utils"

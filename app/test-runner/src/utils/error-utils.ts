@@ -7,7 +7,9 @@ import Logger from '@logging/logger';
  * @param {string} additionalMessage - An additional error message to append to the existing error message.
  * @returns {Error} A new error object with the combined message.
  */
-const logAndGetError = (err: Error, additionalMessage?: string): Error => {
+const logAndGetError = (err?: Error, additionalMessage?: string): Error => {
+  err = err || new Error();
+
   if (additionalMessage) {
     err.message = `${additionalMessage} (Error: ${err.message})`;
   }
