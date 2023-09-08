@@ -27,7 +27,7 @@ const retrieveTestNamesFromGasSnapshot = (
   try {
     return { tests: testOutputUtils.retrieveTestNamesFromGasSnapshot(output?.data) };
   } catch (err: Error | unknown) {
-    throw errorUtils.getErrorWithoutDetails(`An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`, err);
+    throw errorUtils.logAndGetError(err as Error, `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`);
   }
 };
 
@@ -78,7 +78,7 @@ const createNewProject = async (
         return { image: dockerImageSaved, output: dockerContainerHistorySaved?.output };
       });
   } catch (err: Error | unknown) {
-    throw errorUtils.getErrorWithoutDetails(`An error occurred while creating the ${projectName} project.`, err);
+    throw errorUtils.logAndGetError(err as Error, `An error occurred while creating the ${projectName} project.`);
   }
 };
 

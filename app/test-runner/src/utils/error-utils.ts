@@ -1,19 +1,19 @@
 import Logger from '@logging/logger';
 
 /**
- * Logs an error message and throws an error with an abstract error message.
+ * Creates an error with an additional message and logs it using a logger.
  *
- * @param {string} abstractErrorMessage - The abstract error message to log and include in the thrown error.
- * @param {Error | unknown} fullError - The full error object to log and throw.
- * @returns {Error} The full error object with the abstract error message as its message property.
+ * @param {Error} err - The original error object.
+ * @param {string} additionalMessage - An additional error message to append to the existing error message.
+ * @returns {Error} A new error object with the combined message.
  */
-const getErrorWithoutDetails = (abstractErrorMessage: string, fullError: Error | unknown): Error => {
-  if (!(fullError instanceof Error)) return new Error();
+const logAndGetError = (err: Error, additionalMessage?: string): Error => {
+  if (additionalMessage) {
+    err.message = `${additionalMessage} (Error: ${err.message})`;
+  }
 
-  Logger.error(`${abstractErrorMessage} (${fullError?.message})`);
-
-  fullError.message = abstractErrorMessage;
-  return fullError;
+  Logger.error(err.message);
+  return err;
 };
 
-export default { getErrorWithoutDetails };
+export default { logAndGetError };

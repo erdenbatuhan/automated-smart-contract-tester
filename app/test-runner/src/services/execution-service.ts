@@ -29,7 +29,7 @@ const extractTestResultsFromExecutionOutput = (
       ...testOutputUtils.extractGasDiffAnalysis(output?.data)
     } as DockerContainerExecutionOutput;
   } catch (err: Error | unknown) {
-    throw errorUtils.getErrorWithoutDetails(`An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`, err);
+    throw errorUtils.logAndGetError(err as Error, `An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`);
   }
 };
 
@@ -78,7 +78,7 @@ const executeTests = async (imageName: string, zipBuffer: Buffer): Promise<IDock
       Logger.info(`Execution history for the Docker container created from the image '${imageName}' has been successfully saved.`);
       return dockerContainerHistorySaved;
     }).catch((err: Error | unknown) => {
-      throw errorUtils.getErrorWithoutDetails(`Failed to save execution history for the Docker container created from the image '${imageName}'.`, err);
+      throw errorUtils.logAndGetError(err as Error, `Failed to save execution history for the Docker container created from the image '${imageName}'.`);
     });
 };
 

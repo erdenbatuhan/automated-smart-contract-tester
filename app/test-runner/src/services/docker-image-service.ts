@@ -16,7 +16,7 @@ import dockerUtils from '@utils/docker-utils';
  */
 const findAllDockerImages = async (): Promise<IDockerImage[]> => dockerImageRepository.findAll()
   .catch((err) => {
-    throw errorUtils.getErrorWithoutDetails('An error occurred while finding all docker images.', err);
+    throw errorUtils.logAndGetError(err as Error, 'An error occurred while finding all docker images.');
   });
 
 /**
@@ -31,11 +31,10 @@ const findDockerImage = async (
   imageName: string
 ): Promise<IDockerImage> => dockerImageRepository.findByName(imageName).catch((err: HTTPError | Error | unknown) => {
   if (err instanceof HTTPError) {
-    Logger.error(err.message);
-    throw err;
+    throw errorUtils.logAndGetError(err as HTTPError);
   }
 
-  throw errorUtils.getErrorWithoutDetails(`An error occurred while finding the docker image with the name=${imageName}.`, err);
+  throw errorUtils.logAndGetError(err as Error, `An error occurred while finding the docker image with the name=${imageName}.`);
 });
 
 /**
@@ -54,7 +53,7 @@ const upsertDockerImageWithDockerContainerHistory = async (
   dockerContainerHistorySaved: IDockerContainerHistory
 }> => dockerImageRepository.upsertWithDockerContainerHistory(dockerImage, dockerContainerHistory)
   .catch((err) => {
-    throw errorUtils.getErrorWithoutDetails('An error occurred while saving/updating the Docker Image with associated Docker Container History.', err);
+    throw errorUtils.logAndGetError(err as Error, 'An error occurred while saving/updating the Docker Image with associated Docker Container History.');
   });
 
 /**
@@ -74,11 +73,10 @@ const removeDockerImage = async (imageName: string): Promise<void> => {
     await dockerUtils.removeImage(imageName, { shouldPrune: true });
   } catch (err: HTTPError | Error | unknown) {
     if (err instanceof HTTPError) {
-      Logger.error(err.message);
-      throw err;
+      throw errorUtils.logAndGetError(err as HTTPError);
     }
 
-    throw errorUtils.getErrorWithoutDetails(`An error occurred while removing the Docker Image with the name=${imageName}.`, err);
+    throw errorUtils.logAndGetError(err as Error, `An error occurred while removing the Docker Image with the name=${imageName}.`);
   }
 };
 
