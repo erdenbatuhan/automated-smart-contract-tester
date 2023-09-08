@@ -120,7 +120,7 @@ const getUploadedFilesFromZipBuffer = async (
  *
  * @param {IUpload} uploadDocument - The Upload document containing the list of uploaded files.
  * @returns {Buffer} A buffer containing the zipped files.
- * @throws {HTTPError} HTTP Error if an error occurs during the operation.
+ * @throws {Error} Error if an error occurs during the operation.
  */
 const writeUploadedFilesToZipBuffer = (uploadDocument: IUpload): Buffer => {
   try {
@@ -135,7 +135,7 @@ const writeUploadedFilesToZipBuffer = (uploadDocument: IUpload): Buffer => {
     return zip.toBuffer();
   } catch (err: Error | unknown) {
     Logger.error(`An error occurred while writing the stringified contents of ${uploadDocument._id} to a zip buffer.`);
-    throw new HTTPError(500, (err as Error)?.message || `An error occurred while writing the stringified contents of ${uploadDocument._id} to a zip buffer.`);
+    throw err;
   }
 };
 

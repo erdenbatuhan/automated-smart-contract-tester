@@ -57,11 +57,14 @@ const findUploadById = async (uploadId: string): Promise<IUpload> => Upload.find
  * @throws {HTTPError | Error} Error if an error occurs during the download.
  */
 const getUploadedFilesInZipBuffer = async (name: string, uploadId: string): Promise<Buffer> => {
+  // Find the document
+  const upload = await findUploadById(uploadId);
+
   try {
     Logger.info(`Downloading the uploaded files for ${name} (Upload ID = ${uploadId}).`);
 
-    const zipBuffer = await findUploadById(uploadId)
-      .then((upload) => fsUtils.writeUploadedFilesToZipBuffer(upload));
+    // Get uploaded files and write them into zip buffer
+    const zipBuffer = fsUtils.writeUploadedFilesToZipBuffer(upload);
 
     Logger.info(`Successfully downloaded the uploaded files for ${name} (Upload ID = ${uploadId}).`);
     return zipBuffer;
