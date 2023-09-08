@@ -1,21 +1,19 @@
-import express from 'express';
-import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
+
+import projectMiddleware from '@middlewares/project-middleware';
 
 import healthCheckRoutes from '@routes/health-check-routes';
 import forgeRoutes from '@routes/forge-routes';
 import projectRoutes from '@routes/project-routes';
+import dockerImageRoutes from '@routes/docker-image-routes';
 import executionRoutes from '@routes/execution-routes';
 
-import routerUtils, { IModifiedRequest } from '@utils/router-utils';
-
-const router = express.Router();
+const router = Router();
 
 router.use('/', healthCheckRoutes);
 router.use('/forge', forgeRoutes);
-router.use('/project', projectRoutes);
-router.use('/project/:projectName/execution', (req: Request, res: Response, next: NextFunction) => {
-  (req as IModifiedRequest).locals = routerUtils.extractRequiredParams(req, ['projectName']);
-  next();
-}, executionRoutes);
+router.use('/projects', projectRoutes);
+router.use('/projects/images', dockerImageRoutes);
+router.use('/projects/:projectName/executions', projectMiddleware.passProjectName, executionRoutes);
 
 export default router;

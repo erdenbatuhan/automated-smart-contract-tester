@@ -1,4 +1,4 @@
-import express from 'express';
+import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
 
@@ -9,7 +9,7 @@ import executionService from '@services/execution-service';
 import routerUtils from '@utils/router-utils';
 import type { IMulterRequest, IModifiedRequest } from '@utils/router-utils';
 
-const router = express.Router();
+const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 /**
@@ -18,7 +18,8 @@ const upload = multer({ storage: multer.memoryStorage() });
  * The uploaded ZIP file must contain the smart contracts in a 'src' folder.
  *
  * @param {string} projectName - The name of the project associated with the tests.
- * @param {file} srcZip - The ZIP file containing the smart contracts to be tested.
+ * @consumes multipart/form-data
+ * @param {file} srcZip.file.required - The ZIP file containing the smart contracts to be tested.
  * @returns {object} 200 - The execution result, including test output and details.
  * @returns {object} 400 - Bad request error, such as missing parameters or invalid file format.
  * @returns {object} 500 - Internal server error, indicating a failure during execution.

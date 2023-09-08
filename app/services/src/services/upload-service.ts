@@ -15,7 +15,7 @@ import errorUtils from '@utils/error-utils';
  * @param {string} name - The name associated with the upload.
  * @param {Buffer} zipBuffer - The zip buffer to upload.
  * @returns {Promise<any>} A promise that resolves to the uploaded data.
- * @throws {Error} Throws an error if an error occurs during the upload.
+ * @throws {HTTPError | Error} Error if an error occurs during the upload.
  */
 const uploadZipBuffer = async (name: string, zipBuffer: Buffer): Promise<IUpload> => {
   try {
@@ -44,7 +44,7 @@ const uploadZipBuffer = async (name: string, zipBuffer: Buffer): Promise<IUpload
  * @param {string} name - The name associated with the upload.
  * @param {string} uploadId - The ID of the upload to download.
  * @returns {Promise<Buffer>} A promise that resolves to the downloaded zip buffer.
- * @throws {Error} Throws an error if an error occurs during the download.
+ * @throws {HTTPError | Error} Error if an error occurs during the download.
  */
 const getUploadedFilesInZipBuffer = async (name: string, uploadId: string): Promise<Buffer> => {
   Logger.info(`Downloading the uploaded files for ${name} (Upload ID = ${uploadId}).`);

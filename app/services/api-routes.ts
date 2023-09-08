@@ -1,19 +1,15 @@
-import express from 'express';
-import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
+
+import projectMiddleware from '@middlewares/project-middleware';
 
 import healthCheckRoutes from '@routes/health-check-routes';
 import projectRoutes from '@routes/project-routes';
 import submissionRoutes from '@routes/submission-routes';
 
-import routerUtils, { IModifiedRequest } from '@utils/router-utils';
-
-const router = express.Router();
+const router = Router();
 
 router.use('/', healthCheckRoutes);
-router.use('/project', projectRoutes);
-router.use('/project/:projectName/submission', (req: Request, res: Response, next: NextFunction) => {
-  (req as IModifiedRequest).locals = routerUtils.extractRequiredParams(req, ['projectName']);
-  next();
-}, submissionRoutes);
+router.use('/projects', projectRoutes);
+router.use('/projects/:projectName/submissions', projectMiddleware.passProjectName, submissionRoutes);
 
 export default router;

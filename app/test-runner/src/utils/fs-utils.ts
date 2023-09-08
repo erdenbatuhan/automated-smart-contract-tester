@@ -9,7 +9,7 @@ import HTTPError from '@errors/http-error';
 import constantUtils from '@utils/constant-utils';
 
 /**
- * Check if a file exists within a directory.
+ * Checks if a file exists within a directory.
  *
  * @param {string} dirPath - The directory path.
  * @param {string} filename - The name of the file to check.
@@ -28,7 +28,7 @@ const checkIfFileExists = (dirPath: string, filename: string): void => {
  * @param {string} zipFilePath - The path to the zip file to be extracted.
  * @param {Buffer} zipBuffer - The buffer containing the contents of the zip file.
  * @param {string[]} [requiredFolders=[]] - An optional array of folder names that must exist in the zip file.
- * @throws {HTTPError} Throws an HTTP error with status code 400 if the zip file is empty or does not unzip to a directory.
+ * @throws {HTTPError} HTTP Error with status code 400 if the zip file is empty or does not unzip to a directory.
  * @returns {Promise<string>} A promise that resolves to the path of the directory where the contents were extracted.
  */
 const unzip = async (
@@ -57,7 +57,7 @@ const unzip = async (
 };
 
 /**
- * Check the contents of a directory against required files and folders.
+ * Checks the contents of a directory against required files and folders.
  *
  * @param {string} dirPath - The path to the directory.
  * @param {{ requiredFiles: string[]; requiredFolders: string[] }} requirements - An object containing requiredFiles and requiredFolders arrays.
@@ -81,7 +81,7 @@ const checkDirectoryContents = async (
 };
 
 /**
- * Remove a directory synchronously.
+ * Removes a directory synchronously.
  *
  * @param {string} dirPath - The path to the directory to remove.
  */
@@ -96,7 +96,7 @@ const removeDirectorySync = (dirPath: string): void => {
 };
 
 /**
- * Read data from a zip buffer and write it to a temporary directory.
+ * Reads data from a zip buffer and write it to a temporary directory.
  *
  * @param {string} contextName - The name of the context for logging purposes.
  * @param {Buffer} zipBuffer - The zip buffer to read from.
@@ -142,7 +142,7 @@ const readFromZipBuffer = async (
 };
 
 /**
- * Create a tarball (a readable tar stream) from a specified directory.
+ * Creates a tarball (a readable tar stream) from a specified directory.
  *
  * @param {string} cwd - The current working directory for creating the tarball.
  * @returns {NodeJS.ReadableStream | any} A readable tar stream.

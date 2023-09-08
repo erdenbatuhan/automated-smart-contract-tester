@@ -24,7 +24,7 @@ interface ProcessedContractTestExecutionResults {
 }
 
 /**
- * Remove ANSI color codes from a string.
+ * Removes ANSI color codes from a string.
  *
  * @param {string} str - The input string containing color codes.
  * @returns {string} A new string with color codes removed.
@@ -32,15 +32,15 @@ interface ProcessedContractTestExecutionResults {
 const removeColorCodes = (str: string): string => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
 
 /**
- * Extract test names from a gas snapshot text.
+ * Extracts test names from a gas snapshot text.
  *
- * @param {string} gasSnapshotText - The gas snapshot text to extract test names from.
+ * @param {string | undefined} gasSnapshotText - The gas snapshot text to extract test names from.
  * @returns {string[]} An array of test names.
  */
-const extractTestNamesFromGasSnapshot = (gasSnapshotText: string): string[] => {
+const retrieveTestNamesFromGasSnapshot = (gasSnapshotText: string | undefined): string[] => {
   const testNames: string[] = [];
 
-  gasSnapshotText.split('\n').forEach((line) => {
+  gasSnapshotText?.split('\n').forEach((line) => {
     const match = line.match(/^([^()]+)/); // Use regex to extract text before ()
 
     if (match) {
@@ -53,12 +53,12 @@ const extractTestNamesFromGasSnapshot = (gasSnapshotText: string): string[] => {
 };
 
 /**
- * Extract test execution results from test output.
+ * Extracts test execution results from test output.
  *
- * @param {string} testOutput - The test output JSON string.
+ * @param {string | undefined} testOutput - The test output JSON string.
  * @returns {DockerContainerExecutionOutput} An object containing the extracted test execution results.
  */
-const extractTestExecutionResults = (testOutput: string): DockerContainerExecutionOutput => {
+const extractTestExecutionResults = (testOutput: string | undefined): DockerContainerExecutionOutput => {
   const getProcessedTestExecutionResults = (
     unprocessedTestExecResForContracts: { [contract: string]: UnprocessedContractTestExecutionResults }
   ): { [contract: string]: ProcessedContractTestExecutionResults } => Object.entries(unprocessedTestExecResForContracts)
@@ -94,49 +94,58 @@ const extractTestExecutionResults = (testOutput: string): DockerContainerExecuti
       return statusCountForContracts + statusCount;
     }, 0);
 
-  const [jsonStart, jsonEnd] = [testOutput.indexOf('{'), testOutput.lastIndexOf('}')]; // Start and end of the JSON
+  const [jsonStart, jsonEnd] = [testOutput?.indexOf('{') || -1, testOutput?.lastIndexOf('}') || -1]; // Start and end of the JSON
 
-  const unprocessedTestExecutionResults = JSON.parse(testOutput.substring(jsonStart, jsonEnd + 1));
+  const unprocessedTestExecutionResults = JSON.parse(testOutput?.substring(jsonStart, jsonEnd + 1) || '{}');
   const processedTestExecutionResults = getProcessedTestExecutionResults(unprocessedTestExecutionResults);
 
   const numPassed = getStatusCount(processedTestExecutionResults, 'Success');
   const numFailed = getStatusCount(processedTestExecutionResults, 'Failure');
 
   return {
-    overall: { passed: !numFailed, numPassed, numFailed },
+    overall: { passed: !!numPassed && !numFailed, numPassed, numFailed },
     tests: processedTestExecutionResults
   };
 };
 
 /**
- * Extract gas difference analysis from test output.
+ * Extracts gas difference analysis from test output.
  *
- * @param {string} testOutput - The test output text.
+ * @param {string | undefined} testOutput - The test output text.
  * @returns {DockerContainerExecutionOutput} An object containing the extracted gas difference analysis.
  */
-const extractGasDiffAnalysis = (testOutput: string): DockerContainerExecutionOutput => {
-  const extractGasDiffNumbersFromGasParts = (gasParts: string): [number, number] => {
-    const [gasDiff, gasDiffPercentage] = gasParts.split(' ');
-    return [parseInt(gasDiff, 10), parseFloat(gasDiffPercentage.replace('(', '').replace('%)', ''))];
+const extractGasDiffAnalysis = (testOutput: string | undefined): DockerContainerExecutionOutput => {
+  const extractGasDiffNumbersFromGasParts = (
+    gasParts: string | undefined
+  ): { gasDiff: number, gasDiffPercentage: number } => {
+    const gasPartsSplit = gasParts?.split(' ');
+    let [gasDiff, gasDiffPercentage] = [-1, -1];
+
+    if (gasPartsSplit && gasPartsSplit.length > 1) {
+      gasDiff = parseInt(gasPartsSplit[0], 10);
+      gasDiffPercentage = parseFloat(gasPartsSplit[1].replace('(', '').replace('%)', ''));
+    }
+
+    return { gasDiff, gasDiffPercentage };
   };
 
-  const jsonEnd = testOutput.lastIndexOf('}'); // End of the JSON
-  const lines = testOutput.substring(jsonEnd + 1).trim().split('\n').map(removeColorCodes);
+  const jsonEnd = testOutput?.lastIndexOf('}') || -1; // End of the JSON
+  const lines = testOutput?.substring(jsonEnd + 1).trim().split('\n').map(removeColorCodes) || [];
 
   // Overall gas diff
   const [overallGasDiffLine] = lines.slice(-1);
-  const [, overallGasDiffParts] = overallGasDiffLine.split('Overall gas change: ');
-  const [
-    overallGasDiff, overallGasDiffPercentage
-  ]: [
-    GasDiffAnalysis['overallGasDiff'], GasDiffAnalysis['overallGasDiffPercentage']
-  ] = extractGasDiffNumbersFromGasParts(overallGasDiffParts);
+  const [, overallGasDiffParts] = overallGasDiffLine
+    ? overallGasDiffLine.split('Overall gas change: ')
+    : [undefined, undefined];
+  const {
+    gasDiff: overallGasDiff, gasDiffPercentage: overallGasDiffPercentage
+  } = extractGasDiffNumbersFromGasParts(overallGasDiffParts);
 
   // Gas diff for each test
   const testGasDiffLines = lines.slice(0, -1);
-  const testGasDiffs: GasDiffAnalysis['testGasDiffs'] = testGasDiffLines.map((line) => {
+  const testGasDiffs = testGasDiffLines.map((line) => {
     const [testName, gasParts] = line.split(' (gas: ');
-    const [gasDiff, gasDiffPercentage] = extractGasDiffNumbersFromGasParts(gasParts);
+    const { gasDiff, gasDiffPercentage } = extractGasDiffNumbersFromGasParts(gasParts);
 
     return { test: testName.trim(), gasDiff, gasDiffPercentage };
   });
@@ -146,4 +155,4 @@ const extractGasDiffAnalysis = (testOutput: string): DockerContainerExecutionOut
   } as DockerContainerExecutionOutput;
 };
 
-export default { extractTestNamesFromGasSnapshot, extractTestExecutionResults, extractGasDiffAnalysis };
+export default { retrieveTestNamesFromGasSnapshot, extractTestExecutionResults, extractGasDiffAnalysis };

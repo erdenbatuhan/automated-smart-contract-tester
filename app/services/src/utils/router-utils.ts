@@ -12,7 +12,7 @@ export interface IModifiedRequest extends Request {
 }
 
 /**
- * Extract required parameters from the request object's parameters.
+ * Extracts required parameters from the request object's parameters.
  *
  * @param {Request} req - The Express.js request object.
  * @param {string[]} paramNames - An array of parameter names to extract.
@@ -28,7 +28,7 @@ const extractRequiredParams = (req: Request, paramNames: string[]): { [key: stri
 };
 
 /**
- * Extract required query string parameters from the request object's query.
+ * Extracts required query string parameters from the request object's query.
  *
  * @param {Request} req - The Express.js request object.
  * @param {string[]} paramNames - An array of query parameter names to extract.
@@ -44,7 +44,7 @@ const extractRequiredQuery = (req: Request, paramNames: string[]): ParsedQs => {
 };
 
 /**
- * Extract a file buffer from the request object.
+ * Extracts file buffer from the request object.
  *
  * @param {IMulterRequest} req - The Express.js request object.
  * @returns {Buffer | undefined} The extracted file buffer.

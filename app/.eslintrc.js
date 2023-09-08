@@ -14,6 +14,7 @@ module.exports = {
     'comma-dangle': ['error', 'never'],
     'no-var': ['off'],
     'one-var': ['off'],
+    'one-var-declaration-per-line': ['off'],
     'object-curly-newline': ['off'],
     'no-prototype-builtins': ['off'],
     'no-control-regex': ['off'],

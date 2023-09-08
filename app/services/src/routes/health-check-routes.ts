@@ -1,7 +1,7 @@
-import express from 'express';
+import { Router } from 'express';
 import type { Request, Response } from 'express';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * Endpoint to perform a health check on the service. It verifies that everything works as expected.

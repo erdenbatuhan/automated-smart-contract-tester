@@ -1,9 +1,9 @@
-import express from 'express';
+import { Router } from 'express';
 import type { Request, Response } from 'express';
 
 import executorEnvironmentConfig from '~data/forge/executor-environment-config.json';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * Returns the possible options for configuring the execution environment that can be used with the "forge test" command.

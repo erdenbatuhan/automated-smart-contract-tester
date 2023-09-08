@@ -1,4 +1,4 @@
-import express from 'express';
+import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
 
@@ -9,7 +9,7 @@ import uploadService from '@services/upload-service';
 import routerUtils from '@utils/router-utils';
 import type { IMulterRequest, IModifiedRequest } from '@utils/router-utils';
 
-const router = express.Router();
+const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 /**

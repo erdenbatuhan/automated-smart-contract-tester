@@ -37,50 +37,6 @@ const extractImageIDFromStreamResult = (streamRes: BuildStreamResult[] | null): 
 };
 
 /**
- * Removes a Docker image by name.
- *
- * @param {Dockerode} dockerode - The Dockerode instance.
- * @param {string} imageName - The name of the Docker image to remove.
- * @returns {Promise<void>} A promise that resolves once the image is removed.
- */
-const removeImage = async (
-  dockerode: Dockerode, imageName: string
-): Promise<void> => {
-  try {
-    Logger.info(`Removing the Docker image named '${imageName}'.`);
-
-    const dockerImage = dockerode.getImage(imageName);
-    if (dockerImage) await dockerImage.remove();
-
-    Logger.info(`Successfully removed the Docker image named '${imageName}'.`);
-  } catch (err: Error | unknown) {
-    Logger.error(`Could not remove the Docker image named '${imageName}'. (Error: ${(err as Error)?.message})`);
-  }
-};
-
-/**
- * Removes a Docker volume by name.
- *
- * @param {Dockerode} dockerode - The Dockerode instance.
- * @param {string} volumeName - The name of the Docker volume to remove.
- * @returns {Promise<void>} A promise that resolves once the volume is removed.
- */
-const removeVolume = async (
-  dockerode: Dockerode, volumeName: string
-): Promise<void> => {
-  try {
-    Logger.info(`Removing the Docker volume named '${volumeName}'.`);
-
-    const dockerVolume = dockerode.getVolume(volumeName);
-    if (dockerVolume) await dockerVolume.remove();
-
-    Logger.info(`Successfully removed the Docker volume named '${volumeName}'.`);
-  } catch (err: Error | unknown) {
-    Logger.error(`Could not remove the Docker volume named '${volumeName}'. (Error: ${(err as Error)?.message})`);
-  }
-};
-
-/**
  * Prunes unused Docker containers and images.
  *
  * @param {Dockerode} dockerode - The Dockerode instance.
@@ -98,6 +54,63 @@ const pruneDocker = async (dockerode: Dockerode): Promise<void> => {
   } catch (err: Error | unknown) {
     Logger.error(`An error occurred while pruning! (Error: ${(err as Error)?.message})`);
     throw err;
+  }
+};
+
+/**
+ * Removes a Docker image by name and optionally prunes unused containers and images.
+ *
+ * @param {string} imageName - The name of the Docker image to remove.
+ * @param {object} options - An options object.
+ * @param {Dockerode} [options.dockerode] - The Dockerode instance. If not provided, a new instance will be created with the default socket path.
+ * @param {boolean} [options.shouldPrune=false] - Indicates whether to prune unused containers and images after the removal.
+ * @returns {Promise<void>} A promise that resolves once the image is removed.
+ * @throws {Error} If any error occurs during the removal process.
+ */
+const removeImage = async (
+  imageName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode, shouldPrune?: boolean }
+): Promise<void> => {
+  const dockerodeInstance = dockerode || new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
+
+  try {
+    Logger.info(`Removing the Docker image named '${imageName}'.`);
+
+    const dockerImage = dockerodeInstance.getImage(imageName);
+    if (dockerImage) await dockerImage.remove();
+
+    Logger.info(`Successfully removed the Docker image named '${imageName}'.`);
+  } catch (err: Error | unknown) {
+    Logger.error(`Could not remove the Docker image named '${imageName}'. (Error: ${(err as Error)?.message})`);
+  } finally {
+    if (shouldPrune) await pruneDocker(dockerodeInstance); // Prune Docker
+  }
+};
+
+/**
+ * Removes a Docker volume by name.
+ *
+ * @param {Dockerode} dockerode - The Dockerode instance.
+ * @param {object} options - An options object.
+ * @param {Dockerode} [options.dockerode] - The Dockerode instance. If not provided, a new instance will be created with the default socket path.
+ * @param {boolean} [options.shouldPrune=false] - Indicates whether to prune unused containers and images after the removal.
+ * @returns {Promise<void>} A promise that resolves once the volume is removed.
+ */
+const removeVolume = async (
+  volumeName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode, shouldPrune?: boolean }
+): Promise<void> => {
+  const dockerodeInstance = dockerode || new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
+
+  try {
+    Logger.info(`Removing the Docker volume named '${volumeName}'.`);
+
+    const dockerVolume = dockerodeInstance.getVolume(volumeName);
+    if (dockerVolume) await dockerVolume.remove();
+
+    Logger.info(`Successfully removed the Docker volume named '${volumeName}'.`);
+  } catch (err: Error | unknown) {
+    Logger.error(`Could not remove the Docker volume named '${volumeName}'. (Error: ${(err as Error)?.message})`);
+  } finally {
+    if (shouldPrune) await pruneDocker(dockerodeInstance); // Prune Docker
   }
 };
 
@@ -174,7 +187,7 @@ const createImage = async (imageName: string, dirPath: string): Promise<IDockerI
     return { imageID, imageName, imageBuildTimeSeconds, imageSizeMB } as IDockerImage;
   } catch (err: Error | unknown) {
     // Try to remove the docker image if created
-    await removeImage(dockerode, imageName);
+    await removeImage(imageName, { dockerode });
 
     Logger.error(`Could not create a Docker image named '${imageName}'! (Error: ${(err as Error)?.message})`);
     throw err;
@@ -190,11 +203,11 @@ const createImage = async (imageName: string, dirPath: string): Promise<IDockerI
  * @param {Dockerode} dockerode - The Dockerode instance.
  * @param {string} execName - The unique name of the execution.
  * @param {string} srcDirPath - The path to the source directory to be moved into the volume.
- * @param {boolean} [pruned=false] - Indicates whether to remove the volume if pruned.
+ * @param {boolean} [removeAfter=false] - Indicates whether to remove the container after the copy operation.
  * @returns {Promise<string>} A promise that resolves to the name of the created shared volume.
  */
 const createSharedVolume = async (
-  dockerode: Dockerode, execName: string, srcDirPath: string, pruned: boolean = false
+  dockerode: Dockerode, execName: string, srcDirPath: string, removeAfter: boolean = false
 ): Promise<string> => {
   // Create a shared volume
   const sharedVolume = `sharedvolume_${execName}`;
@@ -207,7 +220,7 @@ const createSharedVolume = async (
       Image: 'ubuntu', WorkingDir: '/app', HostConfig: { Binds: [`${sharedVolume}:/app`] }
     });
   } catch (err: Error | unknown) {
-    await removeVolume(dockerode, sharedVolume); // Remove the shared volume
+    await removeVolume(sharedVolume, { dockerode }); // Remove the shared volume
     throw err;
   }
 
@@ -216,7 +229,7 @@ const createSharedVolume = async (
     await copyContainer.putArchive(fsUtils.createTarball(srcDirPath), { path: '/app' });
   } finally {
     // Remove the copy container
-    if (pruned) await copyContainer.remove();
+    if (removeAfter) await copyContainer.remove();
   }
 
   return sharedVolume;
@@ -275,8 +288,8 @@ const runImage = async (
     await pruneDocker(dockerode);
 
     // Remove the shared volume
-    if (sharedVolume) await removeVolume(dockerode, sharedVolume);
+    if (sharedVolume) await removeVolume(sharedVolume, { dockerode });
   }
 };
 
-export default { createImage, runImage };
+export default { removeImage, createImage, runImage };

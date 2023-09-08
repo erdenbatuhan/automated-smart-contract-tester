@@ -10,27 +10,32 @@ import type { IDockerContainerHistory } from '@models/docker-container-history';
 import dockerContainerHistoryRepository from '@repositories/docker-container-history-repository';
 
 /**
- * Find a Docker image by its name.
+ * Find all Docker Images.
  *
- * @param {string} imageName - The name of the Docker image to find.
- * @param {string[]} [arg] - Optional array of field names to select from the DockerImage document.
- * @returns {Promise<IDockerImage>} A promise that resolves to the found DockerImage document.
- * @throws {HTTPError} If the Docker image with the given name is not found (HTTP 404).
+ * @returns {Promise<IDockerImage[]>} A promise that resolves to an array of all Docker Images.
  */
-const findByName = async (imageName: string, arg: string[] | null = null): Promise<IDockerImage> => {
-  const query = !arg ? DockerImage.findOne({ imageName }) : DockerImage.findOne({ imageName }).select(arg.join(' '));
-  const dockerImage = await query.exec();
+const findAll = async (): Promise<IDockerImage[]> => DockerImage.find();
 
-  if (!dockerImage) throw new HTTPError(404, `Docker image with name=${imageName} not found.`);
+/**
+ * Finds a Docker Image.
+ *
+ * @param {string} imageName - The name of the Docker Image to find.
+ * @returns {Promise<IDockerImage>} A promise that resolves to the found Docker Image.
+ * @throws {HTTPError} If the Docker Image with the given name is not found (HTTP 404).
+ */
+const findByName = async (imageName: string): Promise<IDockerImage> => {
+  const dockerImage = await DockerImage.findOne({ imageName });
+
+  if (!dockerImage) throw new HTTPError(404, `DockerImage with name=${imageName} not found.`);
   return dockerImage;
 };
 
 /**
- * Upsert (insert or update) a Docker image document.
+ * Upserts (insert or update) a Docker Image.
  *
- * @param {IDockerImage} dockerImage - The DockerImage document to upsert.
+ * @param {IDockerImage} dockerImage - The Docker Image to upsert.
  * @param {ClientSession | null} [session=null] - The Mongoose client session.
- * @returns {Promise<IDockerImage>} A promise that resolves to the upserted DockerImage document.
+ * @returns {Promise<IDockerImage>} A promise that resolves to the upserted Docker Image.
  */
 const upsert = async (
   dockerImage: IDockerImage, session: ClientSession | null = null
@@ -47,12 +52,12 @@ const upsert = async (
 );
 
 /**
- * Upsert a Docker image document with associated Docker container history.
+ * Upserts a Docker Image with associated Docker Container History.
  *
- * @param {IDockerImage} dockerImage - The DockerImage document to upsert.
- * @param {IDockerContainerHistory} dockerContainerHistory - Associated Docker container history.
- * @returns {Promise<{ dockerImageSaved: IDockerImage, dockerContainerHistorySaved: IDockerContainerHistory }>} A promise that resolves to an object containing the upserted DockerImage document and the saved Docker container history.
- * @throws {Error | unknown} If an error occurs during the upsert or saving of the Docker container history.
+ * @param {IDockerImage} dockerImage - The Docker Image to upsert.
+ * @param {IDockerContainerHistory} dockerContainerHistory - Associated Docker Container History.
+ * @returns {Promise<{ dockerImageSaved: IDockerImage, dockerContainerHistorySaved: IDockerContainerHistory }>} A promise that resolves to an object containing the upserted Docker Image and the saved Docker Container History.
+ * @throws {Error | unknown} If an error occurs during the upsert or saving of the Docker Container History.
  */
 const upsertWithDockerContainerHistory = async (
   dockerImage: IDockerImage,
@@ -82,4 +87,16 @@ const upsertWithDockerContainerHistory = async (
   }
 };
 
-export default { findByName, upsertWithDockerContainerHistory };
+/**
+ * Removes a Docker Image.
+ *
+ * @param {string} imageName - The name of the Docker Image to remove.
+ * @returns {Promise<void>} A promise that resolves when the Docker Image is successfully removed.
+ * @throws {HTTPError} If the Docker Image with the given name is not found (HTTP 404).
+ */
+const removeDockerImage = async (imageName: string): Promise<void> => DockerImage.deleteOne({ imageName })
+  .then(({ deletedCount }) => {
+    if (!deletedCount) throw new HTTPError(404, `DockerImage with name=${imageName} not found.`);
+  });
+
+export default { findAll, findByName, upsertWithDockerContainerHistory, removeDockerImage };

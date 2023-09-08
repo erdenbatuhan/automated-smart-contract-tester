@@ -15,7 +15,7 @@ import constantUtils from '@utils/constant-utils';
  * @param {string} dirPath - The path to the temporary directory where the zip file will be extracted.
  * @param {string} zipFilePath - The path to the zip file to be extracted.
  * @param {Buffer} zipBuffer - The buffer containing the contents of the zip file.
- * @throws {HTTPError} Throws an HTTP error with status code 400 if the zip file is empty or does not unzip to a directory.
+ * @throws {HTTPError} HTTP Error with status code 400 if the zip file is empty or does not unzip to a directory.
  * @returns {Promise<string>} A promise that resolves to the path of the directory where the contents were extracted.
  */
 const unzip = async (dirPath: string, zipFilePath: string, zipBuffer: Buffer): Promise<string> => {
@@ -89,7 +89,7 @@ const removeDirectorySync = (dirPath: string): void => {
  * @param {string} contextName - The context name for identifying the temporary directory.
  * @param {Buffer} zipBuffer - The buffer containing the zip file contents.
  * @returns {Promise<IFile[]>} A list of objects with file paths and content as strings.
- * @throws {HTTPError} Throws an HTTP error if an error occurs during the operation.
+ * @throws {HTTPError} HTTP Error if an error occurs during the operation.
  */
 const getUploadedFilesFromZipBuffer = async (
   contextName: string, zipBuffer: Buffer
@@ -118,9 +118,9 @@ const getUploadedFilesFromZipBuffer = async (
 /**
  * Converts a list of uploaded files to a zip buffer.
  *
- * @param {IUpload} uploadDocument - The upload document containing the list of uploaded files.
+ * @param {IUpload} uploadDocument - The Upload document containing the list of uploaded files.
  * @returns {Buffer} A buffer containing the zipped files.
- * @throws {HTTPError} Throws an HTTP error if an error occurs during the operation.
+ * @throws {HTTPError} HTTP Error if an error occurs during the operation.
  */
 const writeUploadedFilesToZipBuffer = (uploadDocument: IUpload): Buffer => {
   try {
