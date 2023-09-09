@@ -15,6 +15,23 @@ import dockerUtils from '@utils/docker-utils';
 import forgeUtils from '@utils/forge-utils';
 
 /**
+ * Get the test execution command with optional execution arguments.
+ *
+ * @param {object=} [execArgs] - Optional execution arguments to be included in the command.
+ * @returns {string} The test execution command with execution arguments (if provided).
+ */
+const getTestExecutionCommand = (execArgs?: object): string => {
+  const executionArgsString = forgeUtils.convertTestExecutionArgsToString(execArgs);
+  let executionCommand = constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS;
+
+  if (executionArgsString) {
+    executionCommand = `${executionCommand} ${executionArgsString}`;
+  }
+
+  return executionCommand;
+};
+
+/**
  * Extracts test results from execution output based on the status.
  *
  * @param {string} imageName - The name of the Docker Image.
@@ -91,11 +108,9 @@ const runImageWithFilesInZipBuffer = async (
 const executeTests = async (
   imageName: string, zipBuffer: Buffer, execArgs?: object
 ): Promise<IDockerContainerHistory> => {
-  const executionArgsString = forgeUtils.convertTestExecutionArgsToString(execArgs);
-  const commandExecuted = `${constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS} ${executionArgsString}`;
-
+  const testExecutionCommand = getTestExecutionCommand(execArgs);
   const dockerImage = await dockerImageService.findDockerImage(imageName);
-  const dockerContainerHistory = await runImageWithFilesInZipBuffer(zipBuffer, dockerImage, commandExecuted);
+  const dockerContainerHistory = await runImageWithFilesInZipBuffer(zipBuffer, dockerImage, testExecutionCommand);
 
   return dockerContainerHistoryService.saveDockerContainerHistory(dockerContainerHistory)
     .then((dockerContainerHistorySaved) => {
