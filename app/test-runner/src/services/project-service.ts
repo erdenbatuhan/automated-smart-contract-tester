@@ -62,9 +62,10 @@ const createNewProject = async (
       .finally(() => fsUtils.removeDirectorySync(tempDirPath)); // Remove the temp directory after creating the image
 
     // Run the Docker container to get the gas snapshot file
-    const commandExecuted = `cat ${constantUtils.PROJECT_FILES.GAS_SNAPSHOT}`;
     const dockerContainerHistory = await dockerUtils.runImage(
-      execName, dockerImage.imageName, new DockerContainerHistory({ commandExecuted }));
+      execName, dockerImage.imageName, new DockerContainerHistory({
+        commandExecuted: forgeUtils.getGasSnapshotRetrievalCommand()
+      }));
 
     // Retrieve the names of the tests from the gas snapshot output (if the execution has been successful) and update the Docker Container History with the execution results
     if (dockerContainerHistory.status === Status.SUCCESS) {

@@ -6,6 +6,8 @@ import type {
   DockerContainerExecutionOutput
 } from '@models/docker-container-history';
 
+import constantUtils from '@utils/constant-utils';
+
 interface UnprocessedTestExecutionResults extends ProcessedTestExecutionResults {
   counterexample?: string;
   decoded_logs?: string[];
@@ -49,12 +51,28 @@ const convertTestExecutionArgsToString = (executionArguments: object | undefined
 );
 
 /**
- * Removes ANSI color codes from a string.
+ * Get the test execution command with optional execution arguments.
  *
- * @param {string} str - The input string containing color codes.
- * @returns {string} A new string with color codes removed.
+ * @param {object=} [execArgs] - Optional execution arguments to be included in the command.
+ * @returns {string} The test execution command with execution arguments (if provided).
  */
-const removeColorCodes = (str: string): string => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+const getTestExecutionCommand = (execArgs?: object): string => {
+  const executionArgsString = convertTestExecutionArgsToString(execArgs);
+  let executionCommand = constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS;
+
+  if (executionArgsString) {
+    executionCommand = `${executionCommand} ${executionArgsString}`;
+  }
+
+  return executionCommand;
+};
+
+/**
+ * Get the command to retrieve the gas snapshot content.
+ *
+ * @returns {string} The command to read the gas snapshot content.
+ */
+const getGasSnapshotRetrievalCommand = (): string => `cat ${constantUtils.PROJECT_FILES.GAS_SNAPSHOT}`;
 
 /**
  * Extracts test names from a gas snapshot text.
@@ -151,6 +169,14 @@ const extractTestExecutionResultsFromExecutionOutput = (
 };
 
 /**
+ * Removes ANSI color codes from a string.
+ *
+ * @param {string} str - The input string containing color codes.
+ * @returns {string} A new string with color codes removed.
+ */
+const removeColorCodes = (str: string): string => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+
+/**
  * Extracts gas difference analysis from test output.
  *
  * @param {string | undefined} testOutput - The test output text.
@@ -200,7 +226,8 @@ const extractGasDiffAnalysisFromExecutionOutput = (
 };
 
 export default {
-  convertTestExecutionArgsToString,
+  getTestExecutionCommand,
+  getGasSnapshotRetrievalCommand,
   retrieveTestNamesFromGasSnapshot,
   extractTestExecutionResultsFromExecutionOutput,
   extractGasDiffAnalysisFromExecutionOutput
