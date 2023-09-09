@@ -8,7 +8,7 @@ networks:
 services:
   # Service: Services
   services:
-    container_name: ${APP_NAME}-${SERVICES_SERVICE_NAME}
+    container_name: ${SERVICES_CONTAINER_NAME}
     build:
       context: ./services
       dockerfile: Dockerfile
@@ -25,14 +25,14 @@ services:
       APP_NAME: ${APP_NAME}
       SERVICE_NAME: ${SERVICES_SERVICE_NAME}
       PORT: ${SERVICES_PORT}
-      MONGO_DB_URI: mongodb://${APP_NAME}-${MONGO_REPL_1}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_2}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_3}:${MONGO_PORT}/${SERVICES_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
-      TESTRUNNER_HOST: ${APP_NAME}-${TESTRUNNER_SERVICE_NAME}:${TESTRUNNER_PORT} # app name + service name
+      MONGO_DB_URI: mongodb://${MONGO_HOSTS}/${SERVICES_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
+      TESTRUNNER_HOST: ${TESTRUNNER_CONTAINER_NAME}:${TESTRUNNER_PORT} # app name + service name
     depends_on:
       - mongo-manager
       - runner
   # Service: Test Runner
   runner:
-    container_name: ${APP_NAME}-${TESTRUNNER_SERVICE_NAME}
+    container_name: ${TESTRUNNER_CONTAINER_NAME}
     build:
       context: ./test-runner
       dockerfile: Dockerfile
@@ -51,10 +51,11 @@ services:
       APP_NAME: ${APP_NAME}
       SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
       PORT: ${TESTRUNNER_PORT}
-      MONGO_DB_URI: mongodb://${APP_NAME}-${MONGO_REPL_1}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_2}:${MONGO_PORT},${APP_NAME}-${MONGO_REPL_3}:${MONGO_PORT}/${TESTRUNNER_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
+      MONGO_DB_URI: mongodb://${MONGO_HOSTS}/${TESTRUNNER_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
     depends_on:
       - mongo-manager
       - ubuntu
   # ubuntu image (needed in the test runner service)
   ubuntu:
+    container_name: ubuntu
     image: ubuntu:latest

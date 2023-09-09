@@ -14,7 +14,7 @@ _Husky's pre-commit hooks_ and _lint-staged_ ensure that _ESLint_ and _Prettier_
 
 ### Running the Entire Application with Docker
 
-Before running the application, create the **.env** file and set the following environment variables:
+Before running the application, create a **.env** file and set the following environment variables:
 
 ```bash
 STAGING=dev # The staging environment (dev, qa, prod, etc.)

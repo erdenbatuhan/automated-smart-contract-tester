@@ -6,7 +6,7 @@ For instructions on running the entire application using _Docker_, please refer 
 
 ### Running the service separately
 
-Before running the service, make sure that you have created the **.env.development.local** file and set the following environment variables.
+Before running the service, make sure that you have created a **.env.development.local** file and set the following environment variables.
 
 ```bash
 # Application Config

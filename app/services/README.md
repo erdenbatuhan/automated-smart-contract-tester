@@ -8,7 +8,7 @@ For instructions on running the entire application using _Docker_, please refer 
 
 If you have not already done so, first follow the instructions in the [README](../test-runner/README.md) of the test runner service.
 
-Before running the service, make sure that you have created the **.env.development.local** file and set the following environment variables.
+Before running the service, make sure that you have created a **.env.development.local** file and set the following environment variables.
 
 ```bash
 # Application Config
