@@ -25,7 +25,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/', upload.single('srcZip'), async (req: Request, res: Response) => {
   try {
     const { projectName } = res.locals;
-    const zipBuffer = routerUtils.extractFileBuffer(req);
+    const zipBuffer = routerUtils.getRequestFile(req).buffer;
 
     await uploadService.uploadZipBuffer(projectName, zipBuffer).then((uploadSaved) => {
       res.status(200).json(uploadSaved);

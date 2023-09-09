@@ -20,6 +20,7 @@ PORT=4000
 MONGO_DB_URI= # Specify your MongoDB URI here
 
 # Service Configuration: Test Runner
+TESTRUNNER_SERVICE_NAME=runner
 TESTRUNNER_HOST=localhost:4001
 ```
 

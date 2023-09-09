@@ -1,3 +1,5 @@
+import type { SessionOption } from 'mongoose';
+
 import Logger from '@logging/logger';
 import HTTPError from '@errors/http-error';
 
@@ -12,17 +14,25 @@ import errorUtils from '@utils/error-utils';
  *
  * @param {string} name - The name associated with the upload.
  * @param {Buffer} zipBuffer - The zip buffer to upload.
- * @returns {Promise<any>} A promise that resolves to the uploaded data.
+ * @param {IUpload | null} [existingUpload] - An optional existing upload document. If provided, the function will update this document.
+ * @param {SessionOption} [sessionOption] - An optional MongoDB session for the upload.
+ * @returns {Promise<IUpload>} A promise that resolves to the uploaded data.
  * @throws {HTTPError | Error} Error if an error occurs during the upload.
  */
-const uploadZipBuffer = async (name: string, zipBuffer: Buffer): Promise<IUpload> => {
+const uploadZipBuffer = async (
+  name: string, zipBuffer: Buffer, existingUpload?: IUpload | null, sessionOption?: SessionOption
+): Promise<IUpload> => {
   try {
     Logger.info(`Uploading the zip buffer for ${name}.`);
 
-    const upload = new Upload([]);
-    upload.files = await fsUtils.getUploadedFilesFromZipBuffer(`project_${name}_upload_${upload._id}_${Date.now()}`, zipBuffer);
+    const upload = existingUpload || new Upload([]);
+    const files = await fsUtils.getUploadedFilesFromZipBuffer(`${name}_upload_${upload._id}_${Date.now()}`, zipBuffer);
 
-    return await upload.save().then((uploadSaved) => {
+    return await Upload.findByIdAndUpdate(
+      upload,
+      { files },
+      { upsert: true, new: true, ...sessionOption }
+    ).then((uploadSaved) => {
       Logger.info(`Successfully uploaded the zip buffer for ${name}.`);
       return uploadSaved;
     });
