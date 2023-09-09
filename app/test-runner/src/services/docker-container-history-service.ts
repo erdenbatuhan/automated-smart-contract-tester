@@ -1,4 +1,4 @@
-import type { ClientSession } from 'mongoose';
+import type { SessionOption } from 'mongoose';
 
 import type { IDockerContainerHistory } from '@models/docker-container-history';
 
@@ -6,11 +6,11 @@ import type { IDockerContainerHistory } from '@models/docker-container-history';
  * Saves a Docker Container History.
  *
  * @param {IDockerContainerHistory} dockerContainerHistory - The Docker Container History to save.
- * @param {ClientSession | null} [session=null] - The Mongoose client session.
+ * @param {SessionOption} [sessionOption] - An optional MongoDB session for the upload.
  * @returns {Promise<IDockerContainerHistory>} A promise that resolves to the saved Docker Container History.
  */
 const saveDockerContainerHistory = (
-  dockerContainerHistory: IDockerContainerHistory, session: ClientSession | null = null
-): Promise<IDockerContainerHistory> => dockerContainerHistory.save({ session });
+  dockerContainerHistory: IDockerContainerHistory, sessionOption?: SessionOption
+): Promise<IDockerContainerHistory> => dockerContainerHistory.save(sessionOption);
 
 export default { saveDockerContainerHistory };

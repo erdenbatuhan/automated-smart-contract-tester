@@ -32,9 +32,9 @@ const retrieveTestNamesFromGasSnapshot = (
 };
 
 /**
- * Creates a new project with the given name from a ZIP buffer.
+ * Creates a new project or updates an existing one with the given name from a ZIP buffer.
  *
- * @param {string} projectName - The name of the new project.
+ * @param {string} projectName - The name of the project.
  * @param {Buffer} zipBuffer - The ZIP buffer containing the project files.
  * @returns {Promise<{ image: IDockerImage, output: DockerContainerExecutionOutput | undefined }>} A promise that resolves to an object containing the created Docker Image and the extracted test names.
  * @throws {Error} If any error occurs during project creation.

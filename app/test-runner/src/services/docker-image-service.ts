@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import type { ClientSession } from 'mongoose';
+import type { SessionOption } from 'mongoose';
 
 import HTTPError from '@errors/http-error';
 
@@ -57,11 +57,11 @@ const findDockerImage = async (
  * Upserts (insert or update) a Docker Image.
  *
  * @param {IDockerImage} dockerImage - The Docker Image to upsert.
- * @param {ClientSession | null} [session=null] - The Mongoose client session.
+ * @param {SessionOption} [sessionOption] - An optional MongoDB session for the upload.
  * @returns {Promise<IDockerImage>} A promise that resolves to the upserted Docker Image.
  */
 const upsertDockerImage = async (
-  dockerImage: IDockerImage, session: ClientSession | null = null
+  dockerImage: IDockerImage, sessionOption?: SessionOption
 ): Promise<IDockerImage> => DockerImage.findOneAndUpdate(
   { imageName: dockerImage.imageName },
   {
@@ -71,7 +71,7 @@ const upsertDockerImage = async (
     },
     $max: { imageBuildTimeSeconds: dockerImage.imageBuildTimeSeconds || 0 }
   },
-  { upsert: true, new: true, session }
+  { upsert: true, new: true, ...sessionOption }
 );
 
 /**
@@ -80,7 +80,7 @@ const upsertDockerImage = async (
  * @param {IDockerImage} dockerImage - The Docker Image to upsert.
  * @param {IDockerContainerHistory} dockerContainerHistory - Associated Docker Container History.
  * @returns {Promise<{ dockerImageSaved: IDockerImage, dockerContainerHistorySaved: IDockerContainerHistory }>} A promise that resolves to an object containing the upserted Docker Image and the saved Docker Container History.
- * @throws {Error | unknown} If an error occurs during the upsert or saving of the Docker Container History.
+ * @throws {Error} If an error occurs during the upsert of the docker image or saving of the Docker Container History.
  */
 const upsertDockerImageWithDockerContainerHistory = async (
   dockerImage: IDockerImage,
@@ -91,12 +91,12 @@ const upsertDockerImageWithDockerContainerHistory = async (
 
   try {
     // Save (or update it if it already exists) the docker image within the transaction
-    const dockerImageSaved = await upsertDockerImage(dockerImage, session);
+    const dockerImageSaved = await upsertDockerImage(dockerImage, { session });
 
     // Save the docker container history for the executed container within the transaction
     dockerContainerHistory.dockerImage = dockerImageSaved;
     const dockerContainerHistorySaved = await dockerContainerHistoryService.saveDockerContainerHistory(
-      dockerContainerHistory, session);
+      dockerContainerHistory, { session });
 
     // Commit the transaction
     await session.commitTransaction();
