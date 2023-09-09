@@ -28,7 +28,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
     const { projectName } = req.params;
     const zipBuffer = routerUtils.extractFileBuffer(req);
 
-    await projectService.createNewProject(projectName, zipBuffer).then((project) => {
+    await projectService.createOrUpdateProject(projectName, zipBuffer).then((project) => {
       res.status(200).json(project);
     });
   } catch (err: HTTPError | Error | unknown) {

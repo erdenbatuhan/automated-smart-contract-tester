@@ -39,7 +39,7 @@ const retrieveTestNamesFromGasSnapshot = (
  * @returns {Promise<{ image: IDockerImage, output: DockerContainerExecutionOutput | undefined }>} A promise that resolves to an object containing the created Docker Image and the extracted test names.
  * @throws {Error} If any error occurs during project creation.
  */
-const createNewProject = async (
+const createOrUpdateProject = async (
   projectName: string, zipBuffer: Buffer
 ): Promise<{ image: IDockerImage, output: DockerContainerExecutionOutput | undefined }> => {
   try {
@@ -83,4 +83,4 @@ const createNewProject = async (
   }
 };
 
-export default { createNewProject };
+export default { createOrUpdateProject };
