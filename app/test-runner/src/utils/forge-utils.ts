@@ -112,13 +112,23 @@ const extractTestExecutionResultsFromExecutionOutput = (
     }, {} as { [contract: string]: ProcessedContractTestExecutionResults });
 
   const getStatusCount = (
-    testExecResForContracts: { [contract: string]: ProcessedContractTestExecutionResults }, expectedStatus: string
-  ): number => Object.values(testExecResForContracts)
-    .reduce((statusCountForContracts: number, testExecResForContract: ProcessedContractTestExecutionResults) => {
+    testExecutionResults: { [contract: string]: ProcessedContractTestExecutionResults }, expectedStatus: string
+  ): number => Object.values(testExecutionResults)
+    .reduce((totalStatusCount: number, testExecResForContract: ProcessedContractTestExecutionResults) => {
       const testExecResForTests = Object.values(testExecResForContract);
       const statusCount = testExecResForTests.filter(({ status }) => status === expectedStatus).length;
 
-      return statusCountForContracts + statusCount;
+      return totalStatusCount + statusCount;
+    }, 0);
+
+  const getTotalGasUsage = (
+    testExecutionResults: { [contract: string]: ProcessedContractTestExecutionResults }
+  ): number => Object.values(testExecutionResults)
+    .reduce((totalGas: number, testExecResForContract: ProcessedContractTestExecutionResults) => {
+      const testExecResForTests = Object.values(testExecResForContract);
+      const contractGasUsage = testExecResForTests.reduce((gasUsage, { gas }) => gasUsage + Number(gas), 0);
+
+      return totalGas + contractGasUsage;
     }, 0);
 
   const [jsonStart, jsonEnd] = [testOutput?.indexOf('{') || -1, testOutput?.lastIndexOf('}') || -1]; // Start and end of the JSON
@@ -130,7 +140,12 @@ const extractTestExecutionResultsFromExecutionOutput = (
   const numFailed = getStatusCount(processedTestExecutionResults, 'Failure');
 
   return {
-    overall: { passed: !!numPassed && !numFailed, numPassed, numFailed },
+    overall: {
+      passed: !!numPassed && !numFailed,
+      numPassed,
+      numFailed,
+      totalGas: getTotalGasUsage(processedTestExecutionResults)
+    },
     tests: processedTestExecutionResults
   };
 };

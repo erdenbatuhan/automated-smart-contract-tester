@@ -19,7 +19,7 @@ export interface GasDiffAnalysis {
 export interface DockerContainerExecutionOutput {
   data?: string;
   error?: string;
-  overall?: { passed: boolean; numPassed: number; numFailed: number; };
+  overall?: { passed: boolean; numPassed: number; numFailed: number; totalGas: number };
   tests?: string[] | { [contract: string]: { [test: string]: TestExecutionResults } };
   gasDiffAnalysis?: GasDiffAnalysis
 }
