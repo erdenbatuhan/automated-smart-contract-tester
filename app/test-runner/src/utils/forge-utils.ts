@@ -1,3 +1,5 @@
+import executorEnvironmentConfig from '~data/forge/executor-environment-config.json';
+
 import type {
   TestExecutionResults as ProcessedTestExecutionResults,
   GasDiffAnalysis,
@@ -22,6 +24,29 @@ interface UnprocessedContractTestExecutionResults {
 interface ProcessedContractTestExecutionResults {
   [test: string]: ProcessedTestExecutionResults;
 }
+
+const VALID_TEST_EXECUTION_ARGUMENTS = Object.keys(executorEnvironmentConfig);
+
+/**
+ * Converts a camel-cased string to an executable argument format with a double hyphen prefix.
+ *
+ * @param {string} input - The camel-cased input string to convert.
+ * @returns {string} The converted string with a double hyphen prefix (e.g., "--example-string").
+ */
+const convertCamelToExecArg = (input: string): string => `--${input.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}`;
+
+/**
+ * Converts an object of Forge test execution arguments to a command-line execution argument.
+ *
+ * @param {object | undefined} executionArguments - The object containing Forge test execution arguments.
+ * @returns {string} A command-line execution string representing the provided arguments.
+ */
+const convertTestExecutionArgsToString = (executionArguments: object | undefined): string => (
+  executionArguments ? Object.entries(executionArguments)
+    .filter(([argumentName]) => VALID_TEST_EXECUTION_ARGUMENTS.includes(argumentName))
+    .map(([argumentName, argumentValue]) => `${convertCamelToExecArg(argumentName)} ${argumentValue}`)
+    .join(' ') : ''
+);
 
 /**
  * Removes ANSI color codes from a string.
@@ -58,7 +83,9 @@ const retrieveTestNamesFromGasSnapshot = (gasSnapshotText: string | undefined): 
  * @param {string | undefined} testOutput - The test output JSON string.
  * @returns {DockerContainerExecutionOutput} An object containing the extracted test execution results.
  */
-const extractTestExecutionResults = (testOutput: string | undefined): DockerContainerExecutionOutput => {
+const extractTestExecutionResultsFromExecutionOutput = (
+  testOutput: string | undefined
+): DockerContainerExecutionOutput => {
   const getProcessedTestExecutionResults = (
     unprocessedTestExecResForContracts: { [contract: string]: UnprocessedContractTestExecutionResults }
   ): { [contract: string]: ProcessedContractTestExecutionResults } => Object.entries(unprocessedTestExecResForContracts)
@@ -114,7 +141,9 @@ const extractTestExecutionResults = (testOutput: string | undefined): DockerCont
  * @param {string | undefined} testOutput - The test output text.
  * @returns {DockerContainerExecutionOutput} An object containing the extracted gas difference analysis.
  */
-const extractGasDiffAnalysis = (testOutput: string | undefined): DockerContainerExecutionOutput => {
+const extractGasDiffAnalysisFromExecutionOutput = (
+  testOutput: string | undefined
+): DockerContainerExecutionOutput => {
   const extractGasDiffNumbersFromGasParts = (
     gasParts: string | undefined
   ): { gasDiff: number, gasDiffPercentage: number } => {
@@ -155,4 +184,9 @@ const extractGasDiffAnalysis = (testOutput: string | undefined): DockerContainer
   } as DockerContainerExecutionOutput;
 };
 
-export default { retrieveTestNamesFromGasSnapshot, extractTestExecutionResults, extractGasDiffAnalysis };
+export default {
+  convertTestExecutionArgsToString,
+  retrieveTestNamesFromGasSnapshot,
+  extractTestExecutionResultsFromExecutionOutput,
+  extractGasDiffAnalysisFromExecutionOutput
+};

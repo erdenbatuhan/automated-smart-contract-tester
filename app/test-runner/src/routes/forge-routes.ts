@@ -11,7 +11,7 @@ const router = Router();
  * @returns {object} 200 - The executor environment configuration options.
  * @returns {object} 500 - Internal server error, indicating a failure to retrieve the options.
  */
-router.get('/test/options/executor-environment-config', async (req: Request, res: Response) => {
+router.get('/test/options/execution-arguments', async (req: Request, res: Response) => {
   res.status(200).json(executorEnvironmentConfig);
 });
 

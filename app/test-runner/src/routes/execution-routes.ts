@@ -19,6 +19,7 @@ const upload = multer({ storage: multer.memoryStorage() });
  * @param {string} projectName - The name of the project associated with the tests.
  * @consumes multipart/form-data
  * @param {file} srcZip - The ZIP file containing the smart contracts to be tested.
+ * @param {object=} [execArgs] - "Optional" execution arguments for the tests.
  * @returns {object} 200 - The execution result, including test output and details.
  * @returns {object} 400 - Bad request error, such as missing parameters or invalid file format.
  * @returns {object} 500 - Internal server error, indicating a failure during execution.
@@ -27,8 +28,9 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
   try {
     const { projectName } = res.locals;
     const zipBuffer = routerUtils.extractFileBuffer(req);
+    const execArgs = routerUtils.parseJsonObjectFromBody(req, 'execArgs');
 
-    await executionService.executeTests(projectName, zipBuffer).then((execution) => {
+    await executionService.executeTests(projectName, zipBuffer, execArgs).then((execution) => {
       res.status(200).json(execution);
     });
   } catch (err: HTTPError | Error | unknown) {

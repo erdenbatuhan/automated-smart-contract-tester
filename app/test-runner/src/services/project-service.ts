@@ -11,7 +11,7 @@ import constantUtils from '@utils/constant-utils';
 import errorUtils from '@utils/error-utils';
 import fsUtils from '@utils/fs-utils';
 import dockerUtils from '@utils/docker-utils';
-import testOutputUtils from '@utils/test-output-utils';
+import forgeUtils from '@utils/forge-utils';
 
 /**
  * Retrieves the names of the tests from the gas snapshot output.
@@ -25,7 +25,7 @@ const retrieveTestNamesFromGasSnapshot = (
   projectName: string, output: DockerContainerExecutionOutput | undefined
 ): { tests: string[] } => {
   try {
-    return { tests: testOutputUtils.retrieveTestNamesFromGasSnapshot(output?.data) };
+    return { tests: forgeUtils.retrieveTestNamesFromGasSnapshot(output?.data) };
   } catch (err: Error | unknown) {
     throw errorUtils.logAndGetError(err as Error, `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`);
   }
