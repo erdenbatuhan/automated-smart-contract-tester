@@ -7,7 +7,6 @@ import HTTPError from '@errors/http-error';
 import uploadService from '@services/upload-service';
 
 import routerUtils from '@utils/router-utils';
-import type { IMulterRequest, IModifiedRequest } from '@utils/router-utils';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -25,13 +24,14 @@ const upload = multer({ storage: multer.memoryStorage() });
  */
 router.post('/', upload.single('srcZip'), async (req: Request, res: Response) => {
   try {
-    const { projectName } = (req as IModifiedRequest).locals;
-    const zipBuffer = routerUtils.extractFileBuffer(req as IMulterRequest);
+    const { projectName } = res.locals;
+    const zipBuffer = routerUtils.extractFileBuffer(req);
 
-    const uploadSaved = await uploadService.uploadZipBuffer(projectName, zipBuffer);
-    res.status(200).json(uploadSaved);
+    await uploadService.uploadZipBuffer(projectName, zipBuffer).then((uploadSaved) => {
+      res.status(200).json(uploadSaved);
+    });
   } catch (err: HTTPError | Error | unknown) {
-    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
+    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
   }
 });
 
@@ -40,21 +40,20 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
  *
  * Note: The projectName must also be provided as a request parameter. (Refer to api-routes.ts)
  *
- * @param {string} submissionId.params.required - The ID of the submission to download.
+ * @param {string} submissionId - The ID of the submission to download.
  */
 router.get('/:submissionId/download', async (req: Request, res: Response) => {
-  try {
-    const { projectName } = (req as IModifiedRequest).locals;
-    const { submissionId } = req.params;
+  const { projectName } = res.locals;
+  const { submissionId } = req.params;
 
-    const zipBuffer = await uploadService.getUploadedFilesInZipBuffer(projectName, submissionId);
-
-    res.setHeader('Content-Disposition', `attachment; filename=project_${projectName}_submission_${submissionId}.zip`);
-    res.setHeader('Content-Type', 'application/zip');
-    res.status(200).send(zipBuffer);
-  } catch (err: HTTPError | Error | unknown) {
-    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
-  }
+  uploadService.getUploadedFilesInZipBuffer(projectName, submissionId)
+    .then((zipBuffer) => {
+      res.setHeader('Content-Disposition', `attachment; filename=project_${projectName}_submission_${submissionId}.zip`);
+      res.setHeader('Content-Type', 'application/zip');
+      res.status(200).send(zipBuffer);
+    }).catch((err: HTTPError | Error | unknown) => {
+      res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
+    });
 });
 
 export default router;

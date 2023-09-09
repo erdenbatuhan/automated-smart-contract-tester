@@ -109,7 +109,7 @@ const getUploadedFilesFromZipBuffer = async (
     });
   } catch (err: HTTPError | Error | unknown) {
     Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
-    throw new HTTPError((err as HTTPError)?.statusCode || 500, (err as Error)?.message || 'An error occurred.');
+    throw new HTTPError((err as HTTPError).statusCode || 500, (err as Error)?.message);
   } finally {
     removeDirectorySync(dirPath);
   }

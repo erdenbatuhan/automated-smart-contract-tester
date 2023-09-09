@@ -5,8 +5,6 @@ import HTTPError from '@errors/http-error';
 
 import dockerImageService from '@services/docker-image-service';
 
-import routerUtils from '@utils/router-utils';
-
 const router = Router();
 
 /**
@@ -19,7 +17,7 @@ router.get('/', async (req: Request, res: Response) => {
   dockerImageService.findAllDockerImages().then((dockerImages) => {
     res.status(200).json(dockerImages);
   }).catch((err: HTTPError | Error | unknown) => {
-    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
+    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
   });
 });
 
@@ -32,15 +30,13 @@ router.get('/', async (req: Request, res: Response) => {
  * @throws {object} 500 - If there's a server error.
  */
 router.get('/:imageName', async (req: Request, res: Response) => {
-  try {
-    const { imageName } = routerUtils.extractRequiredParams(req, ['imageName']);
+  const { imageName } = req.params;
 
-    await dockerImageService.findDockerImage(imageName).then((dockerImage) => {
-      res.status(200).json(dockerImage);
-    });
-  } catch (err: HTTPError | Error | unknown) {
-    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
-  }
+  dockerImageService.findDockerImage(imageName).then((dockerImage) => {
+    res.status(200).json(dockerImage);
+  }).catch((err: HTTPError | Error | unknown) => {
+    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
+  });
 });
 
 /**
@@ -52,15 +48,13 @@ router.get('/:imageName', async (req: Request, res: Response) => {
  * @throws {object} 500 - If there's a server error.
  */
 router.delete('/:imageName', async (req: Request, res: Response) => {
-  try {
-    const { imageName } = routerUtils.extractRequiredParams(req, ['imageName']);
+  const { imageName } = req.params;
 
-    await dockerImageService.removeDockerImage(imageName).then(() => {
-      res.status(204).end();
-    });
-  } catch (err: HTTPError | Error | unknown) {
-    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
-  }
+  dockerImageService.removeDockerImage(imageName).then(() => {
+    res.status(204).end();
+  }).catch((err: HTTPError | Error | unknown) => {
+    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
+  });
 });
 
 export default router;

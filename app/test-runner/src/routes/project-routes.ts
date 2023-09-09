@@ -7,7 +7,6 @@ import HTTPError from '@errors/http-error';
 import projectService from '@services/project-service';
 
 import routerUtils from '@utils/router-utils';
-import type { IMulterRequest } from '@utils/router-utils';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -26,13 +25,14 @@ const upload = multer({ storage: multer.memoryStorage() });
  */
 router.put('/:projectName/upload', upload.single('projectZip'), async (req: Request, res: Response) => {
   try {
-    const { projectName } = routerUtils.extractRequiredParams(req, ['projectName']);
-    const zipBuffer = routerUtils.extractFileBuffer(req as IMulterRequest);
+    const { projectName } = req.params;
+    const zipBuffer = routerUtils.extractFileBuffer(req);
 
-    const project = await projectService.createNewProject(projectName, zipBuffer);
-    res.status(200).json(project);
+    await projectService.createNewProject(projectName, zipBuffer).then((project) => {
+      res.status(200).json(project);
+    });
   } catch (err: HTTPError | Error | unknown) {
-    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message || 'An error occurred.' });
+    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
   }
 });
 

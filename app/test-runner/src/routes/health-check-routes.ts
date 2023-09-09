@@ -10,16 +10,16 @@ const router = Router();
  * @returns {string} 500 - Internal server error message if there's an issue with the health check.
  */
 router.post('/', async (req: Request, res: Response) => {
-  try {
-    // Replace the following promise with the service of your choice to easily verify that it works
-    const healthCheckPromise = new Promise<string>((resolve) => {
-      resolve('Yey! Everything works as expected!');
-    });
+  // Replace the following promise with the service of your choice to easily verify that it works
+  const healthCheckPromise = new Promise<string>((resolve) => {
+    resolve('Yey! Everything works as expected!');
+  });
 
-    res.status(200).send(await healthCheckPromise);
-  } catch (err: Error | unknown) {
+  healthCheckPromise.then((result) => {
+    res.status(200).send(result);
+  }).catch((err: Error | unknown) => {
     res.status(500).send((err as Error)?.message);
-  }
+  });
 });
 
 export default router;
