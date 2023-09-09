@@ -1,5 +1,6 @@
 import Logger from '@logging/logger';
 
+import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
 import type { DockerContainerExecutionOutput, IDockerContainerHistory } from '@models/docker-container-history';
 import Status from '@models/enums/status';
@@ -12,7 +13,6 @@ import errorUtils from '@utils/error-utils';
 import fsUtils from '@utils/fs-utils';
 import dockerUtils from '@utils/docker-utils';
 import forgeUtils from '@utils/forge-utils';
-import { IDockerImage } from '@models/docker-image';
 
 /**
  * Extracts test results from execution output based on the status.
