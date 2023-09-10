@@ -4,7 +4,7 @@ import AdmZip from 'adm-zip';
 import tar from 'tar';
 
 import Logger from '@logging/logger';
-import HTTPError from '@errors/http-error';
+import AppError from '@errors/app-error';
 
 import constantUtils from '@utils/constant-utils';
 import errorUtils from './error-utils';
@@ -29,7 +29,7 @@ const checkIfFileExists = (dirPath: string, filename: string): void => {
  * @param {string} zipFilePath - The path to the zip file to be extracted.
  * @param {Buffer} zipBuffer - The buffer containing the contents of the zip file.
  * @param {string[]} [requiredFolders=[]] - An optional array of folder names that must exist in the zip file.
- * @throws {HTTPError} HTTP Error with status code 400 if the zip file is empty or does not unzip to a directory.
+ * @throws {AppError} HTTP Error with status code 400 if the zip file is empty or does not unzip to a directory.
  * @returns {Promise<string>} A promise that resolves to the path of the directory where the contents were extracted.
  */
 const unzip = async (
@@ -47,7 +47,7 @@ const unzip = async (
 
   // If it is a directory, update the extracted path; otherwise, it stays the same
   if (!firstEntry || !firstEntry.entryName) {
-    throw new HTTPError(400, 'The uploaded zip file is probably empty!');
+    throw new AppError(400, 'The uploaded zip file is probably empty!');
   } else if (firstEntry.isDirectory && !requiredFolders.includes(firstEntry.entryName)) {
     extractedDirPath = path.join(dirPath, firstEntry.entryName);
   }
@@ -63,7 +63,7 @@ const unzip = async (
  * @param {string} dirPath - The path to the directory.
  * @param {{ requiredFiles: string[]; requiredFolders: string[] }} requirements - An object containing requiredFiles and requiredFolders arrays.
  * @returns {Promise<void>} A promise that resolves once the directory contents are checked.
- * @throws {HTTPError} If required files or folders are missing in the directory.
+ * @throws {AppError} If required files or folders are missing in the directory.
  */
 const checkDirectoryContents = async (
   dirPath: string, { requiredFiles, requiredFolders }: { requiredFiles: string[], requiredFolders: string[] }
@@ -77,7 +77,7 @@ const checkDirectoryContents = async (
 
   // If there are missing files or directories, remove the extracted directory and throw an error
   if (missingFiles.length > 0 || missingDirectories.length > 0) {
-    throw new HTTPError(400, `Missing required files: ${missingFiles.join(', ')}, Missing required directories: ${missingDirectories.join(', ')}.`);
+    throw new AppError(400, `Missing required files: ${missingFiles.join(', ')}, Missing required directories: ${missingDirectories.join(', ')}.`);
   }
 };
 
@@ -104,7 +104,7 @@ const removeDirectorySync = (dirPath: string): void => {
  * @param {object|null} [directoryRequirements=null] - An optional object containing requiredFiles and requiredFolders arrays.
  * @param {string[]} [additionalSourcesCopied=[]] - An optional array of additional sources to copy to the temporary directory.
  * @returns {Promise<{ dirPath: string; extractedPath: string }>} A promise that resolves to the temporary directory paths.
- * @throws {HTTPError} If an error occurs while reading or validating the zip buffer.
+ * @throws {AppError} If an error occurs while reading or validating the zip buffer.
  */
 const readFromZipBuffer = async (
   contextName: string,
@@ -134,15 +134,15 @@ const readFromZipBuffer = async (
 
     Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory.`);
     return { dirPath, extractedPath };
-  } catch (err: HTTPError | Error | unknown) {
+  } catch (err: AppError | Error | unknown) {
     // Remove the temporary directory before throwing the errors
     removeDirectorySync(dirPath);
 
     // Throw error
-    throw errorUtils.logAndGetError(new HTTPError(
-      (err as HTTPError)?.statusCode || 500,
+    throw errorUtils.logAndGetError(new AppError(
+      (err as AppError)?.statusCode || 500,
       `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`,
-      (err as HTTPError)?.reason || (err as Error)?.message)
+      (err as AppError)?.reason || (err as Error)?.message)
     );
   }
 };

@@ -2,7 +2,7 @@ import type { MongoError } from 'mongodb';
 import mongoose from 'mongoose';
 import type { SessionOption } from 'mongoose';
 
-import HTTPError from '@errors/http-error';
+import AppError from '@errors/app-error';
 
 import DockerImage from '@models/docker-image';
 import type { IDockerImage } from '@models/docker-image';
@@ -17,19 +17,20 @@ import dockerUtils from '@utils/docker-utils';
  * Find all Docker Images.
  *
  * @returns {Promise<IDockerImage[]>} A promise that resolves to an array of all Docker Images.
+ * @throws {AppError} If something goes wrong.
  */
 const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.find().exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.logAndGetError(new HTTPError(409, 'An error occurred while finding all docker images.', (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(500, 'An error occurred while finding all docker images.', (err as Error)?.message));
   });
 
 /**
  * Creates an HTTP 404 error indicating that a Docker image with the specified name was not found.
  *
  * @param {string} imageName - The name of the Docker image that was not found.
- * @returns {HTTPError} An HTTP 404 error object with a message indicating the image was not found.
+ * @returns {AppError} An HTTP 404 error object with a message indicating the image was not found.
  */
-const getDockerImageNotFoundError = (imageName: string): HTTPError => new HTTPError(404, `DockerImage with name=${imageName} not found.`);
+const getDockerImageNotFoundError = (imageName: string): AppError => new AppError(404, `DockerImage with name=${imageName} not found.`);
 
 /**
  * Find a Docker Image by its name.
@@ -38,8 +39,7 @@ const getDockerImageNotFoundError = (imageName: string): HTTPError => new HTTPEr
  * @param {SessionOption} [sessionOption] - An optional MongoDB session for the query.
  * @param {boolean} [required=true] - If true, throws an error if the Docker Image is not found.
  * @returns {Promise<IDockerImage | null>} A promise that resolves to the found Docker Image or null if not found (based on the 'required' parameter).
- * @throws {HTTPError} If an HTTP error occurs during the request.
- * @throws {Error} If any other error occurs.
+ * @throws {AppError} If an error occurs during the find request.
  */
 const findDockerImage = async (
   imageName: string, sessionOption?: SessionOption, required: boolean = true
@@ -48,11 +48,11 @@ const findDockerImage = async (
     if (!dockerImage && required) throw getDockerImageNotFoundError(imageName);
     return dockerImage;
   })
-  .catch((err: HTTPError | Error | unknown) => {
-    throw errorUtils.logAndGetError(new HTTPError(
-      (err as HTTPError)?.statusCode || 500,
+  .catch((err: AppError | Error | unknown) => {
+    throw errorUtils.logAndGetError(new AppError(
+      (err as AppError)?.statusCode || 500,
       `An error occurred while finding the docker image with the name=${imageName}.`,
-      (err as HTTPError)?.reason || (err as Error)?.message)
+      (err as AppError)?.reason || (err as Error)?.message)
     );
   });
 
@@ -84,13 +84,13 @@ const saveDockerImage = async (
  *
  * @param {string} dockerImageID - The imageID for which the error occurred.
  * @param {MongoError | Error | unknown} err - The error object to handle.
- * @returns {Promise<HTTPError>} Returns an HTTP error if the error is a duplicate imageID error; otherwise, returns a generic error for any other error.
+ * @returns {Promise<AppError>} Returns an HTTP error if the error is a duplicate imageID error; otherwise, returns a generic error for any other error.
  */
 const handleSaveErrorAndReturn = async (
   dockerImageID: string, err: MongoError | Error | unknown
-): Promise<HTTPError | MongoError | Error | unknown> => {
+): Promise<AppError | MongoError | Error | unknown> => {
   const message = 'An error occurred while saving/updating the Docker Image with associated Docker Container History.';
-  const httpErr = new HTTPError(409, message, (err as Error)?.message);
+  const httpErr = new AppError(409, message, (err as Error)?.message);
 
   // Handle duplicate image ID error if it's the case
   if ((err as MongoError)?.code === 11000 && (err as MongoError)?.message.includes('imageID')) { // Duplicate image ID error
@@ -107,7 +107,7 @@ const handleSaveErrorAndReturn = async (
  * @param {IDockerImage} dockerImage - The Docker Image to save.
  * @param {IDockerContainerHistory} dockerContainerHistory - Associated Docker Container History.
  * @returns {Promise<{ isNew: boolean; dockerImageSaved: IDockerImage; dockerContainerHistorySaved: IDockerContainerHistory }>} A promise that resolves to an object containing the saved Docker Image and the saved Docker Container History.
- * @throws {Error} If an error occurs during the save of the docker image or saving of the Docker Container History.
+ * @throws {AppError} If an error occurs during the save of the docker image or saving of the Docker Container History.
  */
 const saveDockerImageWithDockerContainerHistory = async (
   dockerImage: IDockerImage, dockerContainerHistory: IDockerContainerHistory
@@ -144,8 +144,7 @@ const saveDockerImageWithDockerContainerHistory = async (
  *
  * @param {string} imageName - The name of the Docker Image to remove.
  * @returns {Promise<void>} A promise that resolves when the Docker Image is successfully removed.
- * @throws {HTTPError} If an HTTP error occurs during the removal process.
- * @throws {Error} If any other error occurs.
+ * @throws {AppError} If an error occurs during the removal process.
  */
 const removeDockerImage = async (imageName: string): Promise<void> => {
   try {
@@ -156,11 +155,11 @@ const removeDockerImage = async (imageName: string): Promise<void> => {
 
     // Remove the image from Docker
     await dockerUtils.removeImage(imageName, { shouldPrune: true });
-  } catch (err: HTTPError | Error | unknown) {
-    throw errorUtils.logAndGetError(new HTTPError(
-      (err as HTTPError)?.statusCode || 500,
+  } catch (err: AppError | Error | unknown) {
+    throw errorUtils.logAndGetError(new AppError(
+      (err as AppError)?.statusCode || 500,
       `An error occurred while removing the Docker Image with the name=${imageName}.`,
-      (err as HTTPError)?.reason || (err as Error)?.message)
+      (err as AppError)?.reason || (err as Error)?.message)
     );
   }
 };

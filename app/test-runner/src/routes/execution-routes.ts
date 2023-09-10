@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
 
-import type HTTPError from '@errors/http-error';
+import type AppError from '@errors/app-error';
 
 import executionService from '@services/execution-service';
 
@@ -33,7 +33,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
     await executionService.executeTests(projectName, zipBuffer, execArgs).then((execution) => {
       res.status(201).json(execution);
     });
-  } catch (err: HTTPError | Error | unknown) {
+  } catch (err: AppError | Error | unknown) {
     routerUtils.handleError(res, err);
   }
 });

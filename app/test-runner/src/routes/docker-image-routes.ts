@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 
-import type HTTPError from '@errors/http-error';
+import type AppError from '@errors/app-error';
 
 import dockerImageService from '@services/docker-image-service';
 
@@ -18,7 +18,7 @@ const router = Router();
 router.get('/', async (req: Request, res: Response) => {
   dockerImageService.findAllDockerImages().then((dockerImages) => {
     res.status(200).json(dockerImages);
-  }).catch((err: HTTPError | Error | unknown) => {
+  }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);
   });
 });
@@ -36,7 +36,7 @@ router.get('/:imageName', async (req: Request, res: Response) => {
 
   dockerImageService.findDockerImage(imageName).then((dockerImage) => {
     res.status(200).json(dockerImage);
-  }).catch((err: HTTPError | Error | unknown) => {
+  }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);
   });
 });
@@ -54,7 +54,7 @@ router.delete('/:imageName', async (req: Request, res: Response) => {
 
   dockerImageService.removeDockerImage(imageName).then(() => {
     res.status(204).end();
-  }).catch((err: HTTPError | Error | unknown) => {
+  }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);
   });
 });

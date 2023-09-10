@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 
-import type HTTPError from '@errors/http-error';
+import type AppError from '@errors/app-error';
 
 import routerUtils from '@utils/router-utils';
 
@@ -21,7 +21,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   healthCheckPromise.then((result) => {
     res.status(200).send(result);
-  }).catch((err: HTTPError | Error | unknown) => {
+  }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);
   });
 });

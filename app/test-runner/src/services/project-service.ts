@@ -1,5 +1,5 @@
 import Logger from '@logging/logger';
-import HTTPError from '@errors/http-error';
+import AppError from '@errors/app-error';
 
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
@@ -20,7 +20,7 @@ import forgeUtils from '@utils/forge-utils';
  * @param {string} projectName - The name of the new project.
  * @param {DockerContainerExecutionOutput | undefined} output - The execution output.
  * @returns {{ tests: string[] }} An object containing the test names.
- * @throws {HTTPError} If any error occurs while retrieving the names of the tests.
+ * @throws {AppError} If any error occurs while retrieving the names of the tests.
  */
 const retrieveTestNamesFromGasSnapshot = (
   projectName: string, output: DockerContainerExecutionOutput | undefined
@@ -29,7 +29,7 @@ const retrieveTestNamesFromGasSnapshot = (
     return { tests: forgeUtils.retrieveTestNamesFromGasSnapshot(output?.data) };
   } catch (err: Error | unknown) {
     const message = `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`;
-    throw errorUtils.logAndGetError(new HTTPError(500, message, (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(500, message, (err as Error)?.message));
   }
 };
 
@@ -39,7 +39,7 @@ const retrieveTestNamesFromGasSnapshot = (
  * @param {string} projectName - The name of the project.
  * @param {Buffer} zipBuffer - The ZIP buffer containing the project files.
  * @returns {Promise<{ isNew: boolean; project: { image: IDockerImage; output: DockerContainerExecutionOutput | undefined } }>} A promise that resolves to an object containing the created Docker Image and the extracted test names.
- * @throws {HTTPError} If any error occurs during project creation.
+ * @throws {AppError} If any error occurs during project creation.
  */
 const saveProject = async (
   projectName: string, zipBuffer: Buffer
@@ -82,16 +82,16 @@ const saveProject = async (
         Logger.info(`Created the ${projectName} project with the Docker Image (${dockerImage!.imageID}).`);
         return { isNew, project: { image: dockerImageSaved, output: dockerContainerHistorySaved?.output } };
       });
-  } catch (err: HTTPError | Error | unknown) {
+  } catch (err: AppError | Error | unknown) {
     // If an error has occurred, remove the Docker image if it has been created
     if (dockerImage) {
       await dockerUtils.removeImage(dockerImage.imageName, { shouldPrune: true });
     }
 
-    throw errorUtils.logAndGetError(new HTTPError(
-      (err as HTTPError)?.statusCode || 500,
+    throw errorUtils.logAndGetError(new AppError(
+      (err as AppError)?.statusCode || 500,
       `An error occurred while creating the ${projectName} project.`,
-      (err as HTTPError)?.reason || (err as Error)?.message)
+      (err as AppError)?.reason || (err as Error)?.message)
     );
   }
 };

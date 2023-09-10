@@ -1,6 +1,6 @@
 import { STATUS_CODES } from 'http';
 
-class HTTPError extends Error {
+class AppError extends Error {
   statusCode: number;
   status: string | undefined;
   message: string;
@@ -25,4 +25,4 @@ class HTTPError extends Error {
   }
 }
 
-export default HTTPError;
+export default AppError;

@@ -1,5 +1,5 @@
 import Logger from '@logging/logger';
-import HTTPError from '@errors/http-error';
+import AppError from '@errors/app-error';
 
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
@@ -31,7 +31,7 @@ const extractTestResultsFromExecutionOutput = (
     } as DockerContainerExecutionOutput;
   } catch (err: Error | unknown) {
     const message = `An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`;
-    throw errorUtils.logAndGetError(new HTTPError(500, message, (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(500, message, (err as Error)?.message));
   }
 };
 
@@ -87,7 +87,7 @@ const runImageWithFilesInZipBuffer = async (
  * @param {Buffer} zipBuffer - The zip buffer containing source files.
  * @param {object} [execArgs] - Optional additional execution arguments.
  * @returns {Promise<IDockerContainerHistory>} A promise that resolves to the Docker Container History.
- * @throws {HTTPError} If any error occurs during the execution.
+ * @throws {AppError} If any error occurs during the execution.
  */
 const executeTests = async (
   imageName: string, zipBuffer: Buffer, execArgs?: object
@@ -100,11 +100,11 @@ const executeTests = async (
     .then((dockerContainerHistorySaved) => {
       Logger.info(`Execution history for the Docker container created from the image '${imageName}' has been successfully saved.`);
       return dockerContainerHistorySaved;
-    }).catch((err: HTTPError | Error | unknown) => {
-      throw errorUtils.logAndGetError(new HTTPError(
-        (err as HTTPError)?.statusCode || 500,
+    }).catch((err: AppError | Error | unknown) => {
+      throw errorUtils.logAndGetError(new AppError(
+        (err as AppError)?.statusCode || 500,
         `Failed to save execution history for the Docker container created from the image '${imageName}'.`,
-        (err as HTTPError)?.reason || (err as Error)?.message)
+        (err as AppError)?.reason || (err as Error)?.message)
       );
     });
 };
