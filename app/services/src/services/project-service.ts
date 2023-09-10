@@ -24,7 +24,7 @@ import type { RequestFile } from '@utils/router-utils';
  * @returns {Promise<{ project: IProject; dockerImage: object }>} A promise that resolves to an object containing the created or updated project and Docker image information.
  * @throws {AppError} If any error occurs during project creation or update.
  */
-const buildAndSaveProject = async (
+const saveProject = async (
   project: IProject, requestFile: RequestFile
 ): Promise<{ project: IProject; dockerImage: object }> => {
   const session = await mongoose.startSession();
@@ -83,7 +83,7 @@ const createNewProject = async (
   if (projectExists) throw new AppError(409, `A project with the name '${projectName}' already exists.`);
 
   const newProject = new Project({ projectName, testExecutionArguments: execArgs }); // Create new project
-  return await buildAndSaveProject(newProject, requestFile);
+  return await saveProject(newProject, requestFile);
 };
 
 /**
@@ -104,7 +104,7 @@ const updateExistingProject = async (
   if (!existingProject) throw new AppError(404, `No project with the name '${projectName}' found for updating.`);
 
   existingProject.testExecutionArguments = execArgs; // Update the existing project's test execution arguments
-  return await buildAndSaveProject(existingProject, requestFile);
+  return await saveProject(existingProject, requestFile);
 };
 
 export default { createNewProject, updateExistingProject };
