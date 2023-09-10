@@ -135,16 +135,15 @@ const readFromZipBuffer = async (
     Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory.`);
     return { dirPath, extractedPath };
   } catch (err: HTTPError | Error | unknown) {
-    const message = `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`;
-
     // Remove the temporary directory before throwing the errors
     removeDirectorySync(dirPath);
 
-    if (err instanceof HTTPError) {
-      throw errorUtils.logAndGetError(new HTTPError(err.statusCode, message, err.reason));
-    }
-
-    throw errorUtils.logAndGetError(new HTTPError(500, message, (err as Error)?.message));
+    // Throw error
+    throw errorUtils.logAndGetError(new HTTPError(
+      (err as HTTPError)?.statusCode || 500,
+      `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`,
+      (err as HTTPError)?.reason || (err as Error)?.message)
+    );
   }
 };
 
