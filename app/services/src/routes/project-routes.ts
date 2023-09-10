@@ -14,7 +14,7 @@ const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 /**
- * Handle project creation or update request.
+ * Helper function to handle project creation or update request.
  *
  * @param {Request} req - The Express request object.
  * @param {Response} res - The Express response object.
@@ -33,9 +33,37 @@ const saveProject = async (
   return saveFunction(projectName, requestFile, execArgs);
 };
 
-// TODO (1): Get Projects
+/**
+ * Retrieves all projects.
+ *
+ * @returns {object} 200 - An array containing all projects.
+ * @throws {object} 500 - If there's a server error.
+ */
+router.get('/', async (req: Request, res: Response) => {
+  projectService.findAllProjects().then((projects) => {
+    res.status(200).json(projects);
+  }).catch((err: AppError | Error | unknown) => {
+    routerUtils.handleError(res, err);
+  });
+});
 
-// TODO (2): Get Project
+/**
+ * Retrieves a project by its name.
+ *
+ * @param {string} projectName - The name of the project.
+ * @returns {object} 200 - The project information.
+ * @throws {object} 404 - If the project does not exist.
+ * @throws {object} 500 - If there's a server error.
+ */
+router.get('/:projectName', async (req: Request, res: Response) => {
+  const { projectName } = req.params;
+
+  projectService.findProjectByName(projectName).then((project) => {
+    res.status(200).json(project);
+  }).catch((err: AppError | Error | unknown) => {
+    routerUtils.handleError(res, err);
+  });
+});
 
 /**
  * Creates a new project.
