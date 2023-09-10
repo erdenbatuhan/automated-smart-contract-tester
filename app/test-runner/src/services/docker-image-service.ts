@@ -19,8 +19,8 @@ import dockerUtils from '@utils/docker-utils';
  * @returns {Promise<IDockerImage[]>} A promise that resolves to an array of all Docker Images.
  */
 const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.find().exec()
-  .catch((err) => {
-    throw errorUtils.logAndGetError(err as Error, 'An error occurred while finding all docker images.');
+  .catch((err: Error | unknown) => {
+    throw errorUtils.logAndGetError(new HTTPError(409, 'An error occurred while finding all docker images.', (err as Error)?.message));
   });
 
 /**
@@ -49,11 +49,11 @@ const findDockerImage = async (
     return dockerImage;
   })
   .catch((err: HTTPError | Error | unknown) => {
-    if (err instanceof HTTPError) {
-      throw errorUtils.logAndGetError(err as HTTPError);
-    }
-
-    throw errorUtils.logAndGetError(err as Error, `An error occurred while finding the docker image with the name=${imageName}.`);
+    throw errorUtils.logAndGetError(new HTTPError(
+      (err as HTTPError)?.statusCode || 500,
+      `An error occurred while finding the docker image with the name=${imageName}.`,
+      (err as HTTPError)?.reason || (err as Error)?.message)
+    );
   });
 
 /**
@@ -84,21 +84,21 @@ const saveDockerImage = async (
  *
  * @param {string} dockerImageID - The imageID for which the error occurred.
  * @param {MongoError | Error | unknown} err - The error object to handle.
- * @returns {Promise<HTTPError | MongoError | Error | unknown>} Returns an HTTP error if the error is a duplicate imageID error; otherwise, returns a generic error for any other error.
+ * @returns {Promise<HTTPError>} Returns an HTTP error if the error is a duplicate imageID error; otherwise, returns a generic error for any other error.
  */
 const handleSaveErrorAndReturn = async (
   dockerImageID: string, err: MongoError | Error | unknown
 ): Promise<HTTPError | MongoError | Error | unknown> => {
-  // Return duplicate image ID error if it's the case
+  const message = 'An error occurred while saving/updating the Docker Image with associated Docker Container History.';
+  const httpErr = new HTTPError(409, message, (err as Error)?.message);
+
+  // Handle duplicate image ID error if it's the case
   if ((err as MongoError)?.code === 11000 && (err as MongoError)?.message.includes('imageID')) { // Duplicate image ID error
     const existingImage = await DockerImage.findOne({ imageID: dockerImageID }, 'imageName').exec();
-    const duplicateImageIDError = new HTTPError(409, `An image with imageID=${dockerImageID} already exists (${existingImage?.imageName}). Please use that one or delete it first!`);
-
-    return errorUtils.logAndGetError(duplicateImageIDError);
+    httpErr.reason = `An image with imageID=${dockerImageID} already exists (${existingImage?.imageName}). Please use that one or delete it first!`;
   }
 
-  // Return a generic error for any other errors
-  return errorUtils.logAndGetError(err as Error, 'An error occurred while saving/updating the Docker Image with associated Docker Container History.');
+  return errorUtils.logAndGetError(httpErr);
 };
 
 /**
@@ -157,11 +157,11 @@ const removeDockerImage = async (imageName: string): Promise<void> => {
     // Remove the image from Docker
     await dockerUtils.removeImage(imageName, { shouldPrune: true });
   } catch (err: HTTPError | Error | unknown) {
-    if (err instanceof HTTPError) {
-      throw errorUtils.logAndGetError(err as HTTPError);
-    }
-
-    throw errorUtils.logAndGetError(err as Error, `An error occurred while removing the Docker Image with the name=${imageName}.`);
+    throw errorUtils.logAndGetError(new HTTPError(
+      (err as HTTPError)?.statusCode || 500,
+      `An error occurred while removing the Docker Image with the name=${imageName}.`,
+      (err as HTTPError)?.reason || (err as Error)?.message)
+    );
   }
 };
 

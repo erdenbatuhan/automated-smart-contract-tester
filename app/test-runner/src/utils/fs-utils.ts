@@ -7,6 +7,7 @@ import Logger from '@logging/logger';
 import HTTPError from '@errors/http-error';
 
 import constantUtils from '@utils/constant-utils';
+import errorUtils from './error-utils';
 
 /**
  * Checks if a file exists within a directory.
@@ -134,10 +135,16 @@ const readFromZipBuffer = async (
     Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory.`);
     return { dirPath, extractedPath };
   } catch (err: HTTPError | Error | unknown) {
+    const message = `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`;
+
+    // Remove the temporary directory before throwing the errors
     removeDirectorySync(dirPath);
 
-    Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
-    throw new HTTPError((err as HTTPError)?.statusCode || 500, (err as Error)?.message);
+    if (err instanceof HTTPError) {
+      throw errorUtils.logAndGetError(new HTTPError(err.statusCode, message, err.reason));
+    }
+
+    throw errorUtils.logAndGetError(new HTTPError(500, message, (err as Error)?.message));
   }
 };
 

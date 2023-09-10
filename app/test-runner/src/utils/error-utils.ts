@@ -2,19 +2,16 @@ import HTTPError from '@errors/http-error';
 import Logger from '@logging/logger';
 
 /**
- * Creates an error with an additional message and logs it using a logger.
+ * Logs the error and then returns it, optionally with a combined message for HTTPError objects.
  *
- * @param {HTTPError | Error} err - The original error object.
- * @param {string} additionalMessage - An additional error message to append to the existing error message.
- * @returns {HTTPError | Error} A new error object with the combined message.
+ * @param {HTTPError | Error | unknown} err - The original error object.
+ * @returns {HTTPError | Error | unknown} The original error object, possibly with an additional message for HTTPError objects.
  */
-const logAndGetError = (err?: HTTPError | Error, additionalMessage?: string): HTTPError | Error => {
-  err = err || new Error('An error occurred!');
+const logAndGetError = (err?: HTTPError | Error | unknown): HTTPError | Error | unknown => {
+  let message = (err as Error)?.message;
+  if (err instanceof HTTPError) message = `${message} (Reason: ${err.reason})`;
 
-  if (err instanceof HTTPError) err.data = { message: err.message }; // Add data
-  if (additionalMessage) err.message = `${additionalMessage} (Error: ${err.message})`; // Append additional message
-
-  Logger.error(err.message);
+  Logger.error(message);
   return err;
 };
 

@@ -20,8 +20,11 @@ const parseJsonObjectFromBody = (req: Request, objectKey: string, required: bool
 
     return jsonString && JSON.parse(jsonString);
   } catch (err: Error | unknown) {
-    const httpErr = new HTTPError(400, (err as Error)?.message);
-    throw errorUtils.logAndGetError(httpErr, `Failed to parse JSON object (${objectKey}) from the request body.`);
+    throw errorUtils.logAndGetError(new HTTPError(
+      (err as HTTPError)?.statusCode || 400,
+      `Failed to parse JSON object (${objectKey}) from the request body.`,
+      (err as HTTPError)?.reason || (err as Error)?.message)
+    );
   }
 };
 
@@ -36,8 +39,8 @@ const extractFileBuffer = (req: Request): Buffer => {
   try {
     return req.file!.buffer;
   } catch (err: Error | unknown) {
-    const httpErr = new HTTPError(400, (err as Error)?.message);
-    throw errorUtils.logAndGetError(httpErr, 'An error occurred while reading the file buffer.');
+    const message = 'An error occurred while reading the file buffer.';
+    throw errorUtils.logAndGetError(new HTTPError(400, message, (err as Error)?.message));
   }
 };
 
