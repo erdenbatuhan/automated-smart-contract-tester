@@ -61,7 +61,7 @@ const saveProject = async (
       (err as AppError)?.reason || (err as Error)?.message)
     );
   } finally {
-    session.endSession();
+    await session.endSession();
   }
 };
 

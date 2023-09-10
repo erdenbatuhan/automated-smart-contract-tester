@@ -33,6 +33,10 @@ const saveProject = async (
   return saveFunction(projectName, requestFile, execArgs);
 };
 
+// TODO (1): Get Projects
+
+// TODO (2): Get Project
+
 /**
  * Creates a new project.
  *
@@ -77,10 +81,10 @@ router.put('/:projectName', upload.single('projectZip'), async (req: Request, re
   });
 });
 
-// TODO (1): Get Projects
-// TODO (2): Get Project
+// TODO (4): Edit Project Weights and Test Execution Arguments
+
 // TODO (3): Download Project Files
-// TODO (4): Edit Project Weights
+
 // TODO (5): Remove Project
 
 export default router;

@@ -135,7 +135,7 @@ const saveDockerImageWithDockerContainerHistory = async (
     // Handle save errors
     throw await handleSaveErrorAndReturn(dockerImage.imageID, err);
   } finally {
-    session.endSession();
+    await session.endSession();
   }
 };
 
