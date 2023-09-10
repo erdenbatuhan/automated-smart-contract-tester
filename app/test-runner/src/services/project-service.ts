@@ -36,12 +36,12 @@ const retrieveTestNamesFromGasSnapshot = (
  *
  * @param {string} projectName - The name of the project.
  * @param {Buffer} zipBuffer - The ZIP buffer containing the project files.
- * @returns {Promise<{ image: IDockerImage, output: DockerContainerExecutionOutput | undefined }>} A promise that resolves to an object containing the created Docker Image and the extracted test names.
+ * @returns {Promise<{ isNew: boolean; project: { image: IDockerImage; output: DockerContainerExecutionOutput | undefined } }>} A promise that resolves to an object containing the created Docker Image and the extracted test names.
  * @throws {Error} If any error occurs during project creation.
  */
 const createOrUpdateProject = async (
   projectName: string, zipBuffer: Buffer
-): Promise<{ image: IDockerImage, output: DockerContainerExecutionOutput | undefined }> => {
+): Promise<{ isNew: boolean; project: { image: IDockerImage; output: DockerContainerExecutionOutput | undefined } }> => {
   try {
     Logger.info(`Creating the ${projectName} project.`);
     const execName = `${projectName}_creation_${Date.now()}`;
@@ -73,10 +73,10 @@ const createOrUpdateProject = async (
     }
 
     // Save (or update it if it already exists) the Docker Image with the Docker Container History for the executed container
-    return await dockerImageService.upsertDockerImageWithDockerContainerHistory(dockerImage, dockerContainerHistory)
-      .then(({ dockerImageSaved, dockerContainerHistorySaved }) => {
+    return await dockerImageService.saveDockerImageWithDockerContainerHistory(dockerImage, dockerContainerHistory)
+      .then(({ isNew, dockerImageSaved, dockerContainerHistorySaved }) => {
         Logger.info(`Created the ${projectName} project with the Docker Image (${dockerImage.imageID}).`);
-        return { image: dockerImageSaved, output: dockerContainerHistorySaved?.output };
+        return { isNew, project: { image: dockerImageSaved, output: dockerContainerHistorySaved?.output } };
       });
   } catch (err: Error | unknown) {
     throw errorUtils.logAndGetError(err as Error, `An error occurred while creating the ${projectName} project.`);

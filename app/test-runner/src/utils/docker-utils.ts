@@ -96,7 +96,7 @@ const removeImage = async (
  * @returns {Promise<void>} A promise that resolves once the volume is removed.
  */
 const removeVolume = async (
-  volumeName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode, shouldPrune?: boolean }
+  volumeName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode; shouldPrune?: boolean }
 ): Promise<void> => {
   const dockerodeInstance = dockerode || new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
 

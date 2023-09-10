@@ -102,15 +102,15 @@ const removeDirectorySync = (dirPath: string): void => {
  * @param {Buffer} zipBuffer - The zip buffer to read from.
  * @param {object|null} [directoryRequirements=null] - An optional object containing requiredFiles and requiredFolders arrays.
  * @param {string[]} [additionalSourcesCopied=[]] - An optional array of additional sources to copy to the temporary directory.
- * @returns {Promise<{ dirPath: string, extractedPath: string }>} A promise that resolves to the temporary directory paths.
+ * @returns {Promise<{ dirPath: string; extractedPath: string }>} A promise that resolves to the temporary directory paths.
  * @throws {HTTPError} If an error occurs while reading or validating the zip buffer.
  */
 const readFromZipBuffer = async (
   contextName: string,
   zipBuffer: Buffer,
-  directoryRequirements: { requiredFiles: string[], requiredFolders: string[] } | null = null,
+  directoryRequirements: { requiredFiles: string[]; requiredFolders: string[] } | null = null,
   additionalSourcesCopied: string[] = []
-): Promise<{ dirPath: string, extractedPath: string }> => {
+): Promise<{ dirPath: string; extractedPath: string }> => {
   const dirPath = path.join(constantUtils.PATH_TEMP_DIR, contextName);
   const zipFilePath = path.join(dirPath, `${contextName}.zip`);
 

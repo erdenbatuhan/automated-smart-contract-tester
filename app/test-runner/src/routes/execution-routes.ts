@@ -31,7 +31,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
     const execArgs = routerUtils.parseJsonObjectFromBody(req, 'execArgs');
 
     await executionService.executeTests(projectName, zipBuffer, execArgs).then((execution) => {
-      res.status(200).json(execution);
+      res.status(201).json(execution);
     });
   } catch (err: HTTPError | Error | unknown) {
     res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });

@@ -92,7 +92,7 @@ const executeTests = async (
 ): Promise<IDockerContainerHistory> => {
   const testExecutionCommand = forgeUtils.getTestExecutionCommand(execArgs);
   const dockerImage = await dockerImageService.findDockerImage(imageName);
-  const dockerContainerHistory = await runImageWithFilesInZipBuffer(zipBuffer, dockerImage, testExecutionCommand);
+  const dockerContainerHistory = await runImageWithFilesInZipBuffer(zipBuffer, dockerImage!, testExecutionCommand);
 
   return dockerContainerHistoryService.saveDockerContainerHistory(dockerContainerHistory)
     .then((dockerContainerHistorySaved) => {

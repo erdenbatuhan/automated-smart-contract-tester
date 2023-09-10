@@ -17,7 +17,7 @@ import dockerUtils from '@utils/docker-utils';
  *
  * @returns {Promise<IDockerImage[]>} A promise that resolves to an array of all Docker Images.
  */
-const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.find()
+const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.find().exec()
   .catch((err) => {
     throw errorUtils.logAndGetError(err as Error, 'An error occurred while finding all docker images.');
   });
@@ -31,18 +31,20 @@ const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.fin
 const getDockerImageNotFoundError = (imageName: string): HTTPError => new HTTPError(404, `DockerImage with name=${imageName} not found.`);
 
 /**
- * Finds a Docker Image.
+ * Find a Docker Image by its name.
  *
  * @param {string} imageName - The name of the Docker Image to find.
- * @returns {Promise<IDockerImage>} A promise that resolves to the found Docker Image.
+ * @param {SessionOption} [sessionOption] - An optional MongoDB session for the query.
+ * @param {boolean} [required=true] - If true, throws an error if the Docker Image is not found.
+ * @returns {Promise<IDockerImage | null>} A promise that resolves to the found Docker Image or null if not found (based on the 'required' parameter).
  * @throws {HTTPError} If an HTTP error occurs during the request.
  * @throws {Error} If any other error occurs.
  */
 const findDockerImage = async (
-  imageName: string
-): Promise<IDockerImage> => DockerImage.findOne({ imageName })
+  imageName: string, sessionOption?: SessionOption, required: boolean = true
+): Promise<IDockerImage | null> => DockerImage.findOne({ imageName }).session(sessionOption?.session || null).exec()
   .then((dockerImage) => {
-    if (!dockerImage) throw getDockerImageNotFoundError(imageName);
+    if (!dockerImage && required) throw getDockerImageNotFoundError(imageName);
     return dockerImage;
   })
   .catch((err: HTTPError | Error | unknown) => {
@@ -54,44 +56,45 @@ const findDockerImage = async (
   });
 
 /**
- * Upserts (insert or update) a Docker Image.
+ * Saves or updates a Docker Image.
  *
- * @param {IDockerImage} dockerImage - The Docker Image to upsert.
+ * @param {IDockerImage} dockerImage - The Docker Image to save.
  * @param {SessionOption} [sessionOption] - An optional MongoDB session for the upload.
- * @returns {Promise<IDockerImage>} A promise that resolves to the upserted Docker Image.
+ * @returns {Promise<{ isNew: boolean; dockerImageSaved: IDockerImage }>} A promise that resolves to the saved Docker Image.
  */
-const upsertDockerImage = async (
+const saveDockerImage = async (
   dockerImage: IDockerImage, sessionOption?: SessionOption
-): Promise<IDockerImage> => DockerImage.findOneAndUpdate(
-  { imageName: dockerImage.imageName },
-  {
-    $set: {
-      imageID: dockerImage.imageID,
-      imageSizeMB: dockerImage.imageSizeMB
-    },
-    $max: { imageBuildTimeSeconds: dockerImage.imageBuildTimeSeconds || 0 }
-  },
-  { upsert: true, new: true, ...sessionOption }
-);
+): Promise<{ isNew: boolean; dockerImageSaved: IDockerImage }> => {
+  const existingDockerImage = await findDockerImage(dockerImage.imageName, sessionOption, false);
+  const dockerImageToSave = existingDockerImage || new DockerImage(dockerImage);
+
+  // Update the existing docker image with new fields if it exists and its image ID has changed
+  if (existingDockerImage && existingDockerImage.imageID !== dockerImage.imageID) {
+    Object.assign(existingDockerImage, dockerImage);
+  }
+
+  // Save the Docker image
+  const dockerImageSaved = await dockerImageToSave.save(sessionOption);
+  return { isNew: !existingDockerImage, dockerImageSaved };
+};
 
 /**
- * Upserts a Docker Image with associated Docker Container History.
+ * Saves a Docker Image with associated Docker Container History.
  *
- * @param {IDockerImage} dockerImage - The Docker Image to upsert.
+ * @param {IDockerImage} dockerImage - The Docker Image to save.
  * @param {IDockerContainerHistory} dockerContainerHistory - Associated Docker Container History.
- * @returns {Promise<{ dockerImageSaved: IDockerImage, dockerContainerHistorySaved: IDockerContainerHistory }>} A promise that resolves to an object containing the upserted Docker Image and the saved Docker Container History.
- * @throws {Error} If an error occurs during the upsert of the docker image or saving of the Docker Container History.
+ * @returns {Promise<{ isNew: boolean; dockerImageSaved: IDockerImage; dockerContainerHistorySaved: IDockerContainerHistory }>} A promise that resolves to an object containing the saved Docker Image and the saved Docker Container History.
+ * @throws {Error} If an error occurs during the save of the docker image or saving of the Docker Container History.
  */
-const upsertDockerImageWithDockerContainerHistory = async (
-  dockerImage: IDockerImage,
-  dockerContainerHistory: IDockerContainerHistory
-): Promise<{ dockerImageSaved: IDockerImage; dockerContainerHistorySaved: IDockerContainerHistory }> => {
+const saveDockerImageWithDockerContainerHistory = async (
+  dockerImage: IDockerImage, dockerContainerHistory: IDockerContainerHistory
+): Promise<{ isNew: boolean; dockerImageSaved: IDockerImage; dockerContainerHistorySaved: IDockerContainerHistory }> => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
     // Save (or update it if it already exists) the docker image within the transaction
-    const dockerImageSaved = await upsertDockerImage(dockerImage, { session });
+    const { isNew, dockerImageSaved } = await saveDockerImage(dockerImage, { session });
 
     // Save the docker container history for the executed container within the transaction
     dockerContainerHistory.dockerImage = dockerImageSaved;
@@ -101,7 +104,7 @@ const upsertDockerImageWithDockerContainerHistory = async (
     // Commit the transaction
     await session.commitTransaction();
 
-    return { dockerImageSaved, dockerContainerHistorySaved };
+    return { isNew, dockerImageSaved, dockerContainerHistorySaved };
   } catch (err: Error | unknown) {
     // Handle any errors and abort the transaction
     await session.abortTransaction();
@@ -137,4 +140,4 @@ const removeDockerImage = async (imageName: string): Promise<void> => {
   }
 };
 
-export default { findAllDockerImages, findDockerImage, upsertDockerImageWithDockerContainerHistory, removeDockerImage };
+export default { findAllDockerImages, findDockerImage, saveDockerImageWithDockerContainerHistory, removeDockerImage };
