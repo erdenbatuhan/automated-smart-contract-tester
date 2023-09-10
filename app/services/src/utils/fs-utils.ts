@@ -3,11 +3,12 @@ import path from 'path';
 import AdmZip from 'adm-zip';
 
 import Logger from '@logging/logger';
-import HTTPError from '@errors/http-error';
+import AppError from '@errors/app-error';
 
 import { IFile, IUpload } from '@models/upload';
 
 import constantUtils from '@utils/constant-utils';
+import errorUtils from '@/utils/error-utils';
 
 /**
  * Extracts the contents of a zip file to a specified directory.
@@ -15,7 +16,7 @@ import constantUtils from '@utils/constant-utils';
  * @param {string} dirPath - The path to the temporary directory where the zip file will be extracted.
  * @param {string} zipFilePath - The path to the zip file to be extracted.
  * @param {Buffer} zipBuffer - The buffer containing the contents of the zip file.
- * @throws {HTTPError} HTTP Error with status code 400 if the zip file is empty or does not unzip to a directory.
+ * @throws {AppError} HTTP Error with status code 400 if the zip file is empty or does not unzip to a directory.
  * @returns {Promise<string>} A promise that resolves to the path of the directory where the contents were extracted.
  */
 const unzip = async (dirPath: string, zipFilePath: string, zipBuffer: Buffer): Promise<string> => {
@@ -31,7 +32,7 @@ const unzip = async (dirPath: string, zipFilePath: string, zipBuffer: Buffer): P
 
   // If it is a directory, update the extracted path; otherwise, it stays the same
   if (!firstEntry || !firstEntry.entryName) {
-    throw new HTTPError(400, 'The uploaded zip file is probably empty!');
+    throw new AppError(400, 'The uploaded zip file is probably empty!');
   } else if (firstEntry.isDirectory) {
     extractedDirPath = path.join(dirPath, firstEntry.entryName);
   }
@@ -89,7 +90,7 @@ const removeDirectorySync = (dirPath: string): void => {
  * @param {string} contextName - The context name for identifying the temporary directory.
  * @param {Buffer} zipBuffer - The buffer containing the zip file contents.
  * @returns {Promise<IFile[]>} A list of objects with file paths and content as strings.
- * @throws {HTTPError} HTTP Error if an error occurs during the operation.
+ * @throws {AppError} HTTP Error if an error occurs during the operation.
  */
 const getUploadedFilesFromZipBuffer = async (
   contextName: string, zipBuffer: Buffer
@@ -107,9 +108,12 @@ const getUploadedFilesFromZipBuffer = async (
       Logger.info(`Read ${contextName} from the zip buffer and wrote it to a temporary directory!`);
       return uploadFiles;
     });
-  } catch (err: HTTPError | Error | unknown) {
-    Logger.error(`An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
-    throw new HTTPError((err as HTTPError).statusCode || 500, (err as Error)?.message);
+  } catch (err: AppError | Error | unknown) {
+    throw errorUtils.logAndGetError(new AppError(
+      (err as AppError)?.statusCode || 500,
+      `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`,
+      (err as AppError)?.reason || (err as Error)?.message)
+    );
   } finally {
     removeDirectorySync(dirPath);
   }

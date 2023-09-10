@@ -1,4 +1,7 @@
+import type { AxiosError } from 'axios';
+
 import Logger from '@logging/logger';
+import AppError from '@errors/app-error';
 
 import apiConfig from '@config/api-config';
 
@@ -9,6 +12,10 @@ import apiUtils from '@utils/api-utils';
 export interface ProjectUploadInterface {
   image: object;
   output?: { tests?: string[]; };
+}
+
+export interface TestRunnerApiError {
+  error?: AppError;
 }
 
 /**
@@ -30,8 +37,12 @@ const uploadProjectToTestRunnerService = async (
       Logger.info(`Successfully uploaded ${projectName} project to the Test Runner service to build the Docker image.`);
       return data as ProjectUploadInterface;
     })
-    .catch((err: Error | unknown) => {
-      throw errorUtils.getErrorWithoutDetails('An error occurred while uploading the project to the Test Runner service.', err);
+    .catch((err: AxiosError<TestRunnerApiError>) => {
+      throw errorUtils.logAndGetError(new AppError(
+        err.response?.data.error?.statusCode || 417,
+        `An error occurred while uploading the project to the Test Runner service. (Error: ${err.response?.data.error?.message || err.message})`,
+        err.response?.data.error?.reason || err.message
+      ));
     });
 };
 

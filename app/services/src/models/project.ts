@@ -26,10 +26,10 @@ export interface ITest {
 
 export interface IProject extends Document {
   _id: Schema.Types.ObjectId;
-  projectName: string,
-  upload: IUpload,
-  tests: ITest[],
-  testExecutionArguments: TestExecutionArguments
+  projectName: string;
+  upload: IUpload;
+  testExecutionArguments?: TestExecutionArguments;
+  tests: ITest[];
 }
 
 const TestSchema = new Schema<ITest>(
@@ -44,7 +44,7 @@ const TestSchema = new Schema<ITest>(
 
 const ProjectSchema = new Schema<IProject>(
   {
-    projectName: { type: String, required: true, unique: true },
+    projectName: { type: String, unique: true },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true },
     testExecutionArguments: { type: Object },
     tests: { type: [TestSchema], required: true }

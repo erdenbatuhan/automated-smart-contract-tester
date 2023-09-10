@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
 
-import HTTPError from '@errors/http-error';
+import type AppError from '@errors/app-error';
 
 import uploadService from '@services/upload-service';
 
@@ -30,8 +30,8 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
     await uploadService.uploadZipBuffer(projectName, zipBuffer).then((uploadSaved) => {
       res.status(200).json(uploadSaved);
     });
-  } catch (err: HTTPError | Error | unknown) {
-    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
+  } catch (err: AppError | Error | unknown) {
+    routerUtils.handleError(res, err);
   }
 });
 
@@ -48,12 +48,19 @@ router.get('/:submissionId/download', async (req: Request, res: Response) => {
 
   uploadService.getUploadedFilesInZipBuffer(projectName, submissionId)
     .then((zipBuffer) => {
+      // TODO: Do this header setting in routerUtils or somewhere else
       res.setHeader('Content-Disposition', `attachment; filename=project_${projectName}_submission_${submissionId}.zip`);
       res.setHeader('Content-Type', 'application/zip');
       res.status(200).send(zipBuffer);
-    }).catch((err: HTTPError | Error | unknown) => {
-      res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
+    }).catch((err: AppError | Error | unknown) => {
+      routerUtils.handleError(res, err);
     });
 });
+
+// TODO (1): Get Submissions
+// TODO (2): Get Submission
+// TODO (3): Do submission
+// TODO (4): Download Submission Files
+// TODO (5): Do submission - Calculate score
 
 export default router;

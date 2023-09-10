@@ -1,19 +1,18 @@
+import AppError from '@errors/app-error';
 import Logger from '@logging/logger';
 
 /**
- * Logs an error message and throws an error with an abstract error message.
+ * Logs the error and then returns it, optionally with a combined message for AppError objects.
  *
- * @param {string} abstractErrorMessage - The abstract error message to log and include in the thrown error.
- * @param {Error | unknown} fullError - The full error object to log and throw.
- * @returns {Error} The full error object with the abstract error message as its message property.
+ * @param {AppError | Error | unknown} err - The original error object.
+ * @returns {AppError | Error | unknown} The original error object, possibly with an additional message for AppError objects.
  */
-const getErrorWithoutDetails = (abstractErrorMessage: string, fullError: Error | unknown): Error => {
-  if (!(fullError instanceof Error)) return new Error();
+const logAndGetError = (err?: AppError | Error | unknown): AppError | Error | unknown => {
+  let message = (err as Error)?.message;
+  if (err instanceof AppError) message = `${message} (Reason: ${err.reason})`;
 
-  Logger.error(`${abstractErrorMessage} (${fullError?.message})`);
-
-  fullError.message = abstractErrorMessage;
-  return fullError;
+  Logger.error(message);
+  return err;
 };
 
-export default { getErrorWithoutDetails };
+export default { logAndGetError };
