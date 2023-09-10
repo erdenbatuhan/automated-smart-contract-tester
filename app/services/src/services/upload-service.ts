@@ -67,4 +67,30 @@ const downloadUploadedFiles = async (contextName: string, upload: IUpload): Prom
   }
 };
 
-export default { uploadZipBuffer, downloadUploadedFiles };
+/**
+ * Deletes an upload by its ID.
+ *
+ * @param {IUpload} upload - The upload document to delete.
+ * @param {SessionOption} [sessionOption] - Optional session to use for the deletion operation.
+ * @returns {Promise<void>} A promise that resolves once the upload is successfully deleted.
+ * @throws {AppError} If the upload document does not exist (HTTP 404) or if there's an error during the deletion process (HTTP 500).
+ */
+const deleteUpload = async (upload: IUpload, sessionOption?: SessionOption): Promise<void> => {
+  Logger.info(`Deleting the upload with the ID '${upload._id}'.`);
+
+  await Upload.findByIdAndDelete(upload._id, sessionOption).exec().then((uploadDeleted) => {
+    if (!uploadDeleted) {
+      throw new AppError(404, `No upload with the ID '${upload._id}' found.`);
+    }
+
+    Logger.info(`Successfully deleted the upload with the ID '${upload._id}'.`);
+  }).catch((err: AppError | Error | unknown) => {
+    throw errorUtils.logAndGetError(new AppError(
+      (err as AppError)?.statusCode || 500,
+      `An error occurred while deleting the upload with the ID '${upload._id}'.`,
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
+  });
+};
+
+export default { uploadZipBuffer, downloadUploadedFiles, deleteUpload };

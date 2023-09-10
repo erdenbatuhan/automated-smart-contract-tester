@@ -152,7 +152,7 @@ const deleteDockerImage = async (imageName: string): Promise<void> => {
     Logger.info(`Deleting the Docker Image with the name=${imageName}.`);
 
     // Remove the image from DB
-    await DockerImage.deleteOne({ imageName }).then(({ deletedCount }) => {
+    await DockerImage.deleteOne({ imageName }).exec().then(({ deletedCount }) => {
       if (!deletedCount) throw getDockerImageNotFoundError(imageName);
     });
 

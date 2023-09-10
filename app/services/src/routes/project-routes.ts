@@ -125,7 +125,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
 router.put('/:projectName/update', async (req: Request, res: Response) => {
   const { projectName } = req.params;
   const { tests, execArgs } = req.body;
-  if (!tests || !execArgs) return res.status(204).json();
+  if (!tests || !execArgs) return res.status(204).end();
 
   return projectService.updateProjectTestWeightsAndExecutionArguments(projectName, tests, execArgs).then((projectUpdated) => {
     res.status(200).json(projectUpdated);
@@ -138,7 +138,9 @@ router.put('/:projectName/update', async (req: Request, res: Response) => {
  * Downloads the uploaded files associated with a project.
  *
  * @param {string} req.params.projectName - The name of the project to download files for.
- * @returns {Promise<void>} A promise that resolves once the download is complete.
+ * @returns {object} 200 - The downloadable zip buffer.
+ * @throws {object} 404 - If the project doesn't exist.
+ * @throws {object} 500 - If there's a server error.
  */
 router.get('/:projectName/download', async (req: Request, res: Response) => {
   const { projectName } = req.params;
@@ -152,6 +154,22 @@ router.get('/:projectName/download', async (req: Request, res: Response) => {
   });
 });
 
-// TODO (5): Remove Project
+/**
+ * Deletes a project.
+ *
+ * @param {string} req.params.projectName - The name of the project to delete.
+ * @returns {object} 204 - If the project deletion is successful.
+ * @throws {object} 404 - If the project doesn't exist.
+ * @throws {object} 500 - If there's a server error.
+ */
+router.delete('/:projectName', async (req: Request, res: Response) => {
+  const { projectName } = req.params;
+
+  projectService.deleteProject(projectName).then(() => {
+    res.status(204).end();
+  }).catch((err: AppError | Error | unknown) => {
+    routerUtils.handleError(res, err);
+  });
+});
 
 export default router;

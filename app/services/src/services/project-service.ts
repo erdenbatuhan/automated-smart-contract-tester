@@ -35,7 +35,7 @@ const findAllProjects = async (): Promise<IProject[]> => Project.find().exec()
  * @param {ProjectionType<IProject>} projection - Optional projection for query.
  * @param {SessionOption} sessionOption - Optional session option for query.
  * @returns {Promise<IProject>} A promise that resolves to the found project.
- * @throws {AppError} If the project is not found or if an error occurs during the operation.
+ * @throws {AppError} If the project is not found (404) or if an error occurs during the operation.
  */
 const findProjectByName = (
   projectName: string, projection?: ProjectionType<IProject>, sessionOption?: SessionOption
@@ -73,16 +73,16 @@ const saveProject = async (
   try {
     Logger.info(`${project.isNew ? 'Creating' : 'Updating'} a project with the name '${project.projectName}'.`);
 
-    // Call the test runner service to build the Docker image
-    const testRunnerOutput = await testRunnerProjectApi.uploadProjectToTestRunnerService(
-      project.projectName, requestFile);
-    project.tests = testRunnerOutput?.output?.tests?.map((test) => ({ test, weight: 1.0 })) || [];
-
-    // Upload files and get the upload document saved
+    // Step 1: Upload files and get the upload document saved
     project.upload = await uploadService.uploadZipBuffer(
       project.projectName, requestFile.buffer, project.upload, { session });
 
-    // Create or update project
+    // Step 2: Call the test runner service to build the Docker image
+    const testRunnerOutput = await testRunnerProjectApi.uploadProject(
+      project.projectName, requestFile);
+    project.tests = testRunnerOutput?.output?.tests?.map((test) => ({ test, weight: 1.0 })) || [];
+
+    // Step 3: Create or update project
     const projectSaved = await project.save({ session });
 
     // Commit transaction and return results
@@ -198,11 +198,57 @@ const updateProjectTestWeightsAndExecutionArguments = async (
 const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProjectByName(projectName, 'upload')
   .then(({ upload }) => uploadService.downloadUploadedFiles(`${projectName} project`, upload));
 
+/**
+ * Deletes a project, including its associated upload, and also its Docker image managed by the Test Runner service.
+ *
+ * @param {string} projectName - The name of the project to delete.
+ * @returns {Promise<void>} A promise that resolves once the project and its associated resources are successfully deleted.
+ * @throws {AppError} If there's an error during the deletion process (HTTP 500).
+ */
+const deleteProject = async (projectName: string): Promise<void> => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    Logger.info(`Deleting the ${projectName} project.`);
+
+    // Step 1: Delete the upload associated with the project
+    await findProjectByName(projectName, 'upload', { session })
+      .then(({ upload }) => uploadService.deleteUpload(upload, { session }));
+
+    // Step 2: Delete the project from the DB
+    await Project.deleteOne({ projectName }, { session }).exec().then(({ deletedCount }) => {
+      if (!deletedCount) throw new Error(`Failed to delete the document for ${projectName}.`);
+    });
+
+    // Step 3: Send a deletion request to the Test Runner service to delete the project's image
+    await testRunnerProjectApi.sendProjectDeletionRequest(projectName);
+
+    // Commit transaction
+    await session.commitTransaction();
+    Logger.info(`Successfully deleted the ${projectName} project.`);
+  } catch (err: AppError | Error | unknown) {
+    // Abort the transaction
+    await session.abortTransaction();
+
+    // Handle any errors and throw an AppError with relevant status code and error message
+    throw errorUtils.logAndGetError(new AppError(
+      (err as AppError)?.statusCode || 500,
+      `An error occurred while deleting the ${projectName} project.`,
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
+  } finally {
+    // End the session
+    await session.endSession();
+  }
+};
+
 export default {
   findAllProjects,
   findProjectByName,
   buildAndCreateProject,
   rebuildAndUpdateProject,
   updateProjectTestWeightsAndExecutionArguments,
-  downloadProjectFiles
+  downloadProjectFiles,
+  deleteProject
 };
