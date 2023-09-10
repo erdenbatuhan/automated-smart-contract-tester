@@ -55,11 +55,8 @@ const extractFileBuffer = (req: Request): Buffer => {
  * @returns void
  */
 const handleError = (res: Response, err: HTTPError | Error | unknown): void => {
-  if (err instanceof HTTPError) {
-    res.status(err.statusCode).json({ error: err });
-  } else {
-    res.status(500).json({ error: (err as Error)?.message });
-  }
+  const httpErr = (err instanceof HTTPError) ? err : new HTTPError(500, (err as Error)?.message);
+  res.status(httpErr.statusCode).json({ error: httpErr });
 };
 
 export default { parseJsonObjectFromBody, extractFileBuffer, handleError };
