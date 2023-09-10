@@ -52,7 +52,7 @@ router.get('/:imageName', async (req: Request, res: Response) => {
 router.delete('/:imageName', async (req: Request, res: Response) => {
   const { imageName } = req.params;
 
-  dockerImageService.removeDockerImage(imageName).then(() => {
+  dockerImageService.deleteDockerImage(imageName).then(() => {
     res.status(204).end();
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);

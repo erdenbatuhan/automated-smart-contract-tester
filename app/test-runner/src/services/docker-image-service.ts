@@ -2,6 +2,7 @@ import type { MongoError } from 'mongodb';
 import mongoose from 'mongoose';
 import type { SessionOption } from 'mongoose';
 
+import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
 import DockerImage from '@models/docker-image';
@@ -146,8 +147,10 @@ const saveDockerImageWithDockerContainerHistory = async (
  * @returns {Promise<void>} A promise that resolves when the Docker Image is successfully removed.
  * @throws {AppError} If an error occurs during the removal process.
  */
-const removeDockerImage = async (imageName: string): Promise<void> => {
+const deleteDockerImage = async (imageName: string): Promise<void> => {
   try {
+    Logger.info(`Deleting the Docker Image with the name=${imageName}.`);
+
     // Remove the image from DB
     await DockerImage.deleteOne({ imageName }).then(({ deletedCount }) => {
       if (!deletedCount) throw getDockerImageNotFoundError(imageName);
@@ -155,13 +158,20 @@ const removeDockerImage = async (imageName: string): Promise<void> => {
 
     // Remove the image from Docker
     await dockerUtils.removeImage(imageName, { shouldPrune: true });
+
+    Logger.info(`Successfully deleted the Docker Image with the name=${imageName}.`);
   } catch (err: AppError | Error | unknown) {
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
-      `An error occurred while removing the Docker Image with the name=${imageName}.`,
+      `An error occurred while deleting the Docker Image with the name=${imageName}.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
   }
 };
 
-export default { findAllDockerImages, findDockerImage, saveDockerImageWithDockerContainerHistory, removeDockerImage };
+export default {
+  findAllDockerImages,
+  findDockerImage,
+  saveDockerImageWithDockerContainerHistory,
+  deleteDockerImage
+};
