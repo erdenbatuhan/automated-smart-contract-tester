@@ -64,6 +64,11 @@ const sendProjectDeletionRequest = async (projectName: string): Promise<void> =>
 
     Logger.info(`Successfully sent a project deletion request to the Test Runner service for the ${projectName} project to remove its Docker image.`);
   }).catch((err: AxiosError<TestRunnerApiError>) => {
+    // Check if the error is related to the image not being found. It's okay even if it's not found; it might have been deleted by another process.
+    if (err.response?.data.error?.statusCode === 404) {
+      return Logger.warn(`No image found for the ${projectName} project.`);
+    }
+
     throw errorUtils.logAndGetError(new AppError(
       err.response?.data.error?.statusCode || 502,
       `An error occurred while sending a project deletion request to the Test Runner service for the ${projectName} project to remove its Docker image. (Error: ${err.response?.data.error?.message || err.message})`,
