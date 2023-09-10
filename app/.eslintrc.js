@@ -8,7 +8,7 @@ module.exports = {
   extends: ['eslint:recommended', 'plugin:import/recommended', 'airbnb-base'],
   ignorePatterns: ['node_modules', 'dist'],
   rules: {
-    'max-len': ['error', 120, { ignoreComments: true, ignoreTrailingComments: true, ignoreUrls: true, ignoreStrings: true, ignoreTemplateLiterals: true, ignoreRegExpLiterals: true }],
+    'max-len': ['error', 130, { ignoreComments: true, ignoreTrailingComments: true, ignoreUrls: true, ignoreStrings: true, ignoreTemplateLiterals: true, ignoreRegExpLiterals: true }],
     'brace-style': ['error'],
     'no-unused-vars': ['warn'],
     'comma-dangle': ['error', 'never'],
