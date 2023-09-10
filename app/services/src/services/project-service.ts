@@ -5,7 +5,9 @@ import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
 import Project from '@models/project';
-import type { TestExecutionArguments, IProject } from '@models/project';
+import type { IProject } from '@models/project';
+import type { ITestExecutionArguments } from '@models/schemas/test-execution-arguments';
+import type { ITest } from '@models/schemas/test';
 
 import uploadService from '@services/upload-service';
 
@@ -46,8 +48,8 @@ const findProjectByName = (
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while finding the project with the name '${projectName}'.`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   });
 
 /**
@@ -96,26 +98,26 @@ const saveProject = async (
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while ${project.isNew ? 'creating' : 'updating'} a project.`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   } finally {
     await session.endSession();
   }
 };
 
 /**
- * Creates a new project with the given name from a ZIP buffer.
+ * Builds and creates a new project with the given name from a ZIP buffer.
  * If a project with the same name already exists, it fails.
  *
  * @param {string} projectName - The name of the new project.
  * @param {RequestFile} requestFile - The file attached to the request containing the project files.
- * @param {TestExecutionArguments} [execArgs] - Optional additional execution arguments.
+ * @param {ITestExecutionArguments} [execArgs] - Optional additional execution arguments.
  * @returns {Promise<{ project: IProject; dockerImage: object }>} A promise that resolves to an object
  *                                                                containing the created project and Docker image information.
  * @throws {AppError} If a project with the same name already exists (409) or if any error occurs during project creation.
  */
-const createNewProject = async (
-  projectName: string, requestFile: RequestFile, execArgs: TestExecutionArguments
+const buildAndCreateProject = async (
+  projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
 ): Promise<{ project: IProject; dockerImage: object }> => {
   // Check if a project with the same name already exists
   const projectExists = await Project.exists({ projectName });
@@ -126,18 +128,18 @@ const createNewProject = async (
 };
 
 /**
- * Updates an existing project with the new ZIP buffer.
+ * Rebuilds and updates an existing project with the new ZIP buffer.
  * If the project does not exist, it fails.
  *
  * @param {string} projectName - The name of the existing project to update.
  * @param {RequestFile} requestFile - The file attached to the request containing the project files.
- * @param {TestExecutionArguments} [execArgs] - Optional additional execution arguments.
+ * @param {ITestExecutionArguments} [execArgs] - Optional additional execution arguments.
  * @returns {Promise<{ project: IProject; dockerImage: object }>} A promise that resolves to an object
  *                                                                containing the updated project and Docker image information.
  * @throws {AppError} If the project does not exist (404) or if any error occurs during project update.
  */
-const updateExistingProject = async (
-  projectName: string, requestFile: RequestFile, execArgs: TestExecutionArguments
+const rebuildAndUpdateProject = async (
+  projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
 ): Promise<{ project: IProject; dockerImage: object }> => {
   // Find the existing project
   const existingProject = await findProjectByName(projectName);
@@ -146,9 +148,50 @@ const updateExistingProject = async (
   return await saveProject(existingProject, requestFile);
 };
 
+/**
+ * Update test weights and execution arguments for an existing project.
+ *
+ * @param {string} projectName - The name of the project to update.
+ * @param {ITest[]} [testsWithNewWeights] - An optional array of test objects with updated weights.
+ * @param {ITestExecutionArguments} [updatedExecArgs] - Optional updated execution arguments for the project's tests.
+ * @returns {Promise<IProject>} A promise that resolves to the updated project.
+ * @throws {AppError} If the project doesn't exist or if there's a server error during the update.
+ */
+const updateProjectTestWeightsAndExecutionArguments = async (
+  projectName: string,
+  testsWithNewWeights?: ITest[],
+  updatedExecArgs?: ITestExecutionArguments
+): Promise<IProject> => {
+  // Find the existing project
+  Logger.info(`Updating test weights and execution arguments of the ${projectName} project.`);
+  const existingProject = await findProjectByName(projectName);
+
+  // Update test weights if provided
+  if (testsWithNewWeights) {
+    existingProject.tests = existingProject.tests.map((existingTest: ITest) => {
+      const newWeight = testsWithNewWeights!.find(({ test }) => test === existingTest.test)?.weight;
+      existingTest.weight = newWeight || existingTest.weight;
+
+      return existingTest;
+    });
+  }
+
+  // Update execution arguments if provided
+  if (updatedExecArgs) existingProject.testExecutionArguments = updatedExecArgs;
+
+  return existingProject.save().then((project) => {
+    Logger.info(`Successfully updated test weights and execution arguments of the ${projectName} project.`);
+    return project;
+  }).catch((err: Error | unknown) => {
+    const message = `An error occurred while updating test weights and execution arguments of the ${projectName} project.`;
+    throw errorUtils.logAndGetError(new AppError(500, message, (err as Error)?.message));
+  });
+};
+
 export default {
   findAllProjects,
   findProjectByName,
-  createNewProject,
-  updateExistingProject
+  buildAndCreateProject,
+  rebuildAndUpdateProject,
+  updateProjectTestWeightsAndExecutionArguments
 };

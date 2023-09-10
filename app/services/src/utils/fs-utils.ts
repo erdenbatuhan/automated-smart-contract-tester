@@ -5,7 +5,8 @@ import AdmZip from 'adm-zip';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
-import { IFile, IUpload } from '@models/upload';
+import { IUpload } from '@models/upload';
+import type { IFile } from '@models/schemas/file';
 
 import constantUtils from '@utils/constant-utils';
 import errorUtils from '@/utils/error-utils';
@@ -112,8 +113,8 @@ const getUploadedFilesFromZipBuffer = async (
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   } finally {
     removeDirectorySync(dirPath);
   }

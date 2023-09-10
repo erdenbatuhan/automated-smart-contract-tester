@@ -16,17 +16,15 @@ export interface RequestFile extends Express.Multer.File {}
  * @throws {AppError} If the JSON parsing fails or if the object is not found in the request body.
  */
 const parseJsonObjectFromBody = (req: Request, objectKey: string, required: boolean = false): object | undefined => {
-  try {
-    const jsonString = req.body[objectKey];
-    if (!jsonString && required) throw new AppError(400, `Object (${objectKey}) not found in the request body.`);
+  const jsonString = req.body[objectKey];
+  if (!jsonString && required) {
+    throw errorUtils.logAndGetError(new AppError(400, `Object (${objectKey}) not found in the request body.`));
+  }
 
+  try {
     return jsonString && JSON.parse(jsonString);
   } catch (err: Error | unknown) {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 400,
-      `Failed to parse JSON object (${objectKey}) from the request body.`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+    throw errorUtils.logAndGetError(new AppError(400, `Failed to parse JSON object (${objectKey}) from the request body.`));
   }
 };
 

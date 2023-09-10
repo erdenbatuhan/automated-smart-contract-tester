@@ -25,4 +25,5 @@ const SubmissionSchema = new Schema<ISubmission>(
   }
 );
 
+// Submission
 export default mongoose.model<ISubmission>('Submission', SubmissionSchema);

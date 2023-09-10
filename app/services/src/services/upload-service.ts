@@ -36,8 +36,8 @@ const uploadZipBuffer = async (
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while uploading the zip buffer for ${name}!`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   }
 };
 
@@ -78,8 +78,8 @@ const getUploadedFilesInZipBuffer = async (name: string, uploadId: string): Prom
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while downloading the uploaded files for ${name} (Upload ID = ${uploadId}).`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   }
 };
 
