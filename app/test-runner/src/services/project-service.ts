@@ -3,7 +3,7 @@ import AppError from '@errors/app-error';
 
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
-import type { DockerContainerExecutionOutput } from '@models/docker-container-history';
+import type { IDockerContainerExecutionOutput } from '@models/schemas/docker-container-execution-output';
 import Status from '@models/enums/status';
 
 import dockerImageService from '@services/docker-image-service';
@@ -18,12 +18,12 @@ import forgeUtils from '@utils/forge-utils';
  * Retrieves the names of the tests from the gas snapshot output.
  *
  * @param {string} projectName - The name of the new project.
- * @param {DockerContainerExecutionOutput | undefined} output - The execution output.
+ * @param {IDockerContainerExecutionOutput | undefined} output - The execution output.
  * @returns {{ tests: string[] }} An object containing the test names.
  * @throws {AppError} If any error occurs while retrieving the names of the tests.
  */
 const retrieveTestNamesFromGasSnapshot = (
-  projectName: string, output: DockerContainerExecutionOutput | undefined
+  projectName: string, output: IDockerContainerExecutionOutput | undefined
 ): { tests: string[] } => {
   try {
     return { tests: forgeUtils.retrieveTestNamesFromGasSnapshot(output?.data) };
@@ -38,12 +38,13 @@ const retrieveTestNamesFromGasSnapshot = (
  *
  * @param {string} projectName - The name of the project.
  * @param {Buffer} zipBuffer - The ZIP buffer containing the project files.
- * @returns {Promise<{ isNew: boolean; project: { image: IDockerImage; output: DockerContainerExecutionOutput | undefined } }>} A promise that resolves to an object containing the created Docker Image and the extracted test names.
+ * @returns {Promise<{ isNew: boolean; project: { image: IDockerImage; output: IDockerContainerExecutionOutput | undefined } }>}
+ *          A promise that resolves to an object containing the created Docker Image and the extracted test names.
  * @throws {AppError} If any error occurs during project creation.
  */
 const saveProject = async (
   projectName: string, zipBuffer: Buffer
-): Promise<{ isNew: boolean; project: { image: IDockerImage; output: DockerContainerExecutionOutput | undefined } }> => {
+): Promise<{ isNew: boolean; project: { image: IDockerImage; output: IDockerContainerExecutionOutput | undefined } }> => {
   let dockerImage: IDockerImage | null = null;
 
   try {
@@ -85,14 +86,14 @@ const saveProject = async (
   } catch (err: AppError | Error | unknown) {
     // If an error has occurred, remove the Docker image if it has been created
     if (dockerImage) {
-      await dockerUtils.removeImage(dockerImage.imageName, { shouldPrune: true });
+      await dockerUtils.removeImage(dockerImage!.imageName, { shouldPrune: true });
     }
 
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while creating the ${projectName} project.`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   }
 };
 

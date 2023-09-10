@@ -3,7 +3,8 @@ import AppError from '@errors/app-error';
 
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
-import type { DockerContainerExecutionOutput, IDockerContainerHistory } from '@models/docker-container-history';
+import type { IDockerContainerHistory } from '@models/docker-container-history';
+import type { IDockerContainerExecutionOutput } from '@models/schemas/docker-container-execution-output';
 import Status from '@models/enums/status';
 
 import dockerImageService from '@services/docker-image-service';
@@ -18,17 +19,17 @@ import forgeUtils from '@utils/forge-utils';
  * Extracts test results from execution output based on the status.
  *
  * @param {string} imageName - The name of the Docker Image.
- * @param {DockerContainerExecutionOutput | undefined} output - The execution output.
- * @returns {DockerContainerExecutionOutput} The extracted test results.
+ * @param {IDockerContainerExecutionOutput | undefined} output - The execution output.
+ * @returns {IDockerContainerExecutionOutput} The extracted test results.
  */
 const extractTestResultsFromExecutionOutput = (
-  imageName: string, output: DockerContainerExecutionOutput | undefined
-): DockerContainerExecutionOutput => {
+  imageName: string, output: IDockerContainerExecutionOutput | undefined
+): IDockerContainerExecutionOutput => {
   try {
     return {
       ...forgeUtils.extractTestExecutionResultsFromExecutionOutput(output?.data),
       ...forgeUtils.extractGasDiffAnalysisFromExecutionOutput(output?.data)
-    } as DockerContainerExecutionOutput;
+    } as IDockerContainerExecutionOutput;
   } catch (err: Error | unknown) {
     const message = `An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`;
     throw errorUtils.logAndGetError(new AppError(500, message, (err as Error)?.message));
@@ -104,8 +105,8 @@ const executeTests = async (
       throw errorUtils.logAndGetError(new AppError(
         (err as AppError)?.statusCode || 500,
         `Failed to save execution history for the Docker container created from the image '${imageName}'.`,
-        (err as AppError)?.reason || (err as Error)?.message)
-      );
+        (err as AppError)?.reason || (err as Error)?.message
+      ));
     });
 };
 

@@ -1,14 +1,14 @@
 import executorEnvironmentConfig from '~data/forge/executor-environment-config.json';
 
 import type {
-  TestExecutionResults as ProcessedTestExecutionResults,
-  GasDiffAnalysis,
-  DockerContainerExecutionOutput
-} from '@models/docker-container-history';
+  ITestExecutionResults,
+  IGasDiffAnalysis,
+  IDockerContainerExecutionOutput
+} from '@models/schemas/docker-container-execution-output';
 
 import constantUtils from '@utils/constant-utils';
 
-interface UnprocessedTestExecutionResults extends ProcessedTestExecutionResults {
+interface UnprocessedTestExecutionResults extends ITestExecutionResults {
   counterexample?: string;
   decoded_logs?: string[];
   kind?: { Standard: number; };
@@ -23,8 +23,8 @@ interface UnprocessedContractTestExecutionResults {
   warnings?: object;
 }
 
-interface ProcessedContractTestExecutionResults {
-  [test: string]: ProcessedTestExecutionResults;
+interface ContractTestExecutionResults {
+  [test: string]: ITestExecutionResults;
 }
 
 const VALID_TEST_EXECUTION_ARGUMENTS = Object.keys(executorEnvironmentConfig);
@@ -99,21 +99,21 @@ const retrieveTestNamesFromGasSnapshot = (gasSnapshotText: string | undefined): 
  * Extracts test execution results from test output.
  *
  * @param {string | undefined} testOutput - The test output JSON string.
- * @returns {DockerContainerExecutionOutput} An object containing the extracted test execution results.
+ * @returns {IDockerContainerExecutionOutput} An object containing the extracted test execution results.
  */
 const extractTestExecutionResultsFromExecutionOutput = (
   testOutput: string | undefined
-): DockerContainerExecutionOutput => {
-  const getProcessedTestExecutionResults = (
+): IDockerContainerExecutionOutput => {
+  const getITestExecutionResults = (
     unprocessedTestExecResForContracts: { [contract: string]: UnprocessedContractTestExecutionResults }
-  ): { [contract: string]: ProcessedContractTestExecutionResults } => Object.entries(unprocessedTestExecResForContracts)
+  ): { [contract: string]: ContractTestExecutionResults } => Object.entries(unprocessedTestExecResForContracts)
     .reduce((
-      newTestExecResForContracts: { [contract: string]: ProcessedContractTestExecutionResults },
+      newTestExecResForContracts: { [contract: string]: ContractTestExecutionResults },
       [contract, unprocessedTestExecResForContract]: [string, UnprocessedContractTestExecutionResults]
     ) => {
       newTestExecResForContracts[contract] = Object.entries(unprocessedTestExecResForContract.test_results || [])
         .reduce((
-          newTestExecResults: { [test: string]: ProcessedTestExecutionResults },
+          newTestExecResults: { [test: string]: ITestExecutionResults },
           [test, unprocessedTestExecRes]: [string, UnprocessedTestExecutionResults]
         ) => {
           newTestExecResults[test] = {
@@ -124,15 +124,15 @@ const extractTestExecutionResultsFromExecutionOutput = (
           };
 
           return newTestExecResults;
-        }, {} as { [test: string]: ProcessedTestExecutionResults });
+        }, {} as { [test: string]: ITestExecutionResults });
 
       return newTestExecResForContracts;
-    }, {} as { [contract: string]: ProcessedContractTestExecutionResults });
+    }, {} as { [contract: string]: ContractTestExecutionResults });
 
   const getStatusCount = (
-    testExecutionResults: { [contract: string]: ProcessedContractTestExecutionResults }, expectedStatus: string
+    testExecutionResults: { [contract: string]: ContractTestExecutionResults }, expectedStatus: string
   ): number => Object.values(testExecutionResults)
-    .reduce((totalStatusCount: number, testExecResForContract: ProcessedContractTestExecutionResults) => {
+    .reduce((totalStatusCount: number, testExecResForContract: ContractTestExecutionResults) => {
       const testExecResForTests = Object.values(testExecResForContract);
       const statusCount = testExecResForTests.filter(({ status }) => status === expectedStatus).length;
 
@@ -140,9 +140,9 @@ const extractTestExecutionResultsFromExecutionOutput = (
     }, 0);
 
   const getTotalGasUsage = (
-    testExecutionResults: { [contract: string]: ProcessedContractTestExecutionResults }
+    testExecutionResults: { [contract: string]: ContractTestExecutionResults }
   ): number => Object.values(testExecutionResults)
-    .reduce((totalGas: number, testExecResForContract: ProcessedContractTestExecutionResults) => {
+    .reduce((totalGas: number, testExecResForContract: ContractTestExecutionResults) => {
       const testExecResForTests = Object.values(testExecResForContract);
       const contractGasUsage = testExecResForTests.reduce((gasUsage, { gas }) => gasUsage + Number(gas), 0);
 
@@ -152,7 +152,7 @@ const extractTestExecutionResultsFromExecutionOutput = (
   const [jsonStart, jsonEnd] = [testOutput?.indexOf('{') || -1, testOutput?.lastIndexOf('}') || -1]; // Start and end of the JSON
 
   const unprocessedTestExecutionResults = JSON.parse(testOutput?.substring(jsonStart, jsonEnd + 1) || '{}');
-  const processedTestExecutionResults = getProcessedTestExecutionResults(unprocessedTestExecutionResults);
+  const processedTestExecutionResults = getITestExecutionResults(unprocessedTestExecutionResults);
 
   const numPassed = getStatusCount(processedTestExecutionResults, 'Success');
   const numFailed = getStatusCount(processedTestExecutionResults, 'Failure');
@@ -180,11 +180,11 @@ const removeColorCodes = (str: string): string => str.replace(/[\u001b\u009b][[(
  * Extracts gas difference analysis from test output.
  *
  * @param {string | undefined} testOutput - The test output text.
- * @returns {DockerContainerExecutionOutput} An object containing the extracted gas difference analysis.
+ * @returns {IDockerContainerExecutionOutput} An object containing the extracted gas difference analysis.
  */
 const extractGasDiffAnalysisFromExecutionOutput = (
   testOutput: string | undefined
-): DockerContainerExecutionOutput => {
+): IDockerContainerExecutionOutput => {
   const extractGasDiffNumbersFromGasParts = (
     gasParts: string | undefined
   ): { gasDiff: number, gasDiffPercentage: number } => {
@@ -221,8 +221,8 @@ const extractGasDiffAnalysisFromExecutionOutput = (
   });
 
   return {
-    gasDiffAnalysis: { overallGasDiff, overallGasDiffPercentage, testGasDiffs } as GasDiffAnalysis
-  } as DockerContainerExecutionOutput;
+    gasDiffAnalysis: { overallGasDiff, overallGasDiffPercentage, testGasDiffs } as IGasDiffAnalysis
+  } as IDockerContainerExecutionOutput;
 };
 
 export default {

@@ -52,8 +52,8 @@ const findDockerImage = async (
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while finding the docker image with the name=${imageName}.`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   });
 
 /**
@@ -159,8 +159,8 @@ const removeDockerImage = async (imageName: string): Promise<void> => {
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while removing the Docker Image with the name=${imageName}.`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   }
 };
 

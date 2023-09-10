@@ -142,8 +142,8 @@ const readFromZipBuffer = async (
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
       `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`,
-      (err as AppError)?.reason || (err as Error)?.message)
-    );
+      (err as AppError)?.reason || (err as Error)?.message
+    ));
   }
 };
 

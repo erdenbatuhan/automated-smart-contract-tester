@@ -1,28 +1,9 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 import type { IDockerImage } from '@models/docker-image';
+import DockerContainerExecutionOutputSchema from '@models/schemas/docker-container-execution-output';
+import type { IDockerContainerExecutionOutput } from '@models/schemas/docker-container-execution-output';
 import Status from '@models/enums/status';
-
-export interface TestExecutionResults {
-  status: Status;
-  reason: string;
-  logs?: string;
-  gas?: number;
-}
-
-export interface GasDiffAnalysis {
-  overallGasDiff: number;
-  overallGasDiffPercentage: number;
-  testGasDiffs: { test: string; gasDiff: number; gasDiffPercentage: number; }[];
-}
-
-export interface DockerContainerExecutionOutput {
-  data?: string;
-  error?: string;
-  overall?: { passed: boolean; numPassed: number; numFailed: number; totalGas: number };
-  tests?: string[] | { [contract: string]: { [test: string]: TestExecutionResults } };
-  gasDiffAnalysis?: GasDiffAnalysis
-}
 
 export interface IDockerContainerHistory extends Document {
   _id: Schema.Types.ObjectId;
@@ -32,7 +13,7 @@ export interface IDockerContainerHistory extends Document {
   status: Status;
   statusCode?: number;
   executionTimeSeconds?: number;
-  output?: DockerContainerExecutionOutput;
+  output?: IDockerContainerExecutionOutput;
 }
 
 const DockerContainerHistorySchema = new Schema<IDockerContainerHistory>(
@@ -43,7 +24,7 @@ const DockerContainerHistorySchema = new Schema<IDockerContainerHistory>(
     status: { type: String, enum: Status, required: true, default: Status.ERROR },
     statusCode: { type: Number },
     executionTimeSeconds: { type: Number },
-    output: { type: Object }
+    output: { type: DockerContainerExecutionOutputSchema }
   },
   {
     timestamps: true,
