@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import HTTPError from '@errors/http-error';
 
@@ -41,4 +41,25 @@ const extractFileBuffer = (req: Request): Buffer => {
   }
 };
 
-export default { parseJsonObjectFromBody, extractFileBuffer };
+/**
+ * Handles errors by sending an appropriate HTTP response to the client.
+ *
+ * If the error is an instance of HTTPError, it sets the response status code to the error's status code
+ * and sends a JSON response containing the error details.
+ *
+ * If the error is not an instance of HTTPError, it sets the response status code to 500 (Internal Server Error)
+ * and sends a JSON response containing the error message from the Error object, if available.
+ *
+ * @param {Response} res - The Express.js response object to send the error response.
+ * @param {HTTPError | Error | unknown} err - The error object to handle.
+ * @returns void
+ */
+const handleError = (res: Response, err: HTTPError | Error | unknown): void => {
+  if (err instanceof HTTPError) {
+    res.status(err.statusCode).json({ error: err });
+  } else {
+    res.status(500).json({ error: (err as Error)?.message });
+  }
+};
+
+export default { parseJsonObjectFromBody, extractFileBuffer, handleError };

@@ -40,6 +40,7 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': ['warn'],
         '@typescript-eslint/comma-dangle': ['error', 'never'],
         '@typescript-eslint/return-await': ['off'],
+        '@typescript-eslint/lines-between-class-members': ['off'],
         'import/extensions': ['off'],
         'import/order': ['off']
       }

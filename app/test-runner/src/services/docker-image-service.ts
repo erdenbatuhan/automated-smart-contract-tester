@@ -1,3 +1,4 @@
+import type { MongoError } from 'mongodb';
 import mongoose from 'mongoose';
 import type { SessionOption } from 'mongoose';
 
@@ -79,6 +80,28 @@ const saveDockerImage = async (
 };
 
 /**
+ * Handles the error that occurred while saving or updating a Docker Image and associated Docker Container History.
+ *
+ * @param {string} dockerImageID - The imageID for which the error occurred.
+ * @param {MongoError | Error | unknown} err - The error object to handle.
+ * @returns {Promise<HTTPError | MongoError | Error | unknown>} Returns an HTTP error if the error is a duplicate imageID error; otherwise, returns a generic error for any other error.
+ */
+const handleSaveErrorAndReturn = async (
+  dockerImageID: string, err: MongoError | Error | unknown
+): Promise<HTTPError | MongoError | Error | unknown> => {
+  // Return duplicate image ID error if it's the case
+  if ((err as MongoError)?.code === 11000 && (err as MongoError)?.message.includes('imageID')) { // Duplicate image ID error
+    const existingImage = await DockerImage.findOne({ imageID: dockerImageID }, 'imageName').exec();
+    const duplicateImageIDError = new HTTPError(409, `An image with imageID=${dockerImageID} already exists (${existingImage?.imageName}). Please use that one or delete it first!`);
+
+    return errorUtils.logAndGetError(duplicateImageIDError);
+  }
+
+  // Return a generic error for any other errors
+  return errorUtils.logAndGetError(err as Error, 'An error occurred while saving/updating the Docker Image with associated Docker Container History.');
+};
+
+/**
  * Saves a Docker Image with associated Docker Container History.
  *
  * @param {IDockerImage} dockerImage - The Docker Image to save.
@@ -105,10 +128,12 @@ const saveDockerImageWithDockerContainerHistory = async (
     await session.commitTransaction();
 
     return { isNew, dockerImageSaved, dockerContainerHistorySaved };
-  } catch (err: Error | unknown) {
-    // Handle any errors and abort the transaction
+  } catch (err: MongoError | Error | unknown) {
+    // Abort the transaction
     await session.abortTransaction();
-    throw errorUtils.logAndGetError(err as Error, 'An error occurred while saving/updating the Docker Image with associated Docker Container History.');
+
+    // Handle save errors
+    throw await handleSaveErrorAndReturn(dockerImage.imageID, err);
   } finally {
     session.endSession();
   }

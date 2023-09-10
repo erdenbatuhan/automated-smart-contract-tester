@@ -53,7 +53,7 @@ const convertTestExecutionArgsToString = (executionArguments: object | undefined
 /**
  * Get the test execution command with optional execution arguments.
  *
- * @param {object=} [execArgs] - Optional execution arguments to be included in the command.
+ * @param {object} [execArgs] - Optional execution arguments to be included in the command.
  * @returns {string} The test execution command with execution arguments (if provided).
  */
 const getTestExecutionCommand = (execArgs?: object): string => {

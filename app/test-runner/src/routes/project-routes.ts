@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
 
-import HTTPError from '@errors/http-error';
+import type HTTPError from '@errors/http-error';
 
 import projectService from '@services/project-service';
 
@@ -33,7 +33,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
       res.status(isNew ? 201 : 200).json(project);
     });
   } catch (err: HTTPError | Error | unknown) {
-    res.status((err as HTTPError)?.statusCode || 500).json({ error: (err as Error)?.message });
+    routerUtils.handleError(res, err);
   }
 });
 

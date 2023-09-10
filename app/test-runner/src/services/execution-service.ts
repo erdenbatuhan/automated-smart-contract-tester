@@ -83,7 +83,7 @@ const runImageWithFilesInZipBuffer = async (
  *
  * @param {string} imageName - The name of the Docker Image.
  * @param {Buffer} zipBuffer - The zip buffer containing source files.
- * @param {object=} [execArgs] - Optional additional execution arguments.
+ * @param {object} [execArgs] - Optional additional execution arguments.
  * @returns {Promise<IDockerContainerHistory>} A promise that resolves to the Docker Container History.
  * @throws {Error} If any error occurs during the execution.
  */
