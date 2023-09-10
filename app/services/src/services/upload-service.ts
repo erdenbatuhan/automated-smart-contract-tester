@@ -42,45 +42,29 @@ const uploadZipBuffer = async (
 };
 
 /**
- * Finds an Upload by its ID.
- *
- * @param {string} uploadId - The ID of the Upload document to find.
- * @returns {Promise<IUpload>} A promise that resolves to the found Upload document.
- * @throws {AppError} HTTP Error with status code 404 if the upload is not found.
- */
-const findUploadById = async (uploadId: string): Promise<IUpload> => Upload.findById(uploadId).exec()
-  .then((upload) => {
-    if (!upload) throw new AppError(404, `Upload with ID=${uploadId} not found!`);
-    return upload;
-  });
-
-/**
  * Downloads uploaded files in a zip buffer.
  *
- * @param {string} name - The name associated with the upload.
- * @param {string} uploadId - The ID of the upload to download.
+ * @param {string} contextName - The name associated with the upload.
+ * @param {IUpload} upload - The Upload document storing the documents to download.
  * @returns {Promise<Buffer>} A promise that resolves to the downloaded zip buffer.
- * @throws {AppError} If an error occurs during the download.
+ * @throws {AppError} If an error occurs during the download, it will throw an AppError with a relevant status code.
  */
-const getUploadedFilesInZipBuffer = async (name: string, uploadId: string): Promise<Buffer> => {
-  // Find the document
-  const upload = await findUploadById(uploadId);
-
+const downloadUploadedFiles = async (contextName: string, upload: IUpload): Promise<Buffer> => {
   try {
-    Logger.info(`Downloading the uploaded files for ${name} (Upload ID = ${uploadId}).`);
+    Logger.info(`Downloading the uploaded files for ${contextName} (Upload ID = ${upload._id}).`);
 
-    // Get uploaded files and write them into zip buffer
+    // Get uploaded files and write them into a zip buffer
     const zipBuffer = fsUtils.writeUploadedFilesToZipBuffer(upload);
 
-    Logger.info(`Successfully downloaded the uploaded files for ${name} (Upload ID = ${uploadId}).`);
+    Logger.info(`Successfully downloaded the uploaded files for ${contextName} (Upload ID = ${upload._id}).`);
     return zipBuffer;
   } catch (err: AppError | Error | unknown) {
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || 500,
-      `An error occurred while downloading the uploaded files for ${name} (Upload ID = ${uploadId}).`,
+      `An error occurred while downloading the uploaded files for ${contextName} (Upload ID = ${upload._id}).`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
   }
 };
 
-export default { uploadZipBuffer, getUploadedFilesInZipBuffer };
+export default { uploadZipBuffer, downloadUploadedFiles };

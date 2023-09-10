@@ -188,10 +188,21 @@ const updateProjectTestWeightsAndExecutionArguments = async (
   });
 };
 
+/**
+ * Downloads the uploaded files associated with a project.
+ *
+ * @param {string} projectName - The name of the project to download files for.
+ * @returns {Promise<Buffer>} A promise that resolves to the downloaded zip buffer containing project files.
+ * @throws {AppError} If the project does not exist (HTTP 404) or if there's an error during the download (HTTP 500).
+ */
+const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProjectByName(projectName, 'upload')
+  .then(({ upload }) => uploadService.downloadUploadedFiles(`${projectName} project`, upload));
+
 export default {
   findAllProjects,
   findProjectByName,
   buildAndCreateProject,
   rebuildAndUpdateProject,
-  updateProjectTestWeightsAndExecutionArguments
+  updateProjectTestWeightsAndExecutionArguments,
+  downloadProjectFiles
 };

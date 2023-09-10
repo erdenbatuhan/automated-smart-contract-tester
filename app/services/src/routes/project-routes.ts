@@ -134,7 +134,23 @@ router.put('/:projectName/update', async (req: Request, res: Response) => {
   });
 });
 
-// TODO (3): Download Project Files
+/**
+ * Downloads the uploaded files associated with a project.
+ *
+ * @param {string} req.params.projectName - The name of the project to download files for.
+ * @returns {Promise<void>} A promise that resolves once the download is complete.
+ */
+router.get('/:projectName/download', async (req: Request, res: Response) => {
+  const { projectName } = req.params;
+
+  projectService.downloadProjectFiles(projectName).then((zipBuffer) => {
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="project_${projectName}.zip"`);
+    res.status(200).send(zipBuffer);
+  }).catch((err: AppError | Error | unknown) => {
+    routerUtils.handleError(res, err);
+  });
+});
 
 // TODO (5): Remove Project
 
