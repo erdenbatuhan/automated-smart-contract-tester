@@ -4,7 +4,7 @@ import type { IUpload } from '@models/upload';
 
 // TestExecutionArgumentsSchema
 import TestExecutionArgumentsSchema from '@models/schemas/test-execution-arguments';
-import type { ITestExecutionArguments } from '@/models/schemas/test-execution-arguments';
+import type { ITestExecutionArguments } from '@models/schemas/test-execution-arguments';
 
 // TestSchema
 import TestSchema from '@models/schemas/test';

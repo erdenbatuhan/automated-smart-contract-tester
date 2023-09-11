@@ -3,10 +3,10 @@ import path from 'path';
 import AdmZip from 'adm-zip';
 import tar from 'tar';
 
+import Constants from '~constants';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
-import constantUtils from '@utils/constant-utils';
 import errorUtils from './error-utils';
 
 /**
@@ -112,7 +112,7 @@ const readFromZipBuffer = async (
   directoryRequirements: { requiredFiles: string[]; requiredFolders: string[] } | null = null,
   additionalSourcesCopied: string[] = []
 ): Promise<{ dirPath: string; extractedPath: string }> => {
-  const dirPath = path.join(constantUtils.PATH_TEMP_DIR, contextName);
+  const dirPath = path.join(Constants.PATH_TEMP_DIR, contextName);
   const zipFilePath = path.join(dirPath, `${contextName}.zip`);
 
   try {

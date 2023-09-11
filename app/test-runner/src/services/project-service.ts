@@ -1,3 +1,4 @@
+import Constants from '~constants';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
@@ -8,7 +9,6 @@ import Status from '@models/enums/status';
 
 import dockerImageService from '@services/docker-image-service';
 
-import constantUtils from '@utils/constant-utils';
 import errorUtils from '@utils/error-utils';
 import fsUtils from '@utils/fs-utils';
 import dockerUtils from '@utils/docker-utils';
@@ -58,8 +58,8 @@ const saveProject = async (
     } = await fsUtils.readFromZipBuffer(
       execName,
       zipBuffer,
-      { requiredFiles: constantUtils.REQUIRED_FILES, requiredFolders: constantUtils.REQUIRED_FOLDERS },
-      [constantUtils.PATH_PROJECT_TEMPLATE]
+      { requiredFiles: Constants.REQUIRED_FILES, requiredFolders: Constants.REQUIRED_FOLDERS },
+      [Constants.PATH_PROJECT_TEMPLATE]
     );
 
     // Create a Docker Image from the project read from the zip buffer

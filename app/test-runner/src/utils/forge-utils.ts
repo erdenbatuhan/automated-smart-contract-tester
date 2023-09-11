@@ -1,12 +1,11 @@
 import executorEnvironmentConfig from '~data/forge/executor-environment-config.json';
+import Constants from '~constants';
 
 import type {
   ITestExecutionResults,
   IGasDiffAnalysis,
   IDockerContainerExecutionOutput
 } from '@models/schemas/docker-container-execution-output';
-
-import constantUtils from '@utils/constant-utils';
 
 interface UnprocessedTestExecutionResults extends ITestExecutionResults {
   counterexample?: string;
@@ -58,7 +57,7 @@ const convertTestExecutionArgsToString = (executionArguments: object | undefined
  */
 const getTestExecutionCommand = (execArgs?: object): string => {
   const executionArgsString = convertTestExecutionArgsToString(execArgs);
-  let executionCommand = constantUtils.FORGE_COMMANDS.COMPARE_SNAPSHOTS;
+  let executionCommand = Constants.FORGE_COMMANDS.COMPARE_SNAPSHOTS;
 
   if (executionArgsString) {
     executionCommand = `${executionCommand} ${executionArgsString}`;
@@ -72,7 +71,7 @@ const getTestExecutionCommand = (execArgs?: object): string => {
  *
  * @returns {string} The command to read the gas snapshot content.
  */
-const getGasSnapshotRetrievalCommand = (): string => `cat ${constantUtils.PROJECT_FILES.GAS_SNAPSHOT}`;
+const getGasSnapshotRetrievalCommand = (): string => `cat ${Constants.PROJECT_FILES.GAS_SNAPSHOT}`;
 
 /**
  * Extracts test names from a gas snapshot text.

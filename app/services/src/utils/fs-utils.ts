@@ -2,14 +2,14 @@ import fs from 'fs-extra';
 import path from 'path';
 import AdmZip from 'adm-zip';
 
+import Constants from '~constants';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
 import { IUpload } from '@models/upload';
 import type { IFile } from '@models/schemas/file';
 
-import constantUtils from '@utils/constant-utils';
-import errorUtils from '@/utils/error-utils';
+import errorUtils from '@utils/error-utils';
 
 /**
  * Extracts the contents of a zip file to a specified directory.
@@ -96,7 +96,7 @@ const removeDirectorySync = (dirPath: string): void => {
 const getUploadedFilesFromZipBuffer = async (
   contextName: string, zipBuffer: Buffer
 ): Promise<IFile[]> => {
-  const dirPath = path.join(constantUtils.PATH_TEMP_DIR, contextName);
+  const dirPath = path.join(Constants.PATH_TEMP_DIR, contextName);
   const zipFilePath = path.join(dirPath, `${contextName}.zip`);
 
   try {

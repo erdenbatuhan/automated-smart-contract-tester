@@ -3,13 +3,13 @@ import Dockerode from 'dockerode';
 import type { Container as ContainerType } from 'dockerode';
 import { WritableStream } from 'memory-streams'; // Streams to capture stdout and stderr
 
+import Constants from '~constants';
 import Logger from '@logging/logger';
 
 import Status from '@models/enums/status';
 import type { IDockerImage } from '@models/docker-image';
 import type { IDockerContainerHistory } from '@models/docker-container-history';
 
-import constantUtils from '@utils/constant-utils';
 import conversionUtils from '@utils/conversion-utils';
 import fsUtils from '@utils/fs-utils';
 
@@ -70,7 +70,7 @@ const pruneDocker = async (dockerode: Dockerode): Promise<void> => {
 const removeImage = async (
   imageName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode, shouldPrune?: boolean }
 ): Promise<void> => {
-  const dockerodeInstance = dockerode || new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
+  const dockerodeInstance = dockerode || new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
 
   try {
     Logger.info(`Removing the Docker image named '${imageName}'.`);
@@ -98,7 +98,7 @@ const removeImage = async (
 const removeVolume = async (
   volumeName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode; shouldPrune?: boolean }
 ): Promise<void> => {
-  const dockerodeInstance = dockerode || new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
+  const dockerodeInstance = dockerode || new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
 
   try {
     Logger.info(`Removing the Docker volume named '${volumeName}'.`);
@@ -161,7 +161,7 @@ const followImageProgressAndRetrieveImageID = async (
 const createImage = async (imageName: string, dirPath: string): Promise<IDockerImage> => {
   // Record start time and start Dockerode
   const startTime = Date.now();
-  const dockerode = new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
+  const dockerode = new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
 
   try {
     Logger.info(`Creating a Docker image named ${imageName}.`);
@@ -172,7 +172,7 @@ const createImage = async (imageName: string, dirPath: string): Promise<IDockerI
         fsUtils.checkIfFileExists(dirPath, 'Dockerfile'); // Check if the Dockerfile exists before attempting to build the image
         return dirPath;
       })(),
-      src: constantUtils.DOCKER_IMAGE_SRC
+      src: Constants.DOCKER_IMAGE_SRC
     }, { t: imageName });
 
     // Follow the process of image creation and retrieve the image information
@@ -250,7 +250,7 @@ const runImage = async (
 ): Promise<IDockerContainerHistory> => {
   // Record start time and start Dockerode
   const startTime = Date.now();
-  const dockerode = new Dockerode({ socketPath: constantUtils.DOCKER_SOCKET_PATH });
+  const dockerode = new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
 
   let sharedVolume: string | undefined;
   try {
@@ -267,7 +267,7 @@ const runImage = async (
       [stdout, stderr],
       {
         Tty: false,
-        HostConfig: { Binds: srcDirPath ? [`${sharedVolume}:${constantUtils.PROJECT_DIR}/${constantUtils.PROJECT_FOLDERS.SRC}`] : [] }
+        HostConfig: { Binds: srcDirPath ? [`${sharedVolume}:${Constants.PROJECT_DIR}/${Constants.PROJECT_FOLDERS.SRC}`] : [] }
       }
     );
 
