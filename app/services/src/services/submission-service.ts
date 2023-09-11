@@ -12,7 +12,7 @@ import errorUtils from '@utils/error-utils';
 import type { RequestFile } from '@utils/router-utils';
 
 /**
- * Find all submissions.
+ * Finds all submissions.
  *
  * @returns {Promise<ISubmission[]>} A promise that resolves to an array of all submissions.
  * @throws {AppError} If an error occurs during the operation.
@@ -24,18 +24,18 @@ const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find()
   });
 
 /**
- * Find a submission by its ID.
+ * Finds a submission by its ID.
  *
  * @param {string} submissionId - The ID of the submission to find.
- * @param {ProjectionType<ISubmission>} projection - Optional projection for query.
- * @param {SessionOption} sessionOption - Optional session option for query.
+ * @param {ProjectionType<ISubmission>} [projection] - Optional projection for the query.
+ * @param {SessionOption} [sessionOption] - Optional session option for the query.
  * @returns {Promise<ISubmission>} A promise that resolves to the found submission.
- * @throws {AppError} If the submission is not found (404) or if an error occurs during the operation.
+ * @throws {AppError} If the submission is not found (HTTP 404) or if an error occurs during the operation.
  */
 const findSubmissionById = (
   submissionId: string, projection?: ProjectionType<ISubmission>, sessionOption?: SessionOption
 ): Promise<ISubmission> => Submission.findById(submissionId, projection, sessionOption)
-  .populate(['project', 'upload']).exec()
+  .populate('upload').exec()
   .then((submission) => {
     if (!submission) throw new AppError(404, `No submission found with the ID '${submissionId}'.`);
     return submission;
