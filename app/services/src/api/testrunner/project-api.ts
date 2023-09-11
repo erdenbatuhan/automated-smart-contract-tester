@@ -2,14 +2,14 @@ import axios from 'axios';
 import type { AxiosError } from 'axios';
 
 import Logger from '@logging/logger';
+import { TestRunnerApiEndpointConfig } from '@api/common/config/api-endpoint-config';
+
 import AppError from '@errors/app-error';
+import type TestRunnerApiError from '@api/testrunner/types/test-runner-api-error';
 
-import errorUtils from '@utils/error-utils';
 import type { RequestFile } from '@utils/router-utils';
-import apiFormDataUtils from '@api/common/utils/api-form-data-utils';
-
-import apiEndpointConfig from './config/api-endpoint-config';
-import type TestRunnerApiError from './types/test-runner-api-error';
+import apiErrorUtils from '@api/testrunner/utils/api-error-utils';
+import apiFormDataUtils from '@api/testrunner/utils/api-form-data-utils';
 
 export interface ProjectUploadResponse {
   image: object;
@@ -17,35 +17,30 @@ export interface ProjectUploadResponse {
 }
 
 /**
- * Upload a project to the Test Runner service.
+ * Uploads a project to the Test Runner service.
  *
  * @param {string} projectName - The name of the project to upload.
  * @param {RequestFile} requestFile - The file containing project data.
  * @returns {Promise<ProjectUploadResponse>} A Promise that resolves to the response data from the Test Runner service.
- * @throws {Error} If an error occurs during the upload.
+ * @throws {AppError} If an error occurs during the upload.
  */
 const uploadProject = async (
   projectName: string, requestFile: RequestFile
 ): Promise<ProjectUploadResponse> => {
   Logger.info(`Uploading ${projectName} project to the Test Runner service to build the Docker image.`);
 
-  return apiFormDataUtils
-    .sendFormData(apiEndpointConfig.TESTRUNNER_CONFIG_PROJECT_UPLOAD(projectName), requestFile)
-    .then(({ data }) => {
-      Logger.info(`Successfully uploaded ${projectName} project to the Test Runner service to build the Docker image.`);
-      return data as ProjectUploadResponse;
-    })
-    .catch((err: AxiosError<TestRunnerApiError>) => {
-      throw errorUtils.logAndGetError(new AppError(
-        err.response?.data.error?.statusCode || 502,
-        `An error occurred while uploading the project to the Test Runner service. (Error: ${err.response?.data.error?.message || err.message})`,
-        err.response?.data.error?.reason || err.message
-      ));
-    });
+  return apiFormDataUtils.sendFormData<ProjectUploadResponse>(
+    TestRunnerApiEndpointConfig.CONFIG_PROJECT_UPLOAD(projectName),
+    requestFile,
+    {
+      successMessage: `Successfully uploaded ${projectName} project to the Test Runner service to build the Docker image.`,
+      errorMessage: 'An error occurred while uploading the project to the Test Runner service.'
+    }
+  );
 };
 
 /**
- * Send a project deletion request to the Test Runner service to remove its Docker image.
+ * Sends a project deletion request to the Test Runner service to remove its Docker image.
  *
  * @param {string} projectName - The name of the project to delete.
  * @returns {Promise<void>} A promise that resolves once the project is successfully deleted.
@@ -54,7 +49,7 @@ const uploadProject = async (
 const sendProjectDeletionRequest = async (projectName: string): Promise<void> => {
   Logger.info(`Sending a project deletion request to the Test Runner service for the ${projectName} project to remove its Docker image.`);
 
-  await axios.request(apiEndpointConfig.TESTRUNNER_CONFIG_PROJECT_REMOVE(projectName)).then(({ status }) => {
+  await axios.request(TestRunnerApiEndpointConfig.CONFIG_PROJECT_REMOVE(projectName)).then(({ status }) => {
     if (status !== 204) {
       throw new AppError(502, 'The service did not return an empty response');
     }
@@ -63,14 +58,11 @@ const sendProjectDeletionRequest = async (projectName: string): Promise<void> =>
   }).catch((err: AxiosError<TestRunnerApiError>) => {
     // Check if the error is related to the image not being found. It's okay even if it's not found; it might have been deleted by another process.
     if (err.response?.data.error?.statusCode === 404) {
-      return Logger.warn(err.response?.data.error?.reason || `No image found for the ${projectName} project.`);
+      Logger.warn(err.response?.data.error?.reason || `No image found for the ${projectName} project.`);
+    } else { // Handle any other error
+      const errorMessage = `An error occurred while sending a project deletion request to the Test Runner service for the ${projectName} project to remove its Docker image.`;
+      throw apiErrorUtils.convertTestRunnerApiErrorToAppError(err, errorMessage) as AppError;
     }
-
-    throw errorUtils.logAndGetError(new AppError(
-      err.response?.data.error?.statusCode || 502,
-      `An error occurred while sending a project deletion request to the Test Runner service for the ${projectName} project to remove its Docker image. (Error: ${err.response?.data.error?.message || err.message})`,
-      err.response?.data.error?.reason || err.message
-    ));
   });
 };
 

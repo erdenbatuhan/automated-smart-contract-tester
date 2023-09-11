@@ -39,6 +39,7 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-unused-vars': ['warn'],
         '@typescript-eslint/comma-dangle': ['error', 'never'],
+        '@typescript-eslint/indent': ['error', 2, { ignoredNodes: ['TSTypeParameterInstantiation'] }],
         '@typescript-eslint/return-await': ['off'],
         '@typescript-eslint/lines-between-class-members': ['off'],
         'import/extensions': ['off'],

@@ -16,7 +16,7 @@ import errorUtils from '@utils/error-utils';
 import type { RequestFile } from '@utils/router-utils';
 
 /**
- * Find all projects.
+ * Finds all projects.
  *
  * @returns {Promise<IProject[]>} A promise that resolves to an array of all projects.
  * @throws {AppError} If an error occurs during the operation.
@@ -29,7 +29,7 @@ const findAllProjects = async (): Promise<IProject[]> => Project.find()
   });
 
 /**
- * Find a project by its name.
+ * Finds a project by its name.
  *
  * @param {string} projectName - The name of the project to find.
  * @param {ProjectionType<IProject>} [projection] - Optional projection for the query.
