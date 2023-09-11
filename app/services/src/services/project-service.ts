@@ -32,10 +32,10 @@ const findAllProjects = async (): Promise<IProject[]> => Project.find()
  * Find a project by its name.
  *
  * @param {string} projectName - The name of the project to find.
- * @param {ProjectionType<IProject>} projection - Optional projection for query.
- * @param {SessionOption} sessionOption - Optional session option for query.
+ * @param {ProjectionType<IProject>} [projection] - Optional projection for the query.
+ * @param {SessionOption} [sessionOption] - Optional session option for the query.
  * @returns {Promise<IProject>} A promise that resolves to the found project.
- * @throws {AppError} If the project is not found (404) or if an error occurs during the operation.
+ * @throws {AppError} If the project is not found (HTTP 404) or if an error occurs during the operation.
  */
 const findProjectByName = (
   projectName: string, projection?: ProjectionType<IProject>, sessionOption?: SessionOption
