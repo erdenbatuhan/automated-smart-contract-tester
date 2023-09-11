@@ -11,8 +11,8 @@ export interface ITestExecutionResults {
 
 export interface IGasDiffAnalysis {
   overallGasDiff: number;
-  overallGasDiffPercentage: number;
-  testGasDiffs: { test: string; gasDiff: number; gasDiffPercentage: number; }[];
+  overallGasDiffPercentage: number | null;
+  testGasDiffs: { test: string; gasDiff: number; gasDiffPercentage: number | null; }[];
 }
 
 export interface IDockerContainerExecutionOutput {

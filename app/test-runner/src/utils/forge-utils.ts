@@ -186,13 +186,15 @@ const extractGasDiffAnalysisFromExecutionOutput = (
 ): IDockerContainerExecutionOutput => {
   const extractGasDiffNumbersFromGasParts = (
     gasParts: string | undefined
-  ): { gasDiff: number, gasDiffPercentage: number } => {
+  ): { gasDiff: number, gasDiffPercentage: number | null } => {
     const gasPartsSplit = gasParts?.split(' ');
-    let [gasDiff, gasDiffPercentage] = [-1, -1];
+    let [gasDiff, gasDiffPercentage]: [number, number | null] = [-1, -1];
 
     if (gasPartsSplit && gasPartsSplit.length > 1) {
       gasDiff = parseInt(gasPartsSplit[0], 10);
       gasDiffPercentage = parseFloat(gasPartsSplit[1].replace('(', '').replace('%)', ''));
+
+      if (Number.isNaN(gasDiffPercentage)) gasDiffPercentage = null;
     }
 
     return { gasDiff, gasDiffPercentage };
