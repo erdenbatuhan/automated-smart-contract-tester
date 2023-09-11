@@ -80,7 +80,7 @@ const deleteUpload = async (upload: IUpload, sessionOption?: SessionOption): Pro
 
   await Upload.findByIdAndDelete(upload._id, sessionOption).exec().then((uploadDeleted) => {
     if (!uploadDeleted) {
-      throw new AppError(404, `No upload found with the ID '${upload._id}'.`);
+      throw new AppError(404, `No upload with the ID '${upload._id}' found.`);
     }
 
     Logger.info(`Successfully deleted the upload with the ID '${upload._id}'.`);

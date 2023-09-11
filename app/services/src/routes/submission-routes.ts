@@ -35,9 +35,10 @@ router.get('/', async (req: Request, res: Response) => {
  * @throws {object} 500 - If there's a server error.
  */
 router.get('/:submissionId', async (req: Request, res: Response) => {
+  const { projectName } = res.locals;
   const { submissionId } = req.params;
 
-  submissionService.findSubmissionById(submissionId).then((submission) => {
+  submissionService.findSubmissionById(projectName, submissionId).then((submission) => {
     res.status(200).json(submission);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);
@@ -84,7 +85,7 @@ router.get('/:submissionId/download', async (req: Request, res: Response) => {
   const { projectName } = res.locals;
   const { submissionId } = req.params;
 
-  submissionService.downloadSubmissionFiles(submissionId).then((zipBuffer) => {
+  submissionService.downloadSubmissionFiles(projectName, submissionId).then((zipBuffer) => {
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="project_${projectName}_submission_${submissionId}.zip"`);
 
@@ -104,9 +105,10 @@ router.get('/:submissionId/download', async (req: Request, res: Response) => {
  * @throws {object} 500 - If there's a server error.
  */
 router.delete('/:submissionId', async (req: Request, res: Response) => {
+  const { projectName } = res.locals;
   const { submissionId } = req.params;
 
-  submissionService.deleteSubmissionById(submissionId).then(() => {
+  submissionService.deleteSubmissionById(projectName, submissionId).then(() => {
     res.status(204).end();
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);

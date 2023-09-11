@@ -1,46 +1,58 @@
 import axios from 'axios';
 import type { AxiosRequestConfig, AxiosError } from 'axios';
+import FormData from 'form-data';
 
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
-import type TestRunnerApiError from '@api/testrunner/types/test-runner-api-error';
+import type ApiError from '@api/testrunner/types/api-error';
 
 import type { RequestFile } from '@utils/router-utils';
 import apiErrorUtils from './api-error-utils';
 
 /**
- * Send a FormData request with a file to the specified URL.
+ * Send a FormData request with a file and optional additional data to the specified URL.
  *
  * @template T
  * @param {AxiosRequestConfig} requestConfig - The request configuration (e.g., URL, HTTP method).
  * @param {RequestFile} requestFile - The file to include in the FormData.
- * @param {Object} messages - Messages for success and error scenarios.
+ * @param {object} messages - Messages for success and error scenarios.
  * @param {string} messages.successMessage - The success message to log.
  * @param {string} messages.errorMessage - The error message to log.
+ * @param {object} [requestBody] - Optional additional data to include in the FormData.
  * @returns {Promise<T>} A Promise that resolves to the Axios response data of type T.
  * @throws {AppError} Throws an AppError if an error occurs during the request.
  */
 const sendFormData = <T>(
   requestConfig: AxiosRequestConfig, requestFile: RequestFile,
-  messages: { successMessage: string; errorMessage: string }
+  messages: { successMessage: string; errorMessage: string },
+  requestBody?: { [key: string]: object }
 ): Promise<T> => {
-  // Create a Blob from the Buffer
-  const blob = new Blob([Buffer.from(requestFile.buffer)], { type: 'application/octet-stream' });
-
   // Create a FormData object and append the file
   const formData = new FormData();
-  formData.append(requestFile.fieldname, blob, requestFile.filename);
+  formData.append(
+    requestFile.fieldname,
+    requestFile.buffer,
+    { filename: requestFile.originalname }
+  );
+
+  // Append the request body if provided
+  if (requestBody) {
+    Object.entries(requestBody).forEach(([key, obj]: [string, object]) => {
+      formData.append(key, JSON.stringify(obj) as string);
+    });
+  }
 
   // Send the FormData request using Axios
   return axios.request({
     ...requestConfig,
     data: formData,
-    headers: { 'Content-Type': 'multipart/form-data' }
+    maxBodyLength: Infinity,
+    headers: { ...formData.getHeaders() }
   }).then(({ data }) => {
     Logger.info(messages.successMessage);
     return data as T;
-  }).catch((err: AxiosError<TestRunnerApiError>) => {
-    throw apiErrorUtils.convertTestRunnerApiErrorToAppError(err, messages.errorMessage) as AppError;
+  }).catch((err: AxiosError<ApiError>) => {
+    throw apiErrorUtils.convertApiErrorToAppError(err, messages.errorMessage) as AppError;
   });
 };
 

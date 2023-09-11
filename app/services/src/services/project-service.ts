@@ -42,7 +42,7 @@ const findProjectByName = (
 ): Promise<IProject> => Project.findOne({ projectName }, projection, sessionOption)
   .populate('upload').exec()
   .then((project) => {
-    if (!project) throw new AppError(404, `No project found with the name '${projectName}'.`);
+    if (!project) throw new AppError(404, `No project with the name '${projectName}' found.`);
     return project;
   })
   .catch((err: Error | unknown) => {
@@ -219,7 +219,9 @@ const deleteProject = async (projectName: string): Promise<void> => {
 
     // Step 2: Delete the project from the DB
     await Project.deleteOne({ projectName }, { session }).exec().then(({ deletedCount }) => {
-      if (!deletedCount) throw new Error(`Failed to delete the document for ${projectName}.`);
+      if (!deletedCount) throw new Error();
+    }).catch((err: AppError | Error | unknown) => {
+      throw new AppError(500, `Failed to delete the ${projectName} project.`, (err as Error)?.message); // Should not happen normally!
     });
 
     // Step 3: Send a deletion request to the Test Runner service to delete the project's image

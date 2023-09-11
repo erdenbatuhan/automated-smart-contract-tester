@@ -27,8 +27,8 @@ const DockerContainerHistorySchema = new Schema<IDockerContainerHistory>(
     output: { type: DockerContainerExecutionOutputSchema }
   },
   {
-    timestamps: true,
-    optimisticConcurrency: true
+    timestamps: { createdAt: true, updatedAt: false },
+    versionKey: false
   }
 );
 

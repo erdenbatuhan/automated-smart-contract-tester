@@ -25,7 +25,7 @@ export class TestRunnerApiEndpointConfig {
    */
   public static CONFIG_TEST_EXECUTION = (projectName: string): { url: string; method: string } => ({
     url: `${TestRunnerApiEndpointConfig.URL_PROJECTS}/${projectName}/executions`,
-    method: 'PUT'
+    method: 'POST'
   });
 }
 

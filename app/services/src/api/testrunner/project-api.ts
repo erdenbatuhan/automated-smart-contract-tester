@@ -2,19 +2,15 @@ import axios from 'axios';
 import type { AxiosError } from 'axios';
 
 import Logger from '@logging/logger';
-import { TestRunnerApiEndpointConfig } from '@api/common/config/api-endpoint-config';
-
 import AppError from '@errors/app-error';
-import type TestRunnerApiError from '@api/testrunner/types/test-runner-api-error';
+
+import { TestRunnerApiEndpointConfig } from '@api/common/config/api-endpoint-config';
+import type ApiError from '@api/testrunner/types/api-error';
+import type ProjectUploadResponse from '@api/testrunner/types/project-upload-response';
 
 import type { RequestFile } from '@utils/router-utils';
 import apiErrorUtils from '@api/testrunner/utils/api-error-utils';
 import apiFormDataUtils from '@api/testrunner/utils/api-form-data-utils';
-
-export interface ProjectUploadResponse {
-  image: object;
-  output?: { tests?: string[]; };
-}
 
 /**
  * Uploads a project to the Test Runner service.
@@ -55,13 +51,13 @@ const sendProjectDeletionRequest = async (projectName: string): Promise<void> =>
     }
 
     Logger.info(`Successfully sent a project deletion request to the Test Runner service for the ${projectName} project to remove its Docker image.`);
-  }).catch((err: AxiosError<TestRunnerApiError>) => {
+  }).catch((err: AxiosError<ApiError>) => {
     // Check if the error is related to the image not being found. It's okay even if it's not found; it might have been deleted by another process.
     if (err.response?.data.error?.statusCode === 404) {
       Logger.warn(err.response?.data.error?.reason || `No image found for the ${projectName} project.`);
     } else { // Handle any other error
       const errorMessage = `An error occurred while sending a project deletion request to the Test Runner service for the ${projectName} project to remove its Docker image.`;
-      throw apiErrorUtils.convertTestRunnerApiErrorToAppError(err, errorMessage) as AppError;
+      throw apiErrorUtils.convertApiErrorToAppError(err, errorMessage) as AppError;
     }
   });
 };

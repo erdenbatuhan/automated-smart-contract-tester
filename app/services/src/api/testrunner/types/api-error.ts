@@ -1,5 +1,5 @@
 import AppError from '@errors/app-error';
 
-export default interface TestRunnerApiError {
+export default interface ApiError {
   error?: AppError;
 }
