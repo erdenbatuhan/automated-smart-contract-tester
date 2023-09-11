@@ -52,7 +52,7 @@ router.get('/:submissionId', async (req: Request, res: Response) => {
  * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes.ts).
  * @consumes multipart/form-data
  * @param {file} req.file.srcZip - The ZIP file containing the smart contracts to be tested.
- * @returns {object} 200 - The submission created.
+ * @returns {object} 201 - The submission created.
  * @throws {object} 400 - If required parameters are missing or if the ZIP file is invalid.
  * @throws {object} 404 - If the project does not exist.
  * @throws {object} 500 - If there's a server error.
@@ -64,7 +64,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
     const requestFile = routerUtils.getRequestFile(req);
 
     await submissionService.runAndCreateSubmission(projectName, requestFile).then((submission) => {
-      res.status(200).json(submission);
+      res.status(201).json(submission);
     });
   } catch (err: AppError | Error | unknown) {
     routerUtils.handleError(res, err);
