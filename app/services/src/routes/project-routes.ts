@@ -78,6 +78,7 @@ router.get('/:projectName', async (req: Request, res: Response) => {
  * @throws {object} 400 - If required parameters are missing or if the ZIP file is invalid.
  * @throws {object} 409 - If the project already exists.
  * @throws {object} 500 - If there's a server error.
+ * @throws {object} 502 - If the external API call to the Test Runner service has failed without a specific request code.
  */
 router.post('/:projectName/upload', upload.single('projectZip'), async (req: Request, res: Response) => {
   saveProject(req, res, projectService.buildAndCreateProject).then((projectCreated) => {
@@ -100,6 +101,7 @@ router.post('/:projectName/upload', upload.single('projectZip'), async (req: Req
  * @throws {object} 400 - If required parameters are missing or if the ZIP file is invalid.
  * @throws {object} 404 - If the project doesn't exist.
  * @throws {object} 500 - If there's a server error.
+ * @throws {object} 502 - If the external API call to the Test Runner service has failed without a specific request code.
  */
 router.put('/:projectName/upload', upload.single('projectZip'), async (req: Request, res: Response) => {
   saveProject(req, res, projectService.rebuildAndUpdateProject).then((projectUpdated) => {
@@ -137,7 +139,7 @@ router.put('/:projectName/update', async (req: Request, res: Response) => {
 /**
  * Downloads the uploaded files associated with a project.
  *
- * @param {string} req.params.projectName - The name of the project to download files for.
+ * @param {string} req.params.projectName - The name of the project associated with the files downloaded.
  * @returns {object} 200 - The downloadable zip buffer.
  * @throws {object} 404 - If the project doesn't exist.
  * @throws {object} 500 - If there's a server error.
@@ -148,6 +150,7 @@ router.get('/:projectName/download', async (req: Request, res: Response) => {
   projectService.downloadProjectFiles(projectName).then((zipBuffer) => {
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="project_${projectName}.zip"`);
+
     res.status(200).send(zipBuffer);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);

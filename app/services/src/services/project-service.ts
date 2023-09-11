@@ -10,8 +10,7 @@ import type { ITestExecutionArguments } from '@models/schemas/test-execution-arg
 import type { ITest } from '@models/schemas/test';
 
 import uploadService from '@services/upload-service';
-
-import testRunnerProjectApi from '@api/test-runner/project-api';
+import testRunnerProjectApi from '@api/testrunner/project-api';
 
 import errorUtils from '@utils/error-utils';
 import type { RequestFile } from '@utils/router-utils';
@@ -22,7 +21,8 @@ import type { RequestFile } from '@utils/router-utils';
  * @returns {Promise<IProject[]>} A promise that resolves to an array of all projects.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllProjects = async (): Promise<IProject[]> => Project.find().exec()
+const findAllProjects = async (): Promise<IProject[]> => Project.find()
+  .exec()
   .catch((err: Error | unknown) => {
     throw errorUtils.logAndGetError(
       new AppError(500, 'An error occurred while finding all projects.', (err as Error)?.message));
@@ -39,9 +39,10 @@ const findAllProjects = async (): Promise<IProject[]> => Project.find().exec()
  */
 const findProjectByName = (
   projectName: string, projection?: ProjectionType<IProject>, sessionOption?: SessionOption
-): Promise<IProject> => Project.findOne({ projectName }, projection, sessionOption).populate('upload').exec()
+): Promise<IProject> => Project.findOne({ projectName }, projection, sessionOption)
+  .populate('upload').exec()
   .then((project) => {
-    if (!project) throw new AppError(404, `No project with the name '${projectName}' found.`);
+    if (!project) throw new AppError(404, `No project found with the name '${projectName}'.`);
     return project;
   })
   .catch((err: Error | unknown) => {
@@ -189,9 +190,9 @@ const updateProjectTestWeightsAndExecutionArguments = async (
 };
 
 /**
- * Downloads the uploaded files associated with a project.
+ * Downloads the uploaded files associated with the project.
  *
- * @param {string} projectName - The name of the project to download files for.
+ * @param {string} projectName - The name of the project.
  * @returns {Promise<Buffer>} A promise that resolves to the downloaded zip buffer containing project files.
  * @throws {AppError} If the project does not exist (HTTP 404) or if there's an error during the download (HTTP 500).
  */
