@@ -20,7 +20,7 @@ export interface IProject extends Document {
 
 const ProjectSchema = new Schema<IProject>(
   {
-    projectName: { type: String, unique: true },
+    projectName: { type: String, unique: true, required: true },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true },
     testExecutionArguments: { type: TestExecutionArgumentsSchema },
     tests: { type: [TestSchema], required: true }

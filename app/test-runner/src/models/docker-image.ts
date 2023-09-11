@@ -10,8 +10,8 @@ export interface IDockerImage extends Document {
 
 const DockerImageSchema = new Schema<IDockerImage>(
   {
-    imageID: { type: String, unique: true },
-    imageName: { type: String, unique: true },
+    imageID: { type: String, unique: true, required: true },
+    imageName: { type: String, unique: true, required: true },
     imageBuildTimeSeconds: { type: Number, required: true },
     imageSizeMB: { type: Number, required: true }
   },
