@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 
 import AppError from '@errors/app-error';
 
+import authMiddlewares from '@middlewares/auth-middlewares';
 import userService from '@services/user-service';
 
 import routerUtils from '@utils/router-utils';
@@ -12,10 +13,11 @@ const router = Router();
 /**
  * Retrieves all users.
  *
+ * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
  * @returns {object} 200 - An array containing all users.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response) => {
   userService.findAllUsers().then((users) => {
     res.status(200).json(users);
   }).catch((err: AppError | Error | unknown) => {
@@ -32,7 +34,7 @@ router.get('/', async (req: Request, res: Response) => {
  * @throws {object} 404 - If the user does not exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/:userId', async (req: Request, res: Response) => {
+router.get('/:userId', authMiddlewares.requireUser, async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   userService.findUserById(userId).then((user) => {
@@ -51,7 +53,7 @@ router.get('/:userId', async (req: Request, res: Response) => {
  * @throws {object} 404 - If the user doesn't exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.delete('/:userId', async (req: Request, res: Response) => {
+router.delete('/:userId', authMiddlewares.requireAdmin, async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   userService.deleteUserById(userId).then(() => {
