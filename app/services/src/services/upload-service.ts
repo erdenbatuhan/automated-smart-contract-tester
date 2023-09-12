@@ -4,6 +4,7 @@ import { HttpStatusCode } from 'axios';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
+import type { IUser } from '@models/user';
 import Upload from '@models/upload';
 import type { IUpload } from '@models/upload';
 
@@ -13,6 +14,7 @@ import errorUtils from '@utils/error-utils';
 /**
  * Uploads a zip buffer.
  *
+ * @param {IUser} user - The user performing the upload.
  * @param {string} uniqueName - The name associated with the upload.
  * @param {Buffer} zipBuffer - The zip buffer to upload.
  * @param {IUpload | null} [existingUpload] - An optional existing upload document. If provided, the function will update this document.
@@ -21,22 +23,23 @@ import errorUtils from '@utils/error-utils';
  * @throws {AppError} If an error occurs during the upload.
  */
 const uploadZipBuffer = async (
-  uniqueName: string, zipBuffer: Buffer, existingUpload?: IUpload | null, sessionOption?: SessionOption
+  user: IUser, uniqueName: string, zipBuffer: Buffer, existingUpload?: IUpload | null, sessionOption?: SessionOption
 ): Promise<IUpload> => {
   try {
-    Logger.info(`Uploading the zip buffer for ${uniqueName}.`);
-
+    Logger.info(`Uploading the zip buffer for ${uniqueName} by ${user.email}.`);
     const upload = existingUpload || new Upload();
+
+    upload.deployer = user;
     upload.files = await fsUtils.getUploadedFilesFromZipBuffer(`${uniqueName}_upload_${upload._id}_${Date.now()}`, zipBuffer);
 
     return await upload.save(sessionOption).then((uploadSaved) => {
-      Logger.info(`Successfully uploaded the zip buffer for ${uniqueName}.`);
+      Logger.info(`Successfully uploaded the zip buffer for ${uniqueName} by ${user.email}.`);
       return uploadSaved;
     });
   } catch (err: AppError | Error | unknown) {
     throw errorUtils.logAndGetError(new AppError(
       (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while uploading the zip buffer for ${uniqueName}!`,
+      `An error occurred while uploading the zip buffer for ${uniqueName} by ${user.email}.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
   }

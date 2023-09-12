@@ -4,6 +4,7 @@ import multer from 'multer';
 
 import type AppError from '@errors/app-error';
 
+import { IUser } from '@models/user';
 import type { ITestExecutionArguments } from '@models/schemas/test-execution-arguments';
 
 import projectService from '@services/project-service';
@@ -23,19 +24,21 @@ const upload = multer({ storage: multer.memoryStorage() });
  */
 const saveProject = async (
   req: Request, res: Response, saveFunction: (
-    projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
+    user: IUser, projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
   ) => Promise<object>
 ): Promise<object> => {
+  const { user } = res.locals;
   const { projectName } = req.params;
   const requestFile = routerUtils.getRequestFile(req);
   const execArgs = routerUtils.parseJsonObjectFromBody(req, 'execArgs') as ITestExecutionArguments;
 
-  return saveFunction(projectName, requestFile, execArgs);
+  return saveFunction(user as IUser, projectName, requestFile, execArgs);
 };
 
 /**
  * Retrieves all projects.
  *
+ * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
  * @returns {object} 200 - An array containing all projects.
  * @throws {object} 500 - If there's a server error.
  */
@@ -50,6 +53,7 @@ router.get('/', async (req: Request, res: Response) => {
 /**
  * Retrieves a project by its name.
  *
+ * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project.
  * @returns {object} 200 - The project information.
  * @throws {object} 404 - If the project does not exist.
@@ -70,6 +74,7 @@ router.get('/:projectName', async (req: Request, res: Response) => {
  *
  * The uploaded ZIP file should contain the necessary files and folders.
  *
+ * @param {IUser} res.locals.user - The user performing the upload (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project.
  * @consumes multipart/form-data
  * @param {file} req.file.projectZip - The ZIP file containing project files and folders.
@@ -93,6 +98,7 @@ router.post('/:projectName/upload', upload.single('projectZip'), async (req: Req
  *
  * The uploaded ZIP file should contain the necessary files and folders.
  *
+ * @param {IUser} res.locals.user - The user performing the upload (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project.
  * @consumes multipart/form-data
  * @param {file} projectZip - The ZIP file containing project files and folders.
@@ -114,6 +120,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
 /**
  * Update test weights and execution arguments for an existing project using data from the request body.
  *
+ * @param {IUser} res.locals.user - The user performing the update (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project to update.
  * @param {object} req.body - The request body containing the following properties:
  * @param {ITest[]} [req.body.testsWithNewWeights] - An optional array of test objects with updated weights.
@@ -139,6 +146,7 @@ router.put('/:projectName/update', async (req: Request, res: Response) => {
 /**
  * Downloads the uploaded files associated with a project.
  *
+ * @param {IUser} res.locals.user - The user requesting the download (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project associated with the files downloaded.
  * @returns {object} 200 - The downloadable zip buffer.
  * @throws {object} 404 - If the project doesn't exist.
@@ -160,6 +168,7 @@ router.get('/:projectName/download', async (req: Request, res: Response) => {
 /**
  * Deletes a project.
  *
+ * @param {IUser} res.locals.user - The user performing the removal (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project to delete.
  * @returns {object} 204 - If the project deletion is successful.
  * @throws {object} 404 - If the project doesn't exist.

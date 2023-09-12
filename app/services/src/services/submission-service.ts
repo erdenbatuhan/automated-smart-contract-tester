@@ -5,6 +5,7 @@ import { HttpStatusCode } from 'axios';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
+import type { IUser } from '@models/user';
 import Submission from '@models/submission';
 import type { ISubmission } from '@models/submission';
 
@@ -63,12 +64,15 @@ const findSubmissionById = (
  * Run a submission for a specified project, including uploading submission files,
  * executing the Docker image, and saving the submission with status and results.
  *
+ * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the project for which the submission is run.
  * @param {RequestFile} requestFile - The file containing project data.
  * @returns {Promise<ISubmission>} A Promise that resolves to the saved submission document.
  * @throws {AppError} If an error occurs during any step of the submission process.
  */
-const runAndCreateSubmission = async (projectName: string, requestFile: RequestFile): Promise<ISubmission> => {
+const runAndCreateSubmission = async (
+  user: IUser, projectName: string, requestFile: RequestFile
+): Promise<ISubmission> => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -81,7 +85,7 @@ const runAndCreateSubmission = async (projectName: string, requestFile: RequestF
 
     // Step 2: Upload submission files and get the upload document saved
     submission.upload = await uploadService.uploadZipBuffer(
-      `project_${projectName}_submission_${submission._id}`, requestFile.buffer, null, { session });
+      user, `project_${projectName}_submission_${submission._id}`, requestFile.buffer, null, { session });
 
     // Step 3: Send the files to the test runner service to run the Docker image
     const testExecutionOutput = await testRunnerExecutionApi.executeSubmission(

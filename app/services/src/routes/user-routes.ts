@@ -26,6 +26,7 @@ router.get('/', async (req: Request, res: Response) => {
 /**
  * Retrieves a user by its ID.
  *
+ * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
  * @param {string} req.params.userId - The ID of the user.
  * @returns {object} 200 - The user information.
  * @throws {object} 404 - If the user does not exist.
@@ -44,6 +45,7 @@ router.get('/:userId', async (req: Request, res: Response) => {
 /**
  * Deletes a user.
  *
+ * @param {IUser} res.locals.user - The user performing the removal (see auth-middleware).
  * @param {string} req.params.userId - The ID of the user that is to be deleted.
  * @returns {object} 204 - If the user deletion is successful.
  * @throws {object} 404 - If the user doesn't exist.

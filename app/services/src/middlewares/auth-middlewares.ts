@@ -18,7 +18,6 @@ if (!JWT_SECRET) throw new Error('Missing environment variables (\'JWT_SECRET\')
 /**
  * Checks access and proceeds if access is granted.
  *
- * @param {Request} req - Express request object.
  * @param {Response} res - Express response object.
  * @param {NextFunction} next - Express next middleware function.
  * @param {(req: Request, res: Response) => void} accessCheckerFn - A function that checks access.
@@ -68,7 +67,9 @@ const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
  * @returns {void}
  */
 const checkUserType = (res: Response, allowedTypes: UserType[]): void => {
-  if (!allowedTypes.some((allowedType) => (res.locals?.user as IUser)?.type === allowedType)) {
+  const { user } = res.locals;
+
+  if (!allowedTypes.some((allowedType) => (user as IUser)?.type === allowedType)) {
     throw new Error(`The user is not ${allowedTypes.join(' or ')}.`);
   }
 };

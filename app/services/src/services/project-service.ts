@@ -5,6 +5,7 @@ import { HttpStatusCode } from 'axios';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
+import type { IUser } from '@models/user';
 import Project from '@models/project';
 import type { IProject } from '@models/project';
 import type { ITestExecutionArguments } from '@models/schemas/test-execution-arguments';
@@ -61,6 +62,7 @@ const findProjectByName = (
  * This function sends the project files to the test runner service to build a Docker image for the project.
  * Afterward, it creates an Upload document associated with the project files and saves the project with these changes.
  *
+ * @param {IUser} user - The user performing the upload.
  * @param {IProject} project - The project to create or update.
  * @param {RequestFile} requestFile - The file attached to the request containing the project files.
  * @returns {Promise<{ project: IProject; dockerImage: object }>} A promise that resolves to an object containing the created or
@@ -68,7 +70,7 @@ const findProjectByName = (
  * @throws {AppError} If any error occurs during project creation or update.
  */
 const saveProject = async (
-  project: IProject, requestFile: RequestFile
+  user: IUser, project: IProject, requestFile: RequestFile
 ): Promise<{ project: IProject; dockerImage: object }> => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -78,7 +80,7 @@ const saveProject = async (
 
     // Step 1: Upload files and get the upload document saved
     project.upload = await uploadService.uploadZipBuffer(
-      project.projectName, requestFile.buffer, project.upload, { session });
+      user, project.projectName, requestFile.buffer, project.upload, { session });
 
     // Step 2: Call the test runner service to build the Docker image
     const testRunnerOutput = await testRunnerProjectApi.uploadProject(
@@ -86,7 +88,7 @@ const saveProject = async (
     project.tests = testRunnerOutput?.output?.tests?.map((test) => ({ test, weight: 1.0 })) || [];
 
     // Step 3: Create or update project
-    const projectSaved = await project.save({ session });
+    const projectSaved = await project.leanSave({ session });
 
     // Commit transaction and return results
     return await session.commitTransaction().then(() => {
@@ -112,6 +114,7 @@ const saveProject = async (
  * Builds and creates a new project with the given name from a ZIP buffer.
  * If a project with the same name already exists, it fails.
  *
+ * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the new project.
  * @param {RequestFile} requestFile - The file attached to the request containing the project files.
  * @param {ITestExecutionArguments} [execArgs] - Optional additional execution arguments.
@@ -120,20 +123,21 @@ const saveProject = async (
  * @throws {AppError} If a project with the same name already exists (409) or if any error occurs during project creation.
  */
 const buildAndCreateProject = async (
-  projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
+  user: IUser, projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
 ): Promise<{ project: IProject; dockerImage: object }> => {
   // Check if a project with the same name already exists
   const projectExists = await Project.exists({ projectName });
   if (projectExists) throw new AppError(HttpStatusCode.Conflict, `A project with the name '${projectName}' already exists.`);
 
   const newProject = new Project({ projectName, testExecutionArguments: execArgs }); // Create new project
-  return await saveProject(newProject, requestFile);
+  return await saveProject(user, newProject, requestFile);
 };
 
 /**
  * Rebuilds and updates an existing project with the new ZIP buffer.
  * If the project does not exist, it fails.
  *
+ * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the existing project to update.
  * @param {RequestFile} requestFile - The file attached to the request containing the project files.
  * @param {ITestExecutionArguments} [execArgs] - Optional additional execution arguments.
@@ -142,13 +146,13 @@ const buildAndCreateProject = async (
  * @throws {AppError} If the project does not exist (404) or if any error occurs during project update.
  */
 const rebuildAndUpdateProject = async (
-  projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
+  user: IUser, projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
 ): Promise<{ project: IProject; dockerImage: object }> => {
   // Find the existing project
   const existingProject = await findProjectByName(projectName);
   existingProject.testExecutionArguments = execArgs; // Update the existing project's test execution arguments
 
-  return await saveProject(existingProject, requestFile);
+  return await saveProject(user, existingProject, requestFile);
 };
 
 /**

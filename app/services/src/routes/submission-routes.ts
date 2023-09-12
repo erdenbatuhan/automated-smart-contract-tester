@@ -7,6 +7,7 @@ import type AppError from '@errors/app-error';
 import submissionService from '@services/submission-service';
 
 import routerUtils from '@utils/router-utils';
+import { IUser } from '@models/user';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -14,6 +15,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 /**
  * Retrieves all submissions.
  *
+ * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
  * @returns {object} 200 - An array containing all submissions.
  * @throws {object} 500 - If there's a server error.
  */
@@ -28,6 +30,7 @@ router.get('/', async (req: Request, res: Response) => {
 /**
  * Retrieves a submission by its ID.
  *
+ * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
  * @param {string} res.locals.projectName - The name of the project (see api-routes.ts).
  * @param {string} req.params.submissionId - The ID of the submission.
  * @returns {object} 200 - The submission information.
@@ -50,6 +53,7 @@ router.get('/:submissionId', async (req: Request, res: Response) => {
  *
  * The uploaded ZIP file must contain the smart contracts (src folder).
  *
+ * @param {IUser} res.locals.user - The user performing the upload (see auth-middleware).
  * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes.ts).
  * @consumes multipart/form-data
  * @param {file} req.file.srcZip - The ZIP file containing the smart contracts to be tested.
@@ -61,10 +65,10 @@ router.get('/:submissionId', async (req: Request, res: Response) => {
  */
 router.post('/', upload.single('srcZip'), async (req: Request, res: Response) => {
   try {
-    const { projectName } = res.locals;
+    const { user, projectName } = res.locals;
     const requestFile = routerUtils.getRequestFile(req);
 
-    await submissionService.runAndCreateSubmission(projectName, requestFile).then((submission) => {
+    await submissionService.runAndCreateSubmission(user as IUser, projectName, requestFile).then((submission) => {
       res.status(201).json(submission);
     });
   } catch (err: AppError | Error | unknown) {
@@ -75,6 +79,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
 /**
  * Downloads the uploaded files associated with a submission.
  *
+ * @param {IUser} res.locals.user - The user requesting the download (see auth-middleware).
  * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes.ts).
  * @param {string} req.params.submissionId - The ID of the submission associated with the files downloaded.
  * @returns {object} 200 - The downloadable zip buffer.
@@ -98,6 +103,7 @@ router.get('/:submissionId/download', async (req: Request, res: Response) => {
 /**
  * Deletes a submission.
  *
+ * @param {IUser} res.locals.user - The user performing the removal (see auth-middleware).
  * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes.ts).
  * @param {string} req.params.submissionId - The ID of the submission to delete.
  * @returns {object} 204 - If the submission deletion is successful.
