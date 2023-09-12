@@ -108,7 +108,7 @@ const requireUser = (
 };
 
 /**
- * Middleware to require admin-type access.
+ * Middleware to require admin role access.
  *
  * @param {Request} req - Express request object.
  * @param {Response} res - Express response object.

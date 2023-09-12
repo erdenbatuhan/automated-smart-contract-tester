@@ -23,8 +23,7 @@ import type { RequestFile } from '@utils/router-utils';
  * @returns {Promise<IProject[]>} A promise that resolves to an array of all projects.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllProjects = async (): Promise<IProject[]> => Project.find()
-  .exec()
+const findAllProjects = async (): Promise<IProject[]> => Project.find().exec()
   .catch((err: Error | unknown) => {
     throw errorUtils.handleError(err, 'An error occurred while finding all projects.');
   });
