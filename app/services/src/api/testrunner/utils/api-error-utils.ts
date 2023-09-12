@@ -1,3 +1,4 @@
+import { HttpStatusCode } from 'axios';
 import type { AxiosError } from 'axios';
 
 import AppError from '@errors/app-error';
@@ -15,7 +16,7 @@ import errorUtils from '@utils/error-utils';
  */
 const convertApiErrorToAppError = (err: AxiosError<ApiError>, message: string): AppError => errorUtils
   .logAndGetError(new AppError(
-    err.response?.data.error?.statusCode || 502,
+    err.response?.data.error?.statusCode || HttpStatusCode.BadGateway,
     `${message} (Error: ${err.response?.data.error?.message || err.message})`,
     err.response?.data.error?.reason || err.message
   )) as AppError;

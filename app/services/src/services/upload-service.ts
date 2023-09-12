@@ -1,4 +1,5 @@
 import type { SessionOption } from 'mongoose';
+import { HttpStatusCode } from 'axios';
 
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
@@ -34,7 +35,7 @@ const uploadZipBuffer = async (
     });
   } catch (err: AppError | Error | unknown) {
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while uploading the zip buffer for ${uniqueName}!`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
@@ -60,7 +61,7 @@ const downloadUploadedFiles = async (contextName: string, upload: IUpload): Prom
     return zipBuffer;
   } catch (err: AppError | Error | unknown) {
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while downloading the uploaded files for ${contextName} (Upload ID = ${upload._id}).`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
@@ -80,13 +81,13 @@ const deleteUpload = async (upload: IUpload, sessionOption?: SessionOption): Pro
 
   await Upload.findByIdAndDelete(upload._id, sessionOption).exec().then((uploadDeleted) => {
     if (!uploadDeleted) {
-      throw new AppError(404, `No upload with the ID '${upload._id}' found.`);
+      throw new AppError(HttpStatusCode.NotFound, `No upload with the ID '${upload._id}' found.`);
     }
 
     Logger.info(`Successfully deleted the upload with the ID '${upload._id}'.`);
   }).catch((err: AppError | Error | unknown) => {
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while deleting the upload with the ID '${upload._id}'.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));

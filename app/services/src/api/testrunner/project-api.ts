@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { HttpStatusCode } from 'axios';
 import type { AxiosError } from 'axios';
 
 import Logger from '@logging/logger';
@@ -47,7 +47,7 @@ const sendProjectDeletionRequest = async (projectName: string): Promise<void> =>
 
   await axios.request(TestRunnerApiEndpointConfig.CONFIG_PROJECT_REMOVE(projectName)).then(({ status }) => {
     if (status !== 204) {
-      throw new AppError(502, 'The service did not return an empty response');
+      throw new AppError(HttpStatusCode.BadGateway, 'The service did not return an empty response');
     }
 
     Logger.info(`Successfully sent a project deletion request to the Test Runner service for the ${projectName} project to remove its Docker image.`);

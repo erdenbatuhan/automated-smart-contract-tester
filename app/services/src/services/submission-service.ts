@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import type { ProjectionType, SessionOption } from 'mongoose';
+import { HttpStatusCode } from 'axios';
 
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
@@ -23,8 +24,11 @@ import executionOutputUtils from '@utils/execution-output-utils';
  */
 const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find().exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.logAndGetError(
-      new AppError(500, 'An error occurred while finding all submissions.', (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(
+      HttpStatusCode.InternalServerError,
+      'An error occurred while finding all submissions.',
+      (err as Error)?.message
+    ));
   });
 
 /**
@@ -43,14 +47,14 @@ const findSubmissionById = (
   .populate(['project', 'upload']).exec()
   .then((submission) => {
     if (!submission || submission.project.projectName !== projectName) {
-      throw new AppError(404, `No submission with the ID '${submissionId}' found within the ${projectName} project.`);
+      throw new AppError(HttpStatusCode.NotFound, `No submission with the ID '${submissionId}' found within the ${projectName} project.`);
     }
 
     return submission;
   })
   .catch((err: Error | unknown) => {
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while finding the submission with the ID '${submissionId}'.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
@@ -102,7 +106,7 @@ const runAndCreateSubmission = async (projectName: string, requestFile: RequestF
 
     // Handle any errors
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while running a submission for the ${projectName} project.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
@@ -148,7 +152,7 @@ const deleteSubmissionById = async (projectName: string, submissionId: string, s
     await Submission.findByIdAndDelete(submissionId, sessionOption).exec().then((submissionDeleted) => {
       if (!submissionDeleted) throw new Error();
     }).catch((err: AppError | Error | unknown) => {
-      throw new AppError(500, `Failed to delete the submission (ID=${submissionId}).`, (err as Error)?.message); // Should not happen normally!
+      throw new AppError(HttpStatusCode.InternalServerError, `Failed to delete the submission (ID=${submissionId}).`, (err as Error)?.message); // Should not happen normally!
     });
 
     // Commit transaction
@@ -160,7 +164,7 @@ const deleteSubmissionById = async (projectName: string, submissionId: string, s
 
     // Handle any errors and throw an AppError with relevant status code and error message
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while deleting the submission with the ID '${submissionId}'.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));

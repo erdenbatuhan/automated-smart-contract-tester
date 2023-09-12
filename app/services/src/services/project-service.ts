@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import type { ProjectionType, SessionOption } from 'mongoose';
+import { HttpStatusCode } from 'axios';
 
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
@@ -25,7 +26,7 @@ const findAllProjects = async (): Promise<IProject[]> => Project.find()
   .exec()
   .catch((err: Error | unknown) => {
     throw errorUtils.logAndGetError(
-      new AppError(500, 'An error occurred while finding all projects.', (err as Error)?.message));
+      new AppError(HttpStatusCode.InternalServerError, 'An error occurred while finding all projects.', (err as Error)?.message));
   });
 
 /**
@@ -42,12 +43,12 @@ const findProjectByName = (
 ): Promise<IProject> => Project.findOne({ projectName }, projection, sessionOption)
   .populate('upload').exec()
   .then((project) => {
-    if (!project) throw new AppError(404, `No project with the name '${projectName}' found.`);
+    if (!project) throw new AppError(HttpStatusCode.NotFound, `No project with the name '${projectName}' found.`);
     return project;
   })
   .catch((err: Error | unknown) => {
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while finding the project with the name '${projectName}'.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
@@ -97,7 +98,7 @@ const saveProject = async (
 
     // Handle any errors
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while ${project.isNew ? 'creating' : 'updating'} a project.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
@@ -122,7 +123,7 @@ const buildAndCreateProject = async (
 ): Promise<{ project: IProject; dockerImage: object }> => {
   // Check if a project with the same name already exists
   const projectExists = await Project.exists({ projectName });
-  if (projectExists) throw new AppError(409, `A project with the name '${projectName}' already exists.`);
+  if (projectExists) throw new AppError(HttpStatusCode.Conflict, `A project with the name '${projectName}' already exists.`);
 
   const newProject = new Project({ projectName, testExecutionArguments: execArgs }); // Create new project
   return await saveProject(newProject, requestFile);
@@ -185,7 +186,7 @@ const updateProjectTestWeightsAndExecutionArguments = async (
     return project;
   }).catch((err: Error | unknown) => {
     const message = `An error occurred while updating test weights and execution arguments of the ${projectName} project.`;
-    throw errorUtils.logAndGetError(new AppError(500, message, (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.InternalServerError, message, (err as Error)?.message));
   });
 };
 
@@ -221,7 +222,7 @@ const deleteProject = async (projectName: string): Promise<void> => {
     await Project.deleteOne({ projectName }, { session }).exec().then(({ deletedCount }) => {
       if (!deletedCount) throw new Error();
     }).catch((err: AppError | Error | unknown) => {
-      throw new AppError(500, `Failed to delete the ${projectName} project.`, (err as Error)?.message); // Should not happen normally!
+      throw new AppError(HttpStatusCode.InternalServerError, `Failed to delete the ${projectName} project.`, (err as Error)?.message); // Should not happen normally!
     });
 
     // Step 3: Send a deletion request to the Test Runner service to delete the project's image
@@ -236,7 +237,7 @@ const deleteProject = async (projectName: string): Promise<void> => {
 
     // Handle any errors and throw an AppError with relevant status code and error message
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while deleting the ${projectName} project.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
