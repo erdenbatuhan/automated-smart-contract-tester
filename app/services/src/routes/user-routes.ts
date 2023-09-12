@@ -21,7 +21,7 @@ router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response)
   userService.findAllUsers().then((users) => {
     res.status(200).json(users);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -40,7 +40,7 @@ router.get('/:userId', authMiddlewares.requireUser, async (req: Request, res: Re
   userService.findUserById(userId).then((user) => {
     res.status(200).json(user);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -59,7 +59,7 @@ router.delete('/:userId', authMiddlewares.requireAdmin, async (req: Request, res
   userService.deleteUserById(userId).then(() => {
     res.status(204).end();
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 

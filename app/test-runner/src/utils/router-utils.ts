@@ -17,13 +17,13 @@ import errorUtils from './error-utils';
 const parseJsonObjectFromBody = (req: Request, objectKey: string, required: boolean = false): object | undefined => {
   const jsonString = req.body[objectKey];
   if (!jsonString && required) {
-    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.BadRequest, `Object (${objectKey}) not found in the request body.`));
+    throw errorUtils.handleError(new AppError(HttpStatusCode.BadRequest, `Object (${objectKey}) not found in the request body.`));
   }
 
   try {
     return jsonString && JSON.parse(jsonString);
   } catch (err: Error | unknown) {
-    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.BadRequest, `Failed to parse JSON object (${objectKey}) from the request body.`));
+    throw errorUtils.handleError(new AppError(HttpStatusCode.BadRequest, `Failed to parse JSON object (${objectKey}) from the request body.`));
   }
 };
 
@@ -38,8 +38,7 @@ const extractFileBuffer = (req: Request): Buffer => {
   try {
     return req.file!.buffer;
   } catch (err: Error | unknown) {
-    const message = 'An error occurred while reading the file buffer.';
-    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.BadRequest, message, (err as Error)?.message));
+    throw errorUtils.handleError(err, 'An error occurred while reading the file buffer.', HttpStatusCode.BadRequest);
   }
 };
 
@@ -56,9 +55,9 @@ const extractFileBuffer = (req: Request): Buffer => {
  * @param {AppError | Error | unknown} err - The error object to handle.
  * @returns void
  */
-const handleError = (res: Response, err: AppError | Error | unknown): void => {
+const sendErrorResponse = (res: Response, err: AppError | Error | unknown): void => {
   const httpErr = (err instanceof AppError) ? err : new AppError(HttpStatusCode.InternalServerError, (err as Error)?.message);
   res.status(httpErr.statusCode).json({ error: httpErr });
 };
 
-export default { parseJsonObjectFromBody, extractFileBuffer, handleError };
+export default { parseJsonObjectFromBody, extractFileBuffer, sendErrorResponse };

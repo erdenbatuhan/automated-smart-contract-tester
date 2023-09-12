@@ -18,7 +18,7 @@ const handleError = (
   const errMessage = (err as Error)?.message;
   const errReason = (err as AppError)?.reason || errMessage;
 
-  if (err instanceof AppError) {
+  if (errMessage !== errReason) {
     Logger.error(`${errMessage} (Reason: ${errReason})`);
   } else {
     Logger.error(errMessage);

@@ -23,9 +23,7 @@ import dockerUtils from '@utils/docker-utils';
  */
 const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.find().exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(
-      HttpStatusCode.InternalServerError, 'An error occurred while finding all docker images.', (err as Error)?.message)
-    );
+    throw errorUtils.handleError(err, 'An error occurred while finding all docker images.');
   });
 
 /**
@@ -53,11 +51,7 @@ const findDockerImage = async (
     return dockerImage;
   })
   .catch((err: AppError | Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while finding the docker image with the name=${imageName}.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while finding the docker image with the name=${imageName}.`);
   });
 
 /**
@@ -93,8 +87,7 @@ const saveDockerImage = async (
 const handleSaveErrorAndReturn = async (
   dockerImageID: string, err: MongoError | Error | unknown
 ): Promise<AppError | MongoError | Error | unknown> => {
-  const message = 'An error occurred while saving/updating the Docker Image with associated Docker Container History.';
-  const httpErr = new AppError(HttpStatusCode.Conflict, message, (err as Error)?.message);
+  const httpErr = new AppError(HttpStatusCode.Conflict, (err as Error)?.message);
 
   // Handle duplicate image ID error if it's the case
   if ((err as MongoError)?.code === 11000 && (err as MongoError)?.message.includes('imageID')) { // Duplicate image ID error
@@ -102,7 +95,7 @@ const handleSaveErrorAndReturn = async (
     httpErr.reason = `An image with imageID=${dockerImageID} already exists (${existingImage?.imageName}). Please use that one or delete it first!`;
   }
 
-  return errorUtils.logAndGetError(httpErr);
+  return errorUtils.handleError(httpErr, 'An error occurred while saving/updating the Docker Image with associated Docker Container History.');
 };
 
 /**
@@ -164,11 +157,7 @@ const deleteDockerImage = async (imageName: string): Promise<void> => {
 
     Logger.info(`Successfully deleted the Docker Image with the name=${imageName}.`);
   } catch (err: AppError | Error | unknown) {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while deleting the Docker Image with the name=${imageName}.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while deleting the Docker Image with the name=${imageName}.`);
   }
 };
 

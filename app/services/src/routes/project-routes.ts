@@ -47,7 +47,7 @@ router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response)
   projectService.findAllProjects().then((projects) => {
     res.status(200).json(projects);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -66,7 +66,7 @@ router.get('/:projectName', authMiddlewares.requireUser, async (req: Request, re
   projectService.findProjectByName(projectName).then((project) => {
     res.status(200).json(project);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -90,7 +90,7 @@ router.post('/:projectName/upload', authMiddlewares.requireAdmin, upload.single(
   saveProject(req, res, projectService.buildAndCreateProject).then((projectCreated) => {
     res.status(201).json(projectCreated);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -114,7 +114,7 @@ router.put('/:projectName/upload', authMiddlewares.requireAdmin, upload.single('
   saveProject(req, res, projectService.rebuildAndUpdateProject).then((projectUpdated) => {
     res.status(200).json(projectUpdated);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -140,7 +140,7 @@ router.put('/:projectName/update', authMiddlewares.requireAdmin, async (req: Req
   return projectService.updateProjectTestWeightsAndExecutionArguments(projectName, tests, execArgs).then((projectUpdated) => {
     res.status(200).json(projectUpdated);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -162,7 +162,7 @@ router.get('/:projectName/download', authMiddlewares.requireAdmin, async (req: R
 
     res.status(200).send(zipBuffer);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -181,7 +181,7 @@ router.delete('/:projectName', authMiddlewares.requireAdmin, async (req: Request
   projectService.deleteProject(projectName).then(() => {
     res.status(204).end();
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 

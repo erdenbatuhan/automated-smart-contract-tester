@@ -30,8 +30,7 @@ const retrieveTestNamesFromGasSnapshot = (
   try {
     return { tests: forgeUtils.retrieveTestNamesFromGasSnapshot(output?.data) };
   } catch (err: Error | unknown) {
-    const message = `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`;
-    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.InternalServerError, message, (err as Error)?.message));
+    throw errorUtils.handleError(err, `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`);
   }
 };
 
@@ -91,11 +90,8 @@ const saveProject = async (
       await dockerUtils.removeImage(dockerImage!.imageName, { shouldPrune: true });
     }
 
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while creating the ${projectName} project.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    // Throw error
+    throw errorUtils.handleError(err, `An error occurred while creating the ${projectName} project.`);
   }
 };
 

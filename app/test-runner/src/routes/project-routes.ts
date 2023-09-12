@@ -33,7 +33,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
       res.status(isNew ? 201 : 200).json(project);
     });
   } catch (err: AppError | Error | unknown) {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   }
 });
 

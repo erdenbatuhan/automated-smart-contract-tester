@@ -22,7 +22,7 @@ router.post('/', async (req: Request, res: Response) => {
   healthCheckPromise.then((result) => {
     res.status(200).send(result);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 

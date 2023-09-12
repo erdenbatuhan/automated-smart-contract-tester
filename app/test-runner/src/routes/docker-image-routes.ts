@@ -19,7 +19,7 @@ router.get('/', async (req: Request, res: Response) => {
   dockerImageService.findAllDockerImages().then((dockerImages) => {
     res.status(200).json(dockerImages);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -37,7 +37,7 @@ router.get('/:imageName', async (req: Request, res: Response) => {
   dockerImageService.findDockerImage(imageName).then((dockerImage) => {
     res.status(200).json(dockerImage);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -55,7 +55,7 @@ router.delete('/:imageName', async (req: Request, res: Response) => {
   dockerImageService.deleteDockerImage(imageName).then(() => {
     res.status(204).end();
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 

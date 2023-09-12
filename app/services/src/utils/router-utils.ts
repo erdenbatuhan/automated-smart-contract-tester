@@ -58,7 +58,7 @@ const getRequestFile = (req: Request): RequestFile => {
  * @param {AppError | Error | unknown} err - The error object to handle.
  * @returns void
  */
-const handleError = (res: Response, err: AppError | Error | unknown): void => {
+const sendErrorResponse = (res: Response, err: AppError | Error | unknown): void => {
   const httpErr = (err instanceof AppError)
     ? err
     : new AppError(HttpStatusCode.InternalServerError, (err as Error)?.message);
@@ -66,4 +66,4 @@ const handleError = (res: Response, err: AppError | Error | unknown): void => {
   res.status(httpErr.statusCode).json({ error: httpErr });
 };
 
-export default { parseJsonObjectFromBody, getRequestFile, handleError };
+export default { parseJsonObjectFromBody, getRequestFile, sendErrorResponse };

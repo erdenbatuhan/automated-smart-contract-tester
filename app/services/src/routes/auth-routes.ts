@@ -38,7 +38,7 @@ router.post('/signup', async (req: Request, res: Response) => {
   authService.register(req.body).then(({ payload, token }) => {
     returnJwtResponse(res, 201, payload, token);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -56,7 +56,7 @@ router.post('/login', async (req: Request, res: Response) => {
   authService.login(req.body).then(({ payload, token }) => {
     returnJwtResponse(res, 200, payload, token);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 

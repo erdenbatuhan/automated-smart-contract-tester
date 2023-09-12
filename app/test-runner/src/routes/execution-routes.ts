@@ -34,7 +34,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
       res.status(201).json(execution);
     });
   } catch (err: AppError | Error | unknown) {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   }
 });
 

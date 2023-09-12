@@ -35,7 +35,7 @@ export const handleAccessErrors = (
 
   if (options.returnResponseOnError) {
     Logger.error(`${appError.message} (Reason: ${appError.reason})`);
-    routerUtils.handleError(res, appError);
+    routerUtils.sendErrorResponse(res, appError);
   } else {
     throw appError;
   }

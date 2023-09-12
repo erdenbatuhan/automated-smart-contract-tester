@@ -33,7 +33,7 @@ router.get('/', submissionMiddlewares.determineFindFunctionBasedOnUserRole, asyn
   findFunction.then((submissions: ISubmission) => {
     res.status(200).json(submissions);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -54,7 +54,7 @@ router.get('/:submissionId', submissionMiddlewares.requireSubmissionOwned, async
   submissionService.findSubmissionById(projectName, submissionId).then((submission) => {
     res.status(200).json(submission);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -82,7 +82,7 @@ router.post('/', authMiddlewares.requireUser, upload.single('srcZip'), async (re
       res.status(201).json(submission);
     });
   } catch (err: AppError | Error | unknown) {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   }
 });
 
@@ -106,7 +106,7 @@ router.get('/:submissionId/download', submissionMiddlewares.requireSubmissionOwn
 
     res.status(200).send(zipBuffer);
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
@@ -127,7 +127,7 @@ router.delete('/:submissionId', authMiddlewares.requireAdmin, async (req: Reques
   submissionService.deleteSubmissionById(projectName, submissionId).then(() => {
     res.status(204).end();
   }).catch((err: AppError | Error | unknown) => {
-    routerUtils.handleError(res, err);
+    routerUtils.sendErrorResponse(res, err);
   });
 });
 
