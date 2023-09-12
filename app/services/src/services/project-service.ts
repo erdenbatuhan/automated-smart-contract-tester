@@ -32,22 +32,29 @@ const findAllProjects = async (): Promise<IProject[]> => Project.find().exec()
  * Finds a project by its name.
  *
  * @param {string} projectName - The name of the project to find.
+ * @param {string | string[]} [populatePath] - Optional path(s) to populate in the query.
  * @param {ProjectionType<IProject>} [projection] - Optional projection for the query.
  * @param {SessionOption} [sessionOption] - Optional session option for the query.
  * @returns {Promise<IProject>} A promise that resolves to the found project.
  * @throws {AppError} If the project is not found (HTTP 404) or if an error occurs during the operation.
  */
-const findProjectByName = (
-  projectName: string, projection?: ProjectionType<IProject>, sessionOption?: SessionOption
-): Promise<IProject> => Project.findOne({ projectName }, projection, sessionOption)
-  .populate('upload').exec()
-  .then((project) => {
+const findProjectByName = async (
+  projectName: string, populatePath?: string | string[], projection?: ProjectionType<IProject>, sessionOption?: SessionOption
+): Promise<IProject> => {
+  let findQuery = Project.findOne({ projectName }, projection, sessionOption);
+
+  // If a populate path is provided, add population to the query
+  if (populatePath) {
+    findQuery = findQuery.populate(populatePath);
+  }
+
+  return findQuery.exec().then((project) => {
     if (!project) throw new AppError(HttpStatusCode.NotFound, `No project with the name '${projectName}' found.`);
     return project;
-  })
-  .catch((err: Error | unknown) => {
+  }).catch((err: Error | unknown) => {
     throw errorUtils.handleError(err, `An error occurred while finding the project with the name '${projectName}'.`);
   });
+};
 
 /**
  * Creates a new project or updates an existing one.
@@ -138,7 +145,7 @@ const rebuildAndUpdateProject = async (
   user: IUser, projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
 ): Promise<{ project: IProject; dockerImage: object }> => {
   // Find the existing project
-  const existingProject = await findProjectByName(projectName);
+  const existingProject = await findProjectByName(projectName, 'upload');
   existingProject.testExecutionArguments = execArgs; // Update the existing project's test execution arguments
 
   return await saveProject(user, existingProject, requestFile);
@@ -160,7 +167,7 @@ const updateProjectTestWeightsAndExecutionArguments = async (
 ): Promise<IProject> => {
   // Find the existing project
   Logger.info(`Updating test weights and execution arguments of the ${projectName} project.`);
-  const existingProject = await findProjectByName(projectName);
+  const existingProject = await findProjectByName(projectName, 'upload');
 
   // Update test weights if provided
   if (testsWithNewWeights) {
@@ -190,7 +197,7 @@ const updateProjectTestWeightsAndExecutionArguments = async (
  * @returns {Promise<Buffer>} A promise that resolves to the downloaded zip buffer containing project files.
  * @throws {AppError} If the project does not exist (HTTP 404) or if there's an error during the download (HTTP 500).
  */
-const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProjectByName(projectName, 'upload')
+const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProjectByName(projectName, 'upload', 'upload')
   .then(({ upload }) => uploadService.downloadUploadedFiles(`${projectName} project`, upload));
 
 /**
@@ -208,7 +215,7 @@ const deleteProject = async (projectName: string): Promise<void> => {
     Logger.info(`Deleting the ${projectName} project.`);
 
     // Step 1: Delete the upload associated with the project
-    await findProjectByName(projectName, 'upload', { session })
+    await findProjectByName(projectName, 'upload', 'upload', { session })
       .then(({ upload }) => uploadService.deleteUpload(upload, { session }));
 
     // Step 2: Delete the project from the DB

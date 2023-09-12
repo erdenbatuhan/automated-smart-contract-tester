@@ -7,6 +7,7 @@ import type AppError from '@errors/app-error';
 import { IUser } from '@models/user';
 import type { ITestExecutionArguments } from '@models/schemas/test-execution-arguments';
 
+import authMiddlewares from '@middlewares/auth-middlewares';
 import projectService from '@services/project-service';
 
 import routerUtils, { RequestFile } from '@utils/router-utils';
@@ -42,7 +43,7 @@ const saveProject = async (
  * @returns {object} 200 - An array containing all projects.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response) => {
   projectService.findAllProjects().then((projects) => {
     res.status(200).json(projects);
   }).catch((err: AppError | Error | unknown) => {
@@ -59,7 +60,7 @@ router.get('/', async (req: Request, res: Response) => {
  * @throws {object} 404 - If the project does not exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/:projectName', async (req: Request, res: Response) => {
+router.get('/:projectName', authMiddlewares.requireUser, async (req: Request, res: Response) => {
   const { projectName } = req.params;
 
   projectService.findProjectByName(projectName).then((project) => {
@@ -85,7 +86,7 @@ router.get('/:projectName', async (req: Request, res: Response) => {
  * @throws {object} 500 - If there's a server error.
  * @throws {object} 502 - If the external API call to the Test Runner service has failed without a specific request code.
  */
-router.post('/:projectName/upload', upload.single('projectZip'), async (req: Request, res: Response) => {
+router.post('/:projectName/upload', authMiddlewares.requireAdmin, upload.single('projectZip'), async (req: Request, res: Response) => {
   saveProject(req, res, projectService.buildAndCreateProject).then((projectCreated) => {
     res.status(201).json(projectCreated);
   }).catch((err: AppError | Error | unknown) => {
@@ -109,7 +110,7 @@ router.post('/:projectName/upload', upload.single('projectZip'), async (req: Req
  * @throws {object} 500 - If there's a server error.
  * @throws {object} 502 - If the external API call to the Test Runner service has failed without a specific request code.
  */
-router.put('/:projectName/upload', upload.single('projectZip'), async (req: Request, res: Response) => {
+router.put('/:projectName/upload', authMiddlewares.requireAdmin, upload.single('projectZip'), async (req: Request, res: Response) => {
   saveProject(req, res, projectService.rebuildAndUpdateProject).then((projectUpdated) => {
     res.status(200).json(projectUpdated);
   }).catch((err: AppError | Error | unknown) => {
@@ -131,7 +132,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
  * @throws {object} 404 - If the project doesn't exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.put('/:projectName/update', async (req: Request, res: Response) => {
+router.put('/:projectName/update', authMiddlewares.requireAdmin, async (req: Request, res: Response) => {
   const { projectName } = req.params;
   const { tests, execArgs } = req.body;
   if (!tests || !execArgs) return res.status(204).end();
@@ -152,7 +153,7 @@ router.put('/:projectName/update', async (req: Request, res: Response) => {
  * @throws {object} 404 - If the project doesn't exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/:projectName/download', async (req: Request, res: Response) => {
+router.get('/:projectName/download', authMiddlewares.requireAdmin, async (req: Request, res: Response) => {
   const { projectName } = req.params;
 
   projectService.downloadProjectFiles(projectName).then((zipBuffer) => {
@@ -174,7 +175,7 @@ router.get('/:projectName/download', async (req: Request, res: Response) => {
  * @throws {object} 404 - If the project doesn't exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.delete('/:projectName', async (req: Request, res: Response) => {
+router.delete('/:projectName', authMiddlewares.requireAdmin, async (req: Request, res: Response) => {
   const { projectName } = req.params;
 
   projectService.deleteProject(projectName).then(() => {
