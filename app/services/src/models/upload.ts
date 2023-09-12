@@ -14,7 +14,7 @@ export interface IUpload extends Document {
 
 const UploadSchema = new Schema<IUpload>(
   {
-    deployer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, select: false },
+    deployer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     files: { type: [FileSchema], required: true }
   },
   {

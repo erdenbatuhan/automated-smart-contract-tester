@@ -18,12 +18,9 @@ import errorUtils from '@utils/error-utils';
  */
 const findAllUsers = async (
   sessionOption?: SessionOption
-): Promise<IUser[]> => User.find({}, null, sessionOption)
-  .exec()
+): Promise<IUser[]> => User.find({}, null, sessionOption).exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(
-      HttpStatusCode.InternalServerError, 'An error occurred while finding all users.', (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, 'An error occurred while finding all users.');
   });
 
 /**
@@ -42,11 +39,7 @@ const findUserById = (
     return user;
   })
   .catch((err) => {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while finding the user with the ID '${userId}'.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while finding the user with the ID '${userId}'.`);
   });
 
 /**
@@ -67,11 +60,7 @@ const deleteUserById = async (userId: string, sessionOption?: SessionOption): Pr
 
     Logger.info(`Successfully deleted the user with the ID '${userId}'.`);
   }).catch((err: AppError | Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while deleting the user with the ID '${userId}'.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while deleting the user with the ID '${userId}'.`);
   });
 };
 

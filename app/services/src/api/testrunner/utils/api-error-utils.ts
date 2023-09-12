@@ -14,11 +14,14 @@ import errorUtils from '@utils/error-utils';
  * @returns {AppError} An AppError with details based on the Test Runner API error response or the Axios error message.
  * @throws {AppError} Throws an AppError with the constructed details.
  */
-const convertApiErrorToAppError = (err: AxiosError<ApiError>, message: string): AppError => errorUtils
-  .logAndGetError(new AppError(
-    err.response?.data.error?.statusCode || HttpStatusCode.BadGateway,
-    `${message} (Error: ${err.response?.data.error?.message || err.message})`,
-    err.response?.data.error?.reason || err.message
-  )) as AppError;
+const convertApiErrorToAppError = (err: AxiosError<ApiError>, message: string): AppError => {
+  const apiError = err.response?.data.error as AppError;
+
+  return errorUtils.handleError(
+    new AppError(apiError?.statusCode, err.message, apiError?.reason),
+    `${message} (Error: ${apiError?.message || err.message})`,
+    HttpStatusCode.BadGateway
+  );
+};
 
 export default { convertApiErrorToAppError };

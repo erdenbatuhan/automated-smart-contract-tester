@@ -26,9 +26,7 @@ import type { RequestFile } from '@utils/router-utils';
 const findAllProjects = async (): Promise<IProject[]> => Project.find()
   .exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(
-      HttpStatusCode.InternalServerError, 'An error occurred while finding all projects.', (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, 'An error occurred while finding all projects.');
   });
 
 /**
@@ -49,11 +47,7 @@ const findProjectByName = (
     return project;
   })
   .catch((err: Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while finding the project with the name '${projectName}'.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while finding the project with the name '${projectName}'.`);
   });
 
 /**
@@ -100,11 +94,7 @@ const saveProject = async (
     await session.abortTransaction();
 
     // Handle any errors
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while ${project.isNew ? 'creating' : 'updating'} a project.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while ${project.isNew ? 'creating' : 'updating'} a project.`);
   } finally {
     await session.endSession();
   }
@@ -190,8 +180,7 @@ const updateProjectTestWeightsAndExecutionArguments = async (
     Logger.info(`Successfully updated test weights and execution arguments of the ${projectName} project.`);
     return project;
   }).catch((err: Error | unknown) => {
-    const message = `An error occurred while updating test weights and execution arguments of the ${projectName} project.`;
-    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.InternalServerError, message, (err as Error)?.message));
+    throw errorUtils.handleError(err, `An error occurred while updating test weights and execution arguments of the ${projectName} project.`);
   });
 };
 
@@ -241,11 +230,7 @@ const deleteProject = async (projectName: string): Promise<void> => {
     await session.abortTransaction();
 
     // Handle any errors and throw an AppError with relevant status code and error message
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while deleting the ${projectName} project.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while deleting the ${projectName} project.`);
   } finally {
     // End the session
     await session.endSession();

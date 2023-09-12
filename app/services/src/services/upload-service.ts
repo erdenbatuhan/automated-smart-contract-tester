@@ -37,11 +37,7 @@ const uploadZipBuffer = async (
       return uploadSaved;
     });
   } catch (err: AppError | Error | unknown) {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while uploading the zip buffer for ${uniqueName} by ${user.email}.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while uploading the zip buffer for ${uniqueName} by ${user.email}.`);
   }
 };
 
@@ -63,11 +59,7 @@ const downloadUploadedFiles = async (contextName: string, upload: IUpload): Prom
     Logger.info(`Successfully downloaded the uploaded files for ${contextName} (Upload ID = ${upload._id}).`);
     return zipBuffer;
   } catch (err: AppError | Error | unknown) {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while downloading the uploaded files for ${contextName} (Upload ID = ${upload._id}).`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while downloading the uploaded files for ${contextName} (Upload ID = ${upload._id}).`);
   }
 };
 
@@ -89,11 +81,7 @@ const deleteUpload = async (upload: IUpload, sessionOption?: SessionOption): Pro
 
     Logger.info(`Successfully deleted the upload with the ID '${upload._id}'.`);
   }).catch((err: AppError | Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while deleting the upload with the ID '${upload._id}'.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+    throw errorUtils.handleError(err, `An error occurred while deleting the upload with the ID '${upload._id}'.`);
   });
 };
 

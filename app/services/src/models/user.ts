@@ -6,7 +6,7 @@ import { HttpStatusCode } from 'axios';
 
 import AppError from '@errors/app-error';
 
-import UserType from '@models/enums/user-type';
+import UserRole from '@models/enums/user-role';
 
 import errorUtils from '@utils/error-utils';
 
@@ -14,13 +14,13 @@ export interface IUser extends Document {
   _id: Schema.Types.ObjectId;
   email: string;
   password: string;
-  type: UserType;
+  role: UserRole;
 
   getPublicRepresentation(this: IUser): IUser;
 }
 
 interface UserModel extends Model<IUser> {
-  register(email: string, password: string, type?: UserType): Promise<IUser>;
+  register(email: string, password: string, type?: UserRole): Promise<IUser>;
   login(email: string, password: string): Promise<IUser>;
 }
 
@@ -39,7 +39,7 @@ const UserSchema = new Schema<IUser, UserModel>(
       required: [true, 'Password is required.'],
       minlength: [8, 'Password should be at least 8 characters long.']
     },
-    type: { type: String, enum: UserType, required: true, default: UserType.USER }
+    role: { type: String, enum: UserRole, required: true, default: UserRole.USER }
   },
   {
     timestamps: true,
@@ -72,16 +72,16 @@ UserSchema.pre<IUser>('save',
 
 UserSchema.static('register',
   /**
-   * Registers a new user with the provided email, password, and optional user type.
+   * Registers a new user with the provided email, password, and optional user role.
    *
    * @static
    * @param {string} email - The email of the new user.
    * @param {string} password - The password for the new user.
-   * @param {UserType} [type] - The optional user type.
+   * @param {UserRole} [type] - The optional user role.
    * @returns {Promise<IUser>} A promise that resolves to the newly created user.
    * @throws {AppError} Throws an error if a user with the same email already exists.
    */
-  async function register(email: string, password: string, type?: UserType): Promise<IUser> {
+  async function register(email: string, password: string, type?: UserRole): Promise<IUser> {
     // Check if a user with the same email already exists
     const userExists = await this.exists({ email }).exec();
     if (userExists) throw new AppError(HttpStatusCode.Conflict, `A user with the email '${email}' already exists.`);
@@ -104,11 +104,11 @@ UserSchema.static('login',
   async function login(email: string, password: string): Promise<IUser> {
     // Find the user by email
     const user = await this.findOne({ email }).select('+password').exec();
-    if (!user) throw errorUtils.logAndGetError(new AppError(HttpStatusCode.NotFound, `No user with the email '${email}' found.`));
+    if (!user) throw errorUtils.handleError(new AppError(HttpStatusCode.NotFound, `No user with the email '${email}' found.`));
 
     // Check credentials
     const credentialsApproved = await bcrypt.compare(password, user.password);
-    if (!credentialsApproved) throw errorUtils.logAndGetError(new AppError(HttpStatusCode.Unauthorized, 'Invalid credentials!'));
+    if (!credentialsApproved) throw errorUtils.handleError(new AppError(HttpStatusCode.Unauthorized, 'Invalid credentials!'));
 
     return user;
   }

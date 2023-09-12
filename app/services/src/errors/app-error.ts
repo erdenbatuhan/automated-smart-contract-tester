@@ -2,16 +2,16 @@ import { STATUS_CODES } from 'http';
 
 export default class AppError extends Error {
   statusCode: number;
-  status: string | undefined;
+  status?: string;
   message: string;
-  reason: string;
+  reason?: string;
 
-  constructor(code: number, message: string, reason?: string) {
+  constructor(code: number, message?: string, reason?: string) {
     super(message || STATUS_CODES[code]);
 
     this.statusCode = code;
     this.status = STATUS_CODES[code];
-    this.message = message;
+    this.message = message || STATUS_CODES[code] || '<null_error>';
     this.reason = reason || message;
   }
 

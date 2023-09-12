@@ -1,7 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 import type { SaveOptions } from 'mongoose';
 
 import type { IProject } from '@models/project';
+import Upload from '@models/upload';
 import type { IUpload } from '@models/upload';
 import type { IUser } from '@models/user';
 import TestStatus from '@models/enums/test-status';
@@ -17,7 +18,12 @@ export interface ISubmission extends Document {
   leanSave(this: ISubmission, options?: SaveOptions): Promise<ISubmission>;
 }
 
-const SubmissionSchema = new Schema<ISubmission>(
+interface SubmissionModel extends Model<ISubmission> {
+  findByDeployer(deployer: IUser): Promise<ISubmission[]>;
+  existsByIdAndDeployer(submissionId: string, deployer: IUser): Promise<boolean>;
+}
+
+const SubmissionSchema = new Schema<ISubmission, SubmissionModel>(
   {
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true, select: false },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },
@@ -31,7 +37,7 @@ const SubmissionSchema = new Schema<ISubmission>(
 );
 
 // Virtual Field: deployer
-SubmissionSchema.virtual('deployer', {
+SubmissionSchema.virtual<ISubmission>('deployer', {
   ref: 'Upload',
   localField: 'upload',
   foreignField: '_id',
@@ -49,5 +55,36 @@ SubmissionSchema.methods.leanSave = async function leanSave(this: ISubmission, o
   return this.save(options).then((savedDoc) => savedDoc.toObject({ virtuals: true, depopulate: true, useProjection: true }));
 };
 
+SubmissionSchema.static('findByDeployer',
+  async function findByDeployer(deployer: IUser): Promise<ISubmission[]> {
+    return this.aggregate([
+      {
+        $lookup: {
+          from: Upload.collection.name,
+          localField: 'upload',
+          foreignField: '_id',
+          as: 'upload'
+        }
+      },
+      { $match: { 'upload.deployer': new mongoose.Types.ObjectId(String(deployer._id)) } }
+    ]);
+  }
+);
+
+SubmissionSchema.static('existsByIdAndDeployer',
+  /**
+   * Checks if a submission with the specified ID was uploaded by the given deployer.
+   *
+   * @param {string} submissionId - The ID of the submission to check.
+   * @param {IUser} deployer - The deployer to check against.
+   * @returns {Promise<boolean>} A promise that resolves to true if the submission was uploaded by the deployer, otherwise false.
+   */
+  async function existsByIdAndDeployer(submissionId: string, deployer: IUser): Promise<boolean> {
+    return this.findById(submissionId, 'upload')
+      .populate('upload').exec()
+      .then((submissionFound) => !!submissionFound && String(submissionFound.deployer) === String(deployer._id));
+  }
+);
+
 // Submission
-export default mongoose.model<ISubmission>('Submission', SubmissionSchema);
+export default mongoose.model<ISubmission, SubmissionModel>('Submission', SubmissionSchema);

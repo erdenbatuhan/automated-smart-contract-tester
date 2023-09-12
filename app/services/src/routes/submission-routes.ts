@@ -4,23 +4,33 @@ import multer from 'multer';
 
 import type AppError from '@errors/app-error';
 
+import { IUser } from '@models/user';
+import { ISubmission } from '@models/submission';
+
+import authMiddlewares from '@middlewares/auth-middlewares';
+import submissionMiddlewares from '@middlewares/submission-middlewares';
+
 import submissionService from '@services/submission-service';
 
 import routerUtils from '@utils/router-utils';
-import { IUser } from '@models/user';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 /**
- * Retrieves all submissions.
+ * Retrieves submissions based on the user's role.
+ *  - Admins can retrieve all submissions
+ *  - Users can only retrieve the submissions uploaded by them
  *
- * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
+ * @param {IUser} res.locals.user - The authenticated user (see auth-middleware).
+ * @param {IUser} res.locals.findFunction - The function returning all submissions depending on the user access (see submission-middleware).
  * @returns {object} 200 - An array containing all submissions.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/', async (req: Request, res: Response) => {
-  submissionService.findAllSubmissions().then((submissions) => {
+router.get('/', submissionMiddlewares.determineFindFunctionBasedOnUserRole, async (req: Request, res: Response) => {
+  const { findFunction } = res.locals;
+
+  findFunction.then((submissions: ISubmission) => {
     res.status(200).json(submissions);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);
@@ -37,7 +47,7 @@ router.get('/', async (req: Request, res: Response) => {
  * @throws {object} 404 - If the submission does not exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/:submissionId', async (req: Request, res: Response) => {
+router.get('/:submissionId', submissionMiddlewares.requireSubmissionOwned, async (req: Request, res: Response) => {
   const { projectName } = res.locals;
   const { submissionId } = req.params;
 
@@ -63,7 +73,7 @@ router.get('/:submissionId', async (req: Request, res: Response) => {
  * @throws {object} 500 - If there's a server error.
  * @throws {object} 502 - If the external API call to the Test Runner service has failed without a specific request code.
  */
-router.post('/', upload.single('srcZip'), async (req: Request, res: Response) => {
+router.post('/', authMiddlewares.requireUser, upload.single('srcZip'), async (req: Request, res: Response) => {
   try {
     const { user, projectName } = res.locals;
     const requestFile = routerUtils.getRequestFile(req);
@@ -86,7 +96,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
  * @throws {object} 404 - If the submission doesn't exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/:submissionId/download', async (req: Request, res: Response) => {
+router.get('/:submissionId/download', submissionMiddlewares.requireSubmissionOwned, async (req: Request, res: Response) => {
   const { projectName } = res.locals;
   const { submissionId } = req.params;
 
@@ -110,7 +120,7 @@ router.get('/:submissionId/download', async (req: Request, res: Response) => {
  * @throws {object} 404 - If the submission doesn't exist.
  * @throws {object} 500 - If there's a server error.
  */
-router.delete('/:submissionId', async (req: Request, res: Response) => {
+router.delete('/:submissionId', authMiddlewares.requireAdmin, async (req: Request, res: Response) => {
   const { projectName } = res.locals;
   const { submissionId } = req.params;
 

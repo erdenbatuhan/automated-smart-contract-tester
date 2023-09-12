@@ -7,7 +7,7 @@ import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
 import type { IUser } from '@models/user';
-import UserType from '@models/enums/user-type';
+import UserRole from '@models/enums/user-role';
 
 import routerUtils from '@utils/router-utils';
 
@@ -16,38 +16,42 @@ const { JWT_SECRET } = process.env;
 if (!JWT_SECRET) throw new Error('Missing environment variables (\'JWT_SECRET\')!');
 
 /**
- * Checks access and proceeds if access is granted.
+ * Handles access-related errors and either sends an appropriate response or throws an error.
  *
  * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
- * @param {(req: Request, res: Response) => void} accessCheckerFn - A function that checks access.
- * @throws {AppError} Throws an error if the access is not granted.
+ * @param {AppError | Error | unknown} err - The error to handle.
+ * @param {Object} [options] - Options for controlling the error handling behavior.
+ * @param {boolean} [options.returnResponseOnError=true] - If true, sends a response; if false, throws the error.
  * @returns {void}
+ * @throws {AppError} If `options.returnResponseOnError` is false and the error is thrown.
  */
-const checkAccessAndProceed = (res: Response, next: NextFunction, accessCheckerFn: () => void): void => {
-  try {
-    accessCheckerFn(); // Check access
-    next(); // Proceed
-  } catch (err: AppError | Error | unknown) { // Handle access errors
-    const appError = (err instanceof AppError)
-      ? err
-      : new AppError(HttpStatusCode.Forbidden, 'No access granted for this resource.', (err as Error)?.message);
+export const handleAccessErrors = (
+  res: Response, err: AppError | Error | unknown,
+  options: { returnResponseOnError: boolean } = { returnResponseOnError: true }
+): void => {
+  const appError = (err instanceof AppError)
+    ? err
+    : new AppError(HttpStatusCode.Forbidden, 'No access granted for this resource.', (err as Error)?.message);
 
+  if (options.returnResponseOnError) {
     Logger.error(`${appError.message} (Reason: ${appError.reason})`);
     routerUtils.handleError(res, appError);
+  } else {
+    throw appError;
   }
 };
 
 /**
- * (Middleware) Requires authentication via JWT token.
+ * Middleware to require JWT token authentication for accessing protected routes.
  *
  * @param {Request} req - Express request object.
  * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
+ * @param {NextFunction} next - Express next function.
  * @returns {void}
+ * @throws {AppError} If authentication fails due to an invalid or missing token.
  */
 const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
-  checkAccessAndProceed(res, next, (): void => {
+  try {
     // Get token and check if it exists
     const token = req.cookies?.token || req.headers?.authorization?.split(' ')[1];
     if (!token) throw new AppError(HttpStatusCode.Unauthorized, 'Cannot authenticate without a valid token.', 'Empty token!');
@@ -55,51 +59,76 @@ const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
     // Extract user from the token (Throws an Error if the token is not verified)
     const payload = jwt.verify(token, JWT_SECRET!) as JwtPayload;
     res.locals.user = payload.user; // Set user object
-  });
-};
 
-/**
- * Checks if a user has a specific type that matches one of the allowed types.
- *
- * @param {Response} res - Express response object.
- * @param {UserType[]} allowedTypes - The allowed user types.
- * @throws {Error} Throws an error if the user type does not match the allowed type.
- * @returns {void}
- */
-const checkUserType = (res: Response, allowedTypes: UserType[]): void => {
-  const { user } = res.locals;
-
-  if (!allowedTypes.some((allowedType) => (user as IUser)?.type === allowedType)) {
-    throw new Error(`The user is not ${allowedTypes.join(' or ')}.`);
+    // Proceed
+    next();
+  } catch (err: AppError | Error | unknown) {
+    handleAccessErrors(res, err);
   }
 };
 
 /**
- * (Middleware) Requires at least a user type access.
+ * Checks if a user has a specific type that matches one of the allowed roles.
  *
- * @param {Request} req - Express request object.
  * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
+ * @param {UserRole[]} allowedRoles - The allowed user roles.
  * @returns {void}
+ * @throws {Error} Throws an error if the user role does not match the allowed role.
  */
-const requireUser = (req: Request, res: Response, next: NextFunction): void => {
-  checkAccessAndProceed(res, next, (): void => {
-    checkUserType(res, [UserType.USER, UserType.ADMIN]); // Make sure 'requireAuth' has been called before!
-  });
+const checkUserRole = (res: Response, allowedRoles: UserRole[]): void => {
+  const { user } = res.locals;
+
+  if (!allowedRoles.some((allowedRole) => (user as IUser)?.role === allowedRole)) {
+    throw new Error(`The user is not ${allowedRoles.join(' or ')}.`);
+  }
 };
 
 /**
- * (Middleware) Requires an admin type access.
+ * (Middleware) Requires at least a user role access.
  *
  * @param {Request} req - Express request object.
  * @param {Response} res - Express response object.
  * @param {NextFunction} next - Express next middleware function.
+ * @param {Object} [options] - Options for controlling the error handling behavior.
+ * @param {boolean} [options.returnResponseOnError=true] - If true, sends a response; if false, throws the error.
  * @returns {void}
+ * @throws {AppError} If the user is not authenticated as an ADMIN or if an error occurs during the check.
  */
-const requireAdmin = (req: Request, res: Response, next: NextFunction): void => {
-  checkAccessAndProceed(res, next, (): void => {
-    checkUserType(res, [UserType.ADMIN]); // Make sure 'requireAuth' has been called before!
-  });
+const requireUser = (
+  req: Request, res: Response, next: NextFunction,
+  options: { returnResponseOnError: boolean } = { returnResponseOnError: true }
+): void => {
+  try {
+    // Check if the user is authenticated as at least a USER, then proceed
+    checkUserRole(res, [UserRole.USER, UserRole.ADMIN]); // Make sure 'requireAuth' has been called before!
+    next();
+  } catch (err: AppError | Error | unknown) {
+    handleAccessErrors(res, err, options);
+  }
+};
+
+/**
+ * Middleware to require admin-type access.
+ *
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
+ * @param {Object} [options] - Options for controlling the error handling behavior.
+ * @param {boolean} [options.returnResponseOnError=true] - If true, sends a response; if false, throws the error.
+ * @returns {void}
+ * @throws {AppError} If the user is not authenticated as an ADMIN or if an error occurs during the check.
+ */
+const requireAdmin = (
+  req: Request, res: Response, next: NextFunction,
+  options: { returnResponseOnError: boolean } = { returnResponseOnError: true }
+): void => {
+  try {
+    // Check if the user is authenticated as an ADMIN, then proceed
+    checkUserRole(res, [UserRole.ADMIN]); // Make sure 'requireAuth' has been called before!
+    next();
+  } catch (err: AppError | Error | unknown) {
+    handleAccessErrors(res, err, options);
+  }
 };
 
 export default { requireAuth, requireUser, requireAdmin };

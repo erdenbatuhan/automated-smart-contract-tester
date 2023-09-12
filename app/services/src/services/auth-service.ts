@@ -28,7 +28,7 @@ const getAuthResponse = (user: IUser): { payload: { user: IUser }, token: string
 };
 
 /**
- * Registers a new user with the provided email, password, and optional user type.
+ * Registers a new user with the provided email, password, and optional user role.
  *
  * @param {object} fields
  * @param {string} fields.email - The email of the new user.
@@ -44,12 +44,8 @@ const register = async (
   return User.register(email, password).then((newUser) => {
     Logger.info(`Successfully registered a new user with the email '${email}'.`);
     return getAuthResponse(newUser);
-  }).catch((err) => {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while registering a new user with the email '${email}'.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+  }).catch((err: Error | unknown) => {
+    throw errorUtils.handleError(err, `An error occurred while registering a new user with the email '${email}'.`);
   });
 };
 
@@ -70,12 +66,8 @@ const login = async (
   return User.login(email, password).then((user) => {
     Logger.info(`Successfully logged in as ${email}.`);
     return getAuthResponse(user);
-  }).catch((err: AppError | Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
-      `An error occurred while logging a new user in with the email '${email}'.`,
-      (err as AppError)?.reason || (err as Error)?.message
-    ));
+  }).catch((err: Error | unknown) => {
+    throw errorUtils.handleError(err, `An error occurred while logging a new user in with the email '${email}'.`);
   });
 };
 
