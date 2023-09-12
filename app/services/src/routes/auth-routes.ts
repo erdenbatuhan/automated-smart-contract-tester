@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import cookieParser from 'cookie-parser';
 
 import Constants from '~constants';
 import AppError from '@errors/app-error';
@@ -10,7 +9,6 @@ import authService from '@services/auth-service';
 import routerUtils from '@utils/router-utils';
 
 const router = Router();
-router.use(cookieParser());
 
 /**
  * Sends a JSON response containing a JWT token as a cookie and a payload with the specified HTTP status code.
@@ -22,7 +20,7 @@ router.use(cookieParser());
  * @returns {void}
  */
 const returnJwtResponse = (res: Response, code: number, payload: object, token: string): void => {
-  res.cookie('token', token, { httpOnly: true, maxAge: Constants.MAX_AGE_COOKIE });
+  res.cookie(Constants.JWT_NAME, token, { httpOnly: true, maxAge: Constants.MAX_AGE_COOKIE });
   res.status(code).json(payload);
 };
 
@@ -59,6 +57,16 @@ router.post('/login', async (req: Request, res: Response) => {
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.handleError(res, err);
   });
+});
+
+/**
+ * Logs outs the user.
+ *
+ * @returns {object} 204 - Empty response.
+ */
+router.get('/logout', async (req: Request, res: Response) => {
+  res.cookie(Constants.JWT_NAME, '', { maxAge: 1 });
+  res.status(204).end();
 });
 
 export default router;
