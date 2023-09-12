@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import projectMiddleware from '@middlewares/project-middleware';
+import projectMiddlewares from '@middlewares/project-middlewares';
 
 import healthCheckRoutes from '@routes/health-check-routes';
 import forgeRoutes from '@routes/forge-routes';
@@ -14,6 +14,6 @@ router.use('/', healthCheckRoutes);
 router.use('/forge', forgeRoutes);
 router.use('/projects', projectRoutes);
 router.use('/projects/images', dockerImageRoutes);
-router.use('/projects/:projectName/executions', projectMiddleware.passProjectName, executionRoutes);
+router.use('/projects/:projectName/executions', projectMiddlewares.passProjectName, executionRoutes);
 
 export default router;

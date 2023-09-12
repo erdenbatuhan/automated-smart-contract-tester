@@ -4,6 +4,7 @@ import type { Request, Response } from 'express';
 import Constants from '~constants';
 import AppError from '@errors/app-error';
 
+import authMiddlewares from '@middlewares/auth-middlewares';
 import authService from '@services/auth-service';
 
 import routerUtils from '@utils/router-utils';
@@ -64,7 +65,7 @@ router.post('/login', async (req: Request, res: Response) => {
  *
  * @returns {object} 204 - Empty response.
  */
-router.get('/logout', async (req: Request, res: Response) => {
+router.get('/logout', authMiddlewares.requireAuth, async (req: Request, res: Response) => {
   res.cookie(Constants.JWT_NAME, '', { maxAge: 1 });
   res.status(204).end();
 });

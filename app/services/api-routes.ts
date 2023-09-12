@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
-import projectMiddleware from '@middlewares/project-middleware';
+import authMiddlewares from '@middlewares/auth-middlewares';
+import projectMiddlewares from '@middlewares/project-middlewares';
 
 import healthCheckRoutes from '@routes/health-check-routes';
 import authRoutes from '@routes/auth-routes';
@@ -12,8 +13,8 @@ const router = Router();
 
 router.use('/', healthCheckRoutes);
 router.use('/auth', authRoutes);
-router.use('/users', userRoutes);
-router.use('/projects', projectRoutes);
-router.use('/projects/:projectName/submissions', projectMiddleware.passProjectName, submissionRoutes);
+router.use('/users', authMiddlewares.requireAuth, userRoutes);
+router.use('/projects', authMiddlewares.requireAuth, projectRoutes);
+router.use('/projects/:projectName/submissions', authMiddlewares.requireAuth, projectMiddlewares.passProjectName, submissionRoutes);
 
 export default router;
