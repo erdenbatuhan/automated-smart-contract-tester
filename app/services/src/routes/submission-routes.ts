@@ -99,7 +99,7 @@ router.get('/:submissionId/download', async (req: Request, res: Response) => {
  * Deletes a submission.
  *
  * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes.ts).
- * @param {string} req.params.submissionName - The name of the submission to delete.
+ * @param {string} req.params.submissionId - The ID of the submission to delete.
  * @returns {object} 204 - If the submission deletion is successful.
  * @throws {object} 404 - If the submission doesn't exist.
  * @throws {object} 500 - If there's a server error.

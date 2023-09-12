@@ -25,6 +25,7 @@ services:
       APP_NAME: ${APP_NAME}
       SERVICE_NAME: ${SERVICES_SERVICE_NAME}
       PORT: ${SERVICES_PORT}
+      JWT_SECRET: ${SERVICES_JWT_SECRET}
       MONGO_DB_URI: mongodb://${MONGO_HOSTS}/${SERVICES_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
       TESTRUNNER_HOST: ${TESTRUNNER_CONTAINER_NAME}:${TESTRUNNER_PORT} # app name + service name
     depends_on:

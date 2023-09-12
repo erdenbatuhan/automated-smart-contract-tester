@@ -19,6 +19,9 @@ SERVICE_NAME=services
 PORT=4000
 MONGO_DB_URI= # Specify your MongoDB URI here
 
+# Service Secrets
+JWT_SECRET= # Specify the secret used to sign JWTs
+
 # Service Configuration: Test Runner
 TESTRUNNER_SERVICE_NAME=runner
 TESTRUNNER_HOST=localhost:4001

@@ -17,7 +17,13 @@ _Husky's pre-commit hooks_ and _lint-staged_ ensure that _ESLint_ and _Prettier_
 Before running the application, create a **.env** file and set the following environment variables:
 
 ```bash
+# Application Config
 STAGING=dev # The staging environment (dev, qa, prod, etc.)
+
+# Service Secrets: Services
+SERVICES_JWT_SECRET= # Specify the secret used to sign JWTs in services app
+
+# Docker
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on
 ```
 

@@ -22,7 +22,8 @@ import executionOutputUtils from '@utils/execution-output-utils';
  * @returns {Promise<ISubmission[]>} A promise that resolves to an array of all submissions.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find().exec()
+const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find()
+  .exec()
   .catch((err: Error | unknown) => {
     throw errorUtils.logAndGetError(new AppError(
       HttpStatusCode.InternalServerError, 'An error occurred while finding all submissions.', (err as Error)?.message
