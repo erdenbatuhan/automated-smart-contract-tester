@@ -1,3 +1,5 @@
+import { HttpStatusCode } from 'axios';
+
 import Constants from '~constants';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
@@ -29,7 +31,7 @@ const retrieveTestNamesFromGasSnapshot = (
     return { tests: forgeUtils.retrieveTestNamesFromGasSnapshot(output?.data) };
   } catch (err: Error | unknown) {
     const message = `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`;
-    throw errorUtils.logAndGetError(new AppError(500, message, (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.InternalServerError, message, (err as Error)?.message));
   }
 };
 
@@ -90,7 +92,7 @@ const saveProject = async (
     }
 
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while creating the ${projectName} project.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));

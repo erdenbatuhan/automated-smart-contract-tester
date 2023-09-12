@@ -25,8 +25,9 @@ import type { RequestFile } from '@utils/router-utils';
 const findAllProjects = async (): Promise<IProject[]> => Project.find()
   .exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.logAndGetError(
-      new AppError(HttpStatusCode.InternalServerError, 'An error occurred while finding all projects.', (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(
+      HttpStatusCode.InternalServerError, 'An error occurred while finding all projects.', (err as Error)?.message
+    ));
   });
 
 /**

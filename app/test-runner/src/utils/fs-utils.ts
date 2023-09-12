@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import AdmZip from 'adm-zip';
 import tar from 'tar';
+import { HttpStatusCode } from 'axios';
 
 import Constants from '~constants';
 import Logger from '@logging/logger';
@@ -47,7 +48,7 @@ const unzip = async (
 
   // If it is a directory, update the extracted path; otherwise, it stays the same
   if (!firstEntry || !firstEntry.entryName) {
-    throw new AppError(400, 'The uploaded zip file is probably empty!');
+    throw new AppError(HttpStatusCode.BadRequest, 'The uploaded zip file is probably empty!');
   } else if (firstEntry.isDirectory && !requiredFolders.includes(firstEntry.entryName)) {
     extractedDirPath = path.join(dirPath, firstEntry.entryName);
   }
@@ -77,7 +78,7 @@ const checkDirectoryContents = async (
 
   // If there are missing files or directories, remove the extracted directory and throw an error
   if (missingFiles.length > 0 || missingDirectories.length > 0) {
-    throw new AppError(400, `Missing required files: ${missingFiles.join(', ')}, Missing required directories: ${missingDirectories.join(', ')}.`);
+    throw new AppError(HttpStatusCode.BadRequest, `Missing required files: ${missingFiles.join(', ')}, Missing required directories: ${missingDirectories.join(', ')}.`);
   }
 };
 
@@ -140,7 +141,7 @@ const readFromZipBuffer = async (
 
     // Throw error
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));

@@ -25,9 +25,7 @@ import executionOutputUtils from '@utils/execution-output-utils';
 const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find().exec()
   .catch((err: Error | unknown) => {
     throw errorUtils.logAndGetError(new AppError(
-      HttpStatusCode.InternalServerError,
-      'An error occurred while finding all submissions.',
-      (err as Error)?.message
+      HttpStatusCode.InternalServerError, 'An error occurred while finding all submissions.', (err as Error)?.message
     ));
   });
 

@@ -1,3 +1,5 @@
+import { HttpStatusCode } from 'axios';
+
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
@@ -32,7 +34,7 @@ const extractTestResultsFromExecutionOutput = (
     } as IDockerContainerExecutionOutput;
   } catch (err: Error | unknown) {
     const message = `An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`;
-    throw errorUtils.logAndGetError(new AppError(500, message, (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.InternalServerError, message, (err as Error)?.message));
   }
 };
 
@@ -103,7 +105,7 @@ const executeTests = async (
       return dockerContainerHistorySaved;
     }).catch((err: AppError | Error | unknown) => {
       throw errorUtils.logAndGetError(new AppError(
-        (err as AppError)?.statusCode || 500,
+        (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
         `Failed to save execution history for the Docker container created from the image '${imageName}'.`,
         (err as AppError)?.reason || (err as Error)?.message
       ));

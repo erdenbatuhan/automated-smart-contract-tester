@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { HttpStatusCode } from 'axios';
 
 import AppError from '@errors/app-error';
 
@@ -16,13 +17,13 @@ import errorUtils from './error-utils';
 const parseJsonObjectFromBody = (req: Request, objectKey: string, required: boolean = false): object | undefined => {
   const jsonString = req.body[objectKey];
   if (!jsonString && required) {
-    throw errorUtils.logAndGetError(new AppError(400, `Object (${objectKey}) not found in the request body.`));
+    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.BadRequest, `Object (${objectKey}) not found in the request body.`));
   }
 
   try {
     return jsonString && JSON.parse(jsonString);
   } catch (err: Error | unknown) {
-    throw errorUtils.logAndGetError(new AppError(400, `Failed to parse JSON object (${objectKey}) from the request body.`));
+    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.BadRequest, `Failed to parse JSON object (${objectKey}) from the request body.`));
   }
 };
 
@@ -38,7 +39,7 @@ const extractFileBuffer = (req: Request): Buffer => {
     return req.file!.buffer;
   } catch (err: Error | unknown) {
     const message = 'An error occurred while reading the file buffer.';
-    throw errorUtils.logAndGetError(new AppError(400, message, (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(HttpStatusCode.BadRequest, message, (err as Error)?.message));
   }
 };
 
@@ -56,7 +57,7 @@ const extractFileBuffer = (req: Request): Buffer => {
  * @returns void
  */
 const handleError = (res: Response, err: AppError | Error | unknown): void => {
-  const httpErr = (err instanceof AppError) ? err : new AppError(500, (err as Error)?.message);
+  const httpErr = (err instanceof AppError) ? err : new AppError(HttpStatusCode.InternalServerError, (err as Error)?.message);
   res.status(httpErr.statusCode).json({ error: httpErr });
 };
 

@@ -1,6 +1,7 @@
 import type { MongoError } from 'mongodb';
 import mongoose from 'mongoose';
 import type { SessionOption } from 'mongoose';
+import { HttpStatusCode } from 'axios';
 
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
@@ -22,7 +23,9 @@ import dockerUtils from '@utils/docker-utils';
  */
 const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.find().exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.logAndGetError(new AppError(500, 'An error occurred while finding all docker images.', (err as Error)?.message));
+    throw errorUtils.logAndGetError(new AppError(
+      HttpStatusCode.InternalServerError, 'An error occurred while finding all docker images.', (err as Error)?.message)
+    );
   });
 
 /**
@@ -31,7 +34,7 @@ const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.fin
  * @param {string} imageName - The name of the Docker image that was not found.
  * @returns {AppError} An HTTP 404 error object with a message indicating the image was not found.
  */
-const getDockerImageNotFoundError = (imageName: string): AppError => new AppError(404, `DockerImage with name=${imageName} not found.`);
+const getDockerImageNotFoundError = (imageName: string): AppError => new AppError(HttpStatusCode.NotFound, `DockerImage with name=${imageName} not found.`);
 
 /**
  * Find a Docker Image by its name.
@@ -51,7 +54,7 @@ const findDockerImage = async (
   })
   .catch((err: AppError | Error | unknown) => {
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while finding the docker image with the name=${imageName}.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
@@ -91,7 +94,7 @@ const handleSaveErrorAndReturn = async (
   dockerImageID: string, err: MongoError | Error | unknown
 ): Promise<AppError | MongoError | Error | unknown> => {
   const message = 'An error occurred while saving/updating the Docker Image with associated Docker Container History.';
-  const httpErr = new AppError(409, message, (err as Error)?.message);
+  const httpErr = new AppError(HttpStatusCode.Conflict, message, (err as Error)?.message);
 
   // Handle duplicate image ID error if it's the case
   if ((err as MongoError)?.code === 11000 && (err as MongoError)?.message.includes('imageID')) { // Duplicate image ID error
@@ -162,7 +165,7 @@ const deleteDockerImage = async (imageName: string): Promise<void> => {
     Logger.info(`Successfully deleted the Docker Image with the name=${imageName}.`);
   } catch (err: AppError | Error | unknown) {
     throw errorUtils.logAndGetError(new AppError(
-      (err as AppError)?.statusCode || 500,
+      (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
       `An error occurred while deleting the Docker Image with the name=${imageName}.`,
       (err as AppError)?.reason || (err as Error)?.message
     ));
