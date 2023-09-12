@@ -7,7 +7,6 @@ import AppError from '@errors/app-error';
 
 import User from '@models/user';
 import type { IUser } from '@models/user';
-import UserType from '@models/enums/user-type';
 
 import errorUtils from '@utils/error-utils';
 
