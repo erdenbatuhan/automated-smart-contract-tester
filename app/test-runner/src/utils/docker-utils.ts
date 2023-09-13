@@ -236,6 +236,27 @@ const createSharedVolume = async (
 };
 
 /**
+ * Extracts and formats execution results from a Docker container.
+ *
+ * @param {Dockerode.Container} container - The Docker container to extract results from.
+ * @param {number} StatusCode - The exit status code of the container execution.
+ * @param {number} startTime - The timestamp when container execution started.
+ * @param {WritableStream} stdout - The writable stream for capturing standard output.
+ * @param {WritableStream} stderr - The writable stream for capturing standard error.
+ * @returns {Promise<IDockerContainerHistory>} A promise that resolves to an object containing the extracted container history.
+ * @throws {Error} If there is an issue inspecting the container.
+ */
+const extractImageExecutionResults = async (
+  container: Dockerode.Container, StatusCode: number, startTime: number, stdout: WritableStream, stderr: WritableStream
+): Promise<IDockerContainerHistory> => ({
+  containerName: await container.inspect().then(({ Name }) => Name.slice(1)), // Get the container name without the leading slash
+  status: StatusCode === 0 ? Status.SUCCESS : Status.FAILURE, // Status code being 0 means a successful execution
+  statusCode: StatusCode,
+  executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(Date.now() - startTime), // Calculate elapsed time in seconds
+  output: StatusCode === 0 ? { data: stdout.toString() } : { error: stderr.toString() }
+} as IDockerContainerHistory);
+
+/**
  * Runs a Docker container from the specified image with the given command.
  *
  * @param {string} execName - The name of the execution.
@@ -251,8 +272,8 @@ const runImage = async (
   // Record start time and start Dockerode
   const startTime = Date.now();
   const dockerode = new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
-
   let sharedVolume: string | undefined;
+
   try {
     Logger.info(`Running a Docker container from '${imageName}' image with the command '${dockerContainerHistory.commandExecuted}'.`);
 
@@ -271,12 +292,11 @@ const runImage = async (
       }
     );
 
-    // Extract the results and update the object
-    dockerContainerHistory.containerName = await container.inspect().then(({ Name }) => Name.slice(1)); // Get the container name without the leading slash
-    dockerContainerHistory.status = StatusCode === 0 ? Status.SUCCESS : Status.FAILURE; // Status code being 0 means a successful execution
-    dockerContainerHistory.statusCode = StatusCode;
-    dockerContainerHistory.executionTimeSeconds = conversionUtils.convertMillisecondsToSeconds(Date.now() - startTime); // Calculate elapsed time in seconds
-    dockerContainerHistory.output = StatusCode === 0 ? { data: stdout.toString() } : { error: stderr.toString() };
+    // Extract the results and update the docker container history object
+    Object.assign(
+      dockerContainerHistory,
+      await extractImageExecutionResults(container, StatusCode, startTime, stdout, stderr)
+    );
 
     Logger.info(`The Docker container '${dockerContainerHistory.containerName}' running from the '${imageName}' image exited with code ${StatusCode} (Elapsed time: ${dockerContainerHistory.executionTimeSeconds} seconds).`);
     return dockerContainerHistory;
