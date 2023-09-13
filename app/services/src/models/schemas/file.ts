@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
 export interface IFile {
   path: string;
@@ -6,7 +6,7 @@ export interface IFile {
 }
 
 // FileSchema
-export default new Schema<IFile>(
+export default new mongoose.Schema<IFile>(
   {
     path: { type: String, required: true },
     content: { type: String, required: true }

@@ -1,14 +1,14 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface IDockerImage extends Document {
-  _id: Schema.Types.ObjectId;
+export interface IDockerImage extends mongoose.Document {
+  _id: mongoose.Schema.Types.ObjectId;
   imageID: string;
   imageName: string;
   imageBuildTimeSeconds: number;
   imageSizeMB: number;
 }
 
-const DockerImageSchema = new Schema<IDockerImage>(
+const DockerImageSchema = new mongoose.Schema<IDockerImage>(
   {
     imageID: { type: String, unique: true, required: true },
     imageName: { type: String, unique: true, required: true },

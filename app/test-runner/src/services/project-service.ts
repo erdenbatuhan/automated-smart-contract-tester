@@ -1,12 +1,10 @@
-import { HttpStatusCode } from 'axios';
-
 import Constants from '~constants';
 import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
+import type AppError from '@errors/app-error';
 
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
-import type { IDockerContainerExecutionOutput } from '@models/schemas/docker-container-execution-output';
+import type { IDockerContainerHistory } from '@models/docker-container-history';
 import Status from '@models/enums/status';
 
 import dockerImageService from '@services/docker-image-service';
@@ -14,21 +12,21 @@ import dockerImageService from '@services/docker-image-service';
 import errorUtils from '@utils/error-utils';
 import fsUtils from '@utils/fs-utils';
 import dockerUtils from '@utils/docker-utils';
-import forgeUtils from '@utils/forge-utils';
+import forgeUtils from '@forge/utils/forge-utils';
 
 /**
- * Retrieves the names of the tests from the gas snapshot output.
+ * Processes the docker container output, which is the gas snapshot output.
  *
  * @param {string} projectName - The name of the new project.
- * @param {IDockerContainerExecutionOutput | undefined} output - The execution output.
+ * @param {IDockerContainerHistory['output']} output - The "unprocessed" execution output.
  * @returns {{ tests: string[] }} An object containing the test names.
  * @throws {AppError} If any error occurs while retrieving the names of the tests.
  */
-const retrieveTestNamesFromGasSnapshot = (
-  projectName: string, output: IDockerContainerExecutionOutput | undefined
-): { tests: string[] } => {
+const processDockerContainerOutput = (
+  projectName: string, output: IDockerContainerHistory['output']
+): IDockerContainerHistory['output'] => {
   try {
-    return { tests: forgeUtils.retrieveTestNamesFromGasSnapshot(output?.data) };
+    return forgeUtils.processForgeSnapshotOutput(output?.data);
   } catch (err: Error | unknown) {
     throw errorUtils.handleError(err, `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`);
   }
@@ -39,13 +37,13 @@ const retrieveTestNamesFromGasSnapshot = (
  *
  * @param {string} projectName - The name of the project.
  * @param {Buffer} zipBuffer - The ZIP buffer containing the project files.
- * @returns {Promise<{ isNew: boolean; project: { image: IDockerImage; output: IDockerContainerExecutionOutput | undefined } }>}
+ * @returns {Promise<{ isNew: boolean; project: { image: IDockerImage; output: IDockerContainerHistory['output'] } }>}
  *          A promise that resolves to an object containing the created Docker Image and the extracted test names.
  * @throws {AppError} If any error occurs during project creation.
  */
 const saveProject = async (
   projectName: string, zipBuffer: Buffer
-): Promise<{ isNew: boolean; project: { image: IDockerImage; output: IDockerContainerExecutionOutput | undefined } }> => {
+): Promise<{ isNew: boolean; project: { image: IDockerImage; output: IDockerContainerHistory['output'] } }> => {
   let dockerImage: IDockerImage | null = null;
 
   try {
@@ -75,7 +73,7 @@ const saveProject = async (
 
     // Retrieve the names of the tests from the gas snapshot output (if the execution has been successful) and update the Docker Container History with the execution results
     if (dockerContainerHistory.status === Status.SUCCESS) {
-      dockerContainerHistory.output = retrieveTestNamesFromGasSnapshot(projectName, dockerContainerHistory.output);
+      dockerContainerHistory.output = processDockerContainerOutput(projectName, dockerContainerHistory.output);
     }
 
     // Save (or update it if it already exists) the Docker Image with the Docker Container History for the executed container

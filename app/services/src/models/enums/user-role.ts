@@ -1,8 +1,8 @@
 import enumUtils from '@models/enums/common/enum-utils';
 
 enum UserRole {
-  USER = 'USER',
-  ADMIN = 'ADMIN'
+  USER = 'User',
+  ADMIN = 'Admin'
 }
 
 export const cast = (typeString: string): UserRole => enumUtils.castStringToEnum(

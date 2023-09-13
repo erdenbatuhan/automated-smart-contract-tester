@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
 export interface ITestExecutionArguments {
   gasLimit?: string;
@@ -18,7 +18,7 @@ export interface ITestExecutionArguments {
 }
 
 // TestExecutionArgumentsSchema
-export default new Schema<ITestExecutionArguments>(
+export default new mongoose.Schema<ITestExecutionArguments>(
   {
     gasLimit: String,
     codeSizeLimit: String,

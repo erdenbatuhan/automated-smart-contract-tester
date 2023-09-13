@@ -1,9 +1,9 @@
 import enumUtils from '@models/enums/common/enum-utils';
 
 enum TestStatus {
-  INCONCLUSIVE = 'INCONCLUSIVE',
-  FAILED = 'FAILED',
-  PASSED = 'PASSED'
+  INCONCLUSIVE = 'Inconclusive',
+  FAILED = 'Failed',
+  PASSED = 'Passed'
 }
 
 export const cast = (statusString: string): TestStatus => enumUtils.castStringToEnum(

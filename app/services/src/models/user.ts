@@ -1,4 +1,4 @@
-import { Document, Model, Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 import type { CallbackWithoutResultAndOptionalError } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
@@ -10,8 +10,8 @@ import UserRole from '@models/enums/user-role';
 
 import errorUtils from '@utils/error-utils';
 
-export interface IUser extends Document {
-  _id: Schema.Types.ObjectId;
+export interface IUser extends mongoose.Document {
+  _id: mongoose.Schema.Types.ObjectId;
   email: string;
   password: string;
   role: UserRole;
@@ -19,12 +19,12 @@ export interface IUser extends Document {
   getPublicRepresentation(this: IUser): IUser;
 }
 
-interface UserModel extends Model<IUser> {
+interface UserModel extends mongoose.Model<IUser> {
   register(email: string, password: string, type?: UserRole): Promise<IUser>;
   login(email: string, password: string): Promise<IUser>;
 }
 
-const UserSchema = new Schema<IUser, UserModel>(
+const UserSchema = new mongoose.Schema<IUser, UserModel>(
   {
     email: {
       type: String,
@@ -115,4 +115,4 @@ UserSchema.static('login',
 );
 
 // User
-export default model<IUser, UserModel>('User', UserSchema);
+export default mongoose.model<IUser, UserModel>('User', UserSchema);

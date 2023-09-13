@@ -24,6 +24,7 @@
     "~data": "dist/data",
     "~constants": "dist/constants",
     "@errors": "dist/src/errors",
+    "@forge": "dist/src/forge",
     "@logging": "dist/src/logging",
     "@middlewares": "dist/src/middlewares",
     "@models": "dist/src/models",

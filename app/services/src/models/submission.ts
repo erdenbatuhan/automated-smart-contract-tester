@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 import type { SaveOptions } from 'mongoose';
 
 import type { IProject } from '@models/project';
@@ -7,8 +7,8 @@ import type { IUpload } from '@models/upload';
 import type { IUser } from '@models/user';
 import TestStatus from '@models/enums/test-status';
 
-export interface ISubmission extends Document {
-  _id: Schema.Types.ObjectId;
+export interface ISubmission extends mongoose.Document {
+  _id: mongoose.Schema.Types.ObjectId;
   project: IProject;
   upload: IUpload;
   status: TestStatus;
@@ -18,12 +18,12 @@ export interface ISubmission extends Document {
   leanSave(this: ISubmission, options?: SaveOptions): Promise<ISubmission>;
 }
 
-interface SubmissionModel extends Model<ISubmission> {
+interface SubmissionModel extends mongoose.Model<ISubmission> {
   findByDeployer(deployer: IUser): Promise<ISubmission[]>;
   existsByIdAndDeployer(submissionId: string, deployer: IUser): Promise<boolean>;
 }
 
-const SubmissionSchema = new Schema<ISubmission, SubmissionModel>(
+const SubmissionSchema = new mongoose.Schema<ISubmission, SubmissionModel>(
   {
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true, select: false },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },

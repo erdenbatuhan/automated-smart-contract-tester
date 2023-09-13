@@ -1,13 +1,11 @@
-import { HttpStatusCode } from 'axios';
-
 import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
+import type AppError from '@errors/app-error';
 
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
 import type { IDockerContainerHistory } from '@models/docker-container-history';
-import type { IDockerContainerExecutionOutput } from '@models/schemas/docker-container-execution-output';
 import Status from '@models/enums/status';
+import ContainerPurpose from '@models/enums/container-purpose';
 
 import dockerImageService from '@services/docker-image-service';
 import dockerContainerHistoryService from '@services/docker-container-history-service';
@@ -15,23 +13,20 @@ import dockerContainerHistoryService from '@services/docker-container-history-se
 import errorUtils from '@utils/error-utils';
 import fsUtils from '@utils/fs-utils';
 import dockerUtils from '@utils/docker-utils';
-import forgeUtils from '@utils/forge-utils';
+import forgeUtils from '@forge/utils/forge-utils';
 
 /**
- * Extracts test results from execution output based on the status.
+ * Processes the docker container output, which is the test execution output.
  *
  * @param {string} imageName - The name of the Docker Image.
- * @param {IDockerContainerExecutionOutput | undefined} output - The execution output.
- * @returns {IDockerContainerExecutionOutput} The extracted test results.
+ * @param {IDockerContainerHistory['output']} output - The "unprocessed" execution output.
+ * @returns {IDockerContainerHistory['output']} The extracted test results.
  */
-const extractTestResultsFromExecutionOutput = (
-  imageName: string, output: IDockerContainerExecutionOutput | undefined
-): IDockerContainerExecutionOutput => {
+const processDockerContainerOutput = (
+  imageName: string, output: IDockerContainerHistory['output']
+): IDockerContainerHistory['output'] => {
   try {
-    return {
-      ...forgeUtils.extractTestExecutionResultsFromExecutionOutput(output?.data),
-      ...forgeUtils.extractGasDiffAnalysisFromExecutionOutput(output?.data)
-    } as IDockerContainerExecutionOutput;
+    return forgeUtils.processForgeTestOutput(output?.data);
   } catch (err: Error | unknown) {
     throw errorUtils.handleError(err, `An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`);
   }
@@ -49,7 +44,9 @@ const extractTestResultsFromExecutionOutput = (
 const runImageWithFilesInZipBuffer = async (
   zipBuffer: Buffer, dockerImage: IDockerImage, commandExecuted: string
 ): Promise<IDockerContainerHistory> => {
-  let dockerContainerHistory = new DockerContainerHistory({ dockerImage, commandExecuted });
+  let dockerContainerHistory = new DockerContainerHistory({
+    dockerImage, commandExecuted, purpose: ContainerPurpose.TEST_EXECUTION
+  });
 
   try {
     Logger.info(`Running the tests using the following command in the ${dockerImage.imageName} image: ${commandExecuted}.`);
@@ -75,7 +72,7 @@ const runImageWithFilesInZipBuffer = async (
 
   // Extract the test execution results from the test output (if the execution has been successful) and update the Docker Container History with the execution results
   if (dockerContainerHistory.status === Status.SUCCESS) {
-    dockerContainerHistory.output = extractTestResultsFromExecutionOutput(
+    dockerContainerHistory.output = processDockerContainerOutput(
       dockerImage.imageName, dockerContainerHistory.output);
   }
 

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 
 import Constants from '~constants';
-import AppError from '@errors/app-error';
+import type AppError from '@errors/app-error';
 
 import authMiddlewares from '@middlewares/auth-middlewares';
 import authService from '@services/auth-service';

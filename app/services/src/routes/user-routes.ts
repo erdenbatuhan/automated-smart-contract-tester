@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 
-import AppError from '@errors/app-error';
+import type AppError from '@errors/app-error';
 
 import authMiddlewares from '@middlewares/auth-middlewares';
 import userService from '@services/user-service';

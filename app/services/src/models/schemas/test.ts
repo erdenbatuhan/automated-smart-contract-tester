@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
 export interface ITest {
   test: string;
@@ -6,7 +6,7 @@ export interface ITest {
 }
 
 // TestSchema
-export default new Schema<ITest>(
+export default new mongoose.Schema<ITest>(
   {
     test: { type: String, required: true },
     weight: { type: Number, required: true }

@@ -1,9 +1,7 @@
-import { HttpStatusCode } from 'axios';
 import jwt from 'jsonwebtoken';
 
 import Constants from '~constants';
 import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
 
 import User from '@models/user';
 import type { IUser } from '@models/user';

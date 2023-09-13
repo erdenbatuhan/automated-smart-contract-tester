@@ -1,4 +1,5 @@
-import mongoose, { Document, Schema, SaveOptions } from 'mongoose';
+import mongoose from 'mongoose';
+import type { SaveOptions } from 'mongoose';
 
 import type { IUpload } from '@models/upload';
 import type { IUser } from '@models/user';
@@ -11,8 +12,8 @@ import type { ITestExecutionArguments } from '@models/schemas/test-execution-arg
 import TestSchema from '@models/schemas/test';
 import type { ITest } from '@models/schemas/test';
 
-export interface IProject extends Document {
-  _id: Schema.Types.ObjectId;
+export interface IProject extends mongoose.Document {
+  _id: mongoose.Schema.Types.ObjectId;
   projectName: string;
   upload: IUpload;
   testExecutionArguments?: ITestExecutionArguments;
@@ -22,7 +23,7 @@ export interface IProject extends Document {
   leanSave(this: IProject, options?: SaveOptions): Promise<IProject>;
 }
 
-const ProjectSchema = new Schema<IProject>(
+const ProjectSchema = new mongoose.Schema<IProject>(
   {
     projectName: { type: String, unique: true, required: true },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },
