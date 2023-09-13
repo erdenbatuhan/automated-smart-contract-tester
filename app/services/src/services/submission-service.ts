@@ -100,7 +100,7 @@ const runAndCreateSubmission = async (
     Logger.info(`Running a submission for the ${projectName} project.`);
 
     // Step 1: Find the project by name and create a new submission document
-    const project = await projectService.findProjectByName(projectName, 'testExecutionArguments', { session });
+    const project = await projectService.findProjectByName(projectName, null, 'testExecutionArguments', { session });
     const submission = new Submission({ project });
 
     // Step 2: Upload submission files and get the upload document saved
