@@ -23,11 +23,11 @@ export default class Constants {
     ...Constants.REQUIRED_FOLDERS
   ];
 
-  // Forge
-  public static FORGE_COMMANDS = {
-    LIST_TEST_NAMES: 'forge test --list --json',
-    RUN_TESTS: 'forge test -vv --allow-failure --json',
-    GENERATE_GAS_SNAPSHOT: `forge snapshot --snap ${Constants.PROJECT_FILES.GAS_SNAPSHOT} --json`,
-    COMPARE_SNAPSHOTS: `forge snapshot --diff ${Constants.PROJECT_FILES.GAS_SNAPSHOT} --allow-failure --json`
-  };
+  // Forge & Forge-related Commands
+  public static CMD_RETRIEVE_SNAPSHOTS = `cat ${Constants.PROJECT_FILES.GAS_SNAPSHOT}`;
+  public static FORGE_TEST_ARGUMENTS = '--silent -vv --allow-failure --json';
+  public static FORGE_CMD_RUN_TESTS = `forge test ${Constants.FORGE_TEST_ARGUMENTS}`;
+  public static FORGE_CMD_LIST_TEST_NAMES = `forge test ${Constants.FORGE_TEST_ARGUMENTS} --list`;
+  public static FORGE_CMD_GENERATE_SNAPSHOTS = `forge snapshot ${Constants.FORGE_TEST_ARGUMENTS} --snap ${Constants.PROJECT_FILES.GAS_SNAPSHOT}`;
+  public static FORGE_CMD_COMPARE_SNAPSHOTS = `forge snapshot ${Constants.FORGE_TEST_ARGUMENTS} --diff ${Constants.PROJECT_FILES.GAS_SNAPSHOT}`;
 }

@@ -67,9 +67,7 @@ const saveProject = async (
 
     // Run the Docker container to get the gas snapshot file
     const dockerContainerHistory = await dockerUtils.runImage(
-      execName, dockerImage!.imageName, new DockerContainerHistory({
-        commandExecuted: forgeUtils.getGasSnapshotRetrievalCommand()
-      }));
+      execName, dockerImage!.imageName, new DockerContainerHistory({ commandExecuted: Constants.CMD_RETRIEVE_SNAPSHOTS }));
 
     // Retrieve the names of the tests from the gas snapshot output (if the execution has been successful) and update the Docker Container History with the execution results
     if (dockerContainerHistory.status === Status.SUCCESS) {

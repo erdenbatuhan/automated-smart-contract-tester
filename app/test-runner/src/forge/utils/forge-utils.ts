@@ -38,7 +38,7 @@ const convertTestExecutionArgsToString = (executionArguments: object | undefined
  */
 const getTestExecutionCommand = (execArgs?: object): string => {
   const executionArgsString = convertTestExecutionArgsToString(execArgs);
-  let executionCommand = Constants.FORGE_COMMANDS.COMPARE_SNAPSHOTS;
+  let executionCommand = Constants.FORGE_CMD_COMPARE_SNAPSHOTS;
 
   if (executionArgsString) {
     executionCommand = `${executionCommand} ${executionArgsString}`;
@@ -46,13 +46,6 @@ const getTestExecutionCommand = (execArgs?: object): string => {
 
   return executionCommand;
 };
-
-/**
- * Get the command to retrieve the gas snapshot content.
- *
- * @returns {string} The command to read the gas snapshot content.
- */
-const getGasSnapshotRetrievalCommand = (): string => `cat ${Constants.PROJECT_FILES.GAS_SNAPSHOT}`;
 
 /**
  * Process Forge snapshot output by extracting test output from gas snapshot.
@@ -83,7 +76,6 @@ const processForgeTestOutput = (forgeTestOutput: string | undefined | null): Tes
 
 export default {
   getTestExecutionCommand,
-  getGasSnapshotRetrievalCommand,
   processForgeSnapshotOutput,
   processForgeTestOutput
 };
