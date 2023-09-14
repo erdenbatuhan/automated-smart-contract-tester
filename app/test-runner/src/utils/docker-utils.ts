@@ -223,7 +223,11 @@ const startContainer = async (
     if (options?.timeout) {
       promises.push(new Promise((resolve, reject) => setTimeout(() => {
         if (!timeoutActive) return resolve({ StatusCode: 999, executionTimeSeconds: -1 }); // Make sure to kill timeout if it is not active
-        return reject(new Error(`Container execution timed out after ${options.timeout} seconds.`));
+
+        // Kill the container and throw error
+        return container.kill()
+          .catch((err: Error | unknown) => Logger.warn(`Could not stop the container! (Reason: ${(err as Error)?.message})`)) // It shouldn't have happened, try to find a way to kill that container!
+          .finally(() => reject(new Error(`Container execution timed out after ${options.timeout} seconds.`)));
       }, options!.timeout! * 1000)));
     }
 
@@ -256,7 +260,7 @@ const runImage = async (
     Logger.info(`Running a Docker container from '${imageName}' image with the command '${cmdString}' (${execName}).`);
 
     // Create and start the container
-    const container = await createContainerWithFiles(dockerode, imageName, cmdString.split(' '), srcDirPath);
+    const container = await createContainerWithFiles(dockerode, imageName, ['/bin/bash'], srcDirPath);
     const { StatusCode, executionTimeSeconds, output } = await startContainer(
       dockerode, container, { timeout: 10, removeAfter: false });
 
