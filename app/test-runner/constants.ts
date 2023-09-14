@@ -9,24 +9,32 @@ export default class Constants {
   public static PATH_TEMP_DIR = process.env.PATH_TEMP_DIR || path.join(Constants.PATH_ROOT, 'temp');
   public static PATH_PROJECT_TEMPLATE = path.join(Constants.PATH_ROOT, 'templates', 'project');
 
-  // Project files & folders
+  // Project Files & Folders
   public static PROJECT_DIR = '/app'; // Must match the WORKDIR in ./templates/project/Dockerfile
+  public static PROJECT_FILES = {
+    DOCKERFILE: 'Dockerfile',
+    FOUNDRY_CONFIG: 'foundry.toml',
+    REMAPPINGS: 'remappings.txt',
+    GIT_MODULES: '.gitmodules',
+    LIBRARY_INSTALLATION_SCRIPT: 'install_libraries.sh',
+    GAS_SNAPSHOT: '.gas-snapshot'
+  };
   public static PROJECT_FOLDERS = { TEST: 'test', SRC: 'src', SOLUTION: 'solution' };
-  public static PROJECT_FILES = { GAS_SNAPSHOT: '.gas-snapshot' };
-  public static REQUIRED_FILES = ['remappings.txt', '.gitmodules'];
-  public static REQUIRED_FOLDERS = [Constants.PROJECT_FOLDERS.TEST, Constants.PROJECT_FOLDERS.SOLUTION];
+  public static PROJECT_UPLOAD_REQUIREMENTS_FILES = [Constants.PROJECT_FILES.REMAPPINGS, Constants.PROJECT_FILES.GIT_MODULES];
+  public static PROJECT_UPLOAD_REQUIREMENTS_FOLDERS = [Constants.PROJECT_FOLDERS.TEST, Constants.PROJECT_FOLDERS.SOLUTION];
+  public static PROJECT_DOCKER_IMAGE_SRC = [
+    Constants.PROJECT_FILES.DOCKERFILE,
+    Constants.PROJECT_FILES.FOUNDRY_CONFIG,
+    Constants.PROJECT_FILES.LIBRARY_INSTALLATION_SCRIPT,
+    ...Constants.PROJECT_UPLOAD_REQUIREMENTS_FILES,
+    ...Constants.PROJECT_UPLOAD_REQUIREMENTS_FOLDERS
+  ];
 
   // Docker
   public static DOCKER_SOCKET_PATH = process.env.DOCKER_SOCKET_PATH || '/var/run/docker.sock';
-  public static DOCKER_IMAGE_SRC = [
-    'Dockerfile',
-    'foundry.toml',
-    'install_libraries.sh',
-    ...Constants.REQUIRED_FILES,
-    ...Constants.REQUIRED_FOLDERS
-  ];
+  public static DOCKER_CONTAINER_TIMEOUT_DEFAULT = 30; // Defined in seconds
 
-  // Forge & Forge-related Commands
+  // Forge & Forge-related Constants
   public static CMD_RETRIEVE_SNAPSHOTS = `cat ${Constants.PROJECT_FILES.GAS_SNAPSHOT}`;
   public static FORGE_TEST_ARGUMENTS = '--silent -vv --allow-failure --json';
   public static FORGE_CMD_RUN_TESTS = `forge test ${Constants.FORGE_TEST_ARGUMENTS}`;

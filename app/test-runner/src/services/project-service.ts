@@ -36,6 +36,25 @@ const processDockerContainerOutput = (
 };
 
 /**
+ * Reads and extracts a project from a zip buffer, ensuring it contains the required files and folders.
+ *
+ * @param {string} execName - The name of the execution.
+ * @param {Buffer} zipBuffer - The zip buffer containing the project.
+ * @returns {Promise<{ tempDirPath: string, tempProjectDirPath: string }>} A promise that resolves to an object containing temporary directory paths.
+ */
+const readProjectFromZipBuffer = async (
+  execName: string, zipBuffer: Buffer
+): Promise<{ tempDirPath: string, tempProjectDirPath: string }> => fsUtils.readFromZipBuffer(
+  execName,
+  zipBuffer,
+  {
+    requiredFiles: Constants.PROJECT_UPLOAD_REQUIREMENTS_FILES,
+    requiredFolders: Constants.PROJECT_UPLOAD_REQUIREMENTS_FOLDERS
+  },
+  [Constants.PATH_PROJECT_TEMPLATE]
+).then(({ dirPath: tempDirPath, extractedPath: tempProjectDirPath }) => ({ tempDirPath, tempProjectDirPath }));
+
+/**
  * Creates a new project or updates an existing one with the given name from a ZIP buffer.
  *
  * @param {string} projectName - The name of the project.
@@ -53,27 +72,18 @@ const saveProject = async (
     Logger.info(`Creating the ${projectName} project.`);
     const execName = `${projectName}_creation_${Date.now()}`;
 
-    // Read the project from the zip buffer
-    const { dirPath: tempDirPath, extractedPath: tempProjectDirPath } = await fsUtils.readFromZipBuffer(
-      execName,
-      zipBuffer,
-      { requiredFiles: Constants.REQUIRED_FILES, requiredFolders: Constants.REQUIRED_FOLDERS },
-      [Constants.PATH_PROJECT_TEMPLATE]
-    );
-
-    // Create a Docker Image from the project read from the zip buffer
+    // Read the project from the zip buffer and use it to create a Docker Image
+    const { tempDirPath, tempProjectDirPath } = await readProjectFromZipBuffer(execName, zipBuffer);
     dockerImage = await dockerUtils.createImage(projectName, tempProjectDirPath)
-      .finally(() => fsUtils.removeDirectorySync(tempDirPath)); // Remove the temp directory after creating the image
+      .finally(() => fsUtils.removeDirectorySync(tempDirPath)); // Remove the temporary directory after creating the image
 
-    // Run the Docker container to get the gas snapshot file
+    // Run the Docker container to obtain the gas snapshot file and process the results (if the execution has exited with a non-error code)
     const containerResults = await dockerUtils.runImage(execName, dockerImage!.imageName, Constants.CMD_RETRIEVE_SNAPSHOTS);
-
-    // Process the results and extract the test info from the gas snapshot output (if the execution has exited with a non-error code)
     if (containerResults.statusCode === DockerExitCode.PURPOSELY_STOPPED) {
       containerResults.output = processDockerContainerOutput(projectName, containerResults.output);
     }
 
-    // Create a new docker container history
+    // Create a new Docker Container History
     const dockerContainerHistory = new DockerContainerHistory({
       dockerImage, purpose: ContainerPurpose.PROJECT_CREATION, container: containerResults
     });

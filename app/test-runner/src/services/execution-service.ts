@@ -47,34 +47,29 @@ const runImageWithFilesInZipBuffer = async (
   zipBuffer: Buffer, dockerImage: IDockerImage, commandExecuted: string
 ): Promise<IDockerContainerHistory> => {
   const dockerContainerHistory = new DockerContainerHistory({ dockerImage, purpose: ContainerPurpose.TEST_EXECUTION });
+  const execName = `${dockerImage.imageName}_execution_${dockerContainerHistory._id}_${Date.now()}`;
 
-  try {
-    Logger.info(`Running the tests using the following command in the ${dockerImage.imageName} image: ${commandExecuted}.`);
-    const execName = `${dockerImage.imageName}_execution_${dockerContainerHistory._id}_${Date.now()}`;
+  // Extract source files from the zip buffer
+  const { dirPath: tempDirPath, extractedPath: tempSrcDirPath } = await fsUtils.readFromZipBuffer(execName, zipBuffer);
 
-    // Read the source files from the zip buffer
-    const { dirPath: tempDirPath, extractedPath: tempSrcDirPath } = await fsUtils.readFromZipBuffer(execName, zipBuffer);
-
-    // Run the Docker container to execute the tests and update the docker container history
-    const containerResults = await dockerUtils.runImage(
-      execName, dockerImage.imageName, commandExecuted, tempSrcDirPath
-    ).finally(() => { fsUtils.removeDirectorySync(tempDirPath); }); // Remove the temp directory after running the container
-
-    // Extract the test execution results from the test output (if the execution has exited with a non-error code)
-    if (containerResults.statusCode === DockerExitCode.PURPOSELY_STOPPED) {
-      containerResults.output = processDockerContainerOutput(
-        dockerImage.imageName, containerResults.output);
-    }
-
-    dockerContainerHistory.container = containerResults;
+  // Execute tests against smart contracts in the source files using a Docker container
+  Logger.info(`Executing the tests using the following command in the ${dockerImage.imageName} image: ${commandExecuted}.`);
+  const containerResults = await dockerUtils.runImage(
+    execName, dockerImage.imageName, commandExecuted, { srcDirPath: tempSrcDirPath }
+  ).finally(() => {
+    // Remove the temporary directory after running the container
+    fsUtils.removeDirectorySync(tempDirPath);
     Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image.`);
-  } catch (err: Error | unknown) {
-    Logger.warn(
-      `Failed to execute the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image! `
-      + `(Error: ${(err as Error)?.message})`
-    );
+  });
+
+  // Extract and process test execution results from the container output (if the execution has exited with a non-error code)
+  if (containerResults.statusCode === DockerExitCode.PURPOSELY_STOPPED) {
+    containerResults.output = processDockerContainerOutput(
+      dockerImage.imageName, containerResults.output);
   }
 
+  // Add container results to the Docker Container History
+  dockerContainerHistory.container = containerResults;
   return dockerContainerHistory;
 };
 

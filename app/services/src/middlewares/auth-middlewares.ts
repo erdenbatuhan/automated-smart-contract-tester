@@ -27,7 +27,7 @@ if (!JWT_SECRET) throw new Error('Missing environment variables (\'JWT_SECRET\')
  */
 export const handleAccessErrors = (
   res: Response, err: AppError | Error | unknown,
-  options: { returnResponseOnError: boolean } = { returnResponseOnError: true }
+  options: { returnResponseOnError?: boolean } = { returnResponseOnError: true }
 ): void => {
   const appError = (err instanceof AppError)
     ? err
@@ -96,7 +96,7 @@ const checkUserRole = (res: Response, allowedRoles: UserRole[]): void => {
  */
 const requireUser = (
   req: Request, res: Response, next: NextFunction,
-  options: { returnResponseOnError: boolean } = { returnResponseOnError: true }
+  options: { returnResponseOnError?: boolean } = { returnResponseOnError: true }
 ): void => {
   try {
     // Check if the user is authenticated as at least a user, then proceed
@@ -120,7 +120,7 @@ const requireUser = (
  */
 const requireAdmin = (
   req: Request, res: Response, next: NextFunction,
-  options: { returnResponseOnError: boolean } = { returnResponseOnError: true }
+  options: { returnResponseOnError?: boolean } = { returnResponseOnError: true }
 ): void => {
   try {
     // Check if the user is authenticated as an admin, then proceed

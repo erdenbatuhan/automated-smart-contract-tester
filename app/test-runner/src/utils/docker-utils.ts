@@ -66,7 +66,7 @@ const pruneDocker = async (dockerode: Dockerode): Promise<void> => {
  * @throws {Error} If any error occurs during the removal process.
  */
 const removeImage = async (
-  imageName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode, shouldPrune?: boolean }
+  imageName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode, shouldPrune?: boolean } = {}
 ): Promise<void> => {
   const dockerodeInstance = dockerode || new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
 
@@ -139,10 +139,10 @@ const createImage = async (imageName: string, dirPath: string): Promise<IDockerI
     // Build the Docker image
     const buildStream = await dockerode.buildImage({
       context: (() => {
-        fsUtils.checkIfFileExists(dirPath, 'Dockerfile'); // Check if the Dockerfile exists before attempting to build the image
+        fsUtils.checkIfFileExists(dirPath, Constants.PROJECT_FILES.DOCKERFILE); // Check if the Dockerfile exists before attempting to build the image
         return dirPath;
       })(),
-      src: Constants.DOCKER_IMAGE_SRC
+      src: Constants.PROJECT_DOCKER_IMAGE_SRC
     }, { t: imageName });
 
     // Follow the process of image creation and retrieve the image information
@@ -274,11 +274,15 @@ const startContainer = async (
  * @param {string} execName - The name of the execution.
  * @param {string} imageName - The name of the Docker image from which the container will be spawned.
  * @param {string} cmdString - The command to be executed.
- * @param {string} [srcDirPath] - The source directory path to bind as a volume.
+ * @param {object} [options] - Optional parameters for configuring the container execution.
+ * @param {string} [options.srcDirPath] - The source directory path to bind as a volume.
+ * @param {number} [options.timeout=Constants.DOCKER_CONTAINER_TIMEOUT_DEFAULT] - The maximum duration (in seconds)
+ *                                                                                for the container execution.
  * @returns {Promise<IDockerContainerResults>} A promise that resolves to an object containing the results.
  */
 const runImage = async (
-  execName: string, imageName: string, cmdString: string, srcDirPath?: string
+  execName: string, imageName: string, cmdString: string,
+  { srcDirPath, timeout = Constants.DOCKER_CONTAINER_TIMEOUT_DEFAULT }: { srcDirPath?: string, timeout?: number } = {}
 ): Promise<IDockerContainerResults> => {
   const dockerode = new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
   let containerName = null;
@@ -289,7 +293,7 @@ const runImage = async (
     // Create and start the container
     const container = await createContainerWithFiles(dockerode, imageName, cmdString.split(' '), srcDirPath);
     const { StatusCode, executionTimeSeconds, output } = await startContainer(
-      dockerode, container, { timeout: 10, removeAfter: false });
+      dockerode, container, { timeout, removeAfter: false });
 
     // Get the container name without the leading slash
     containerName = await container.inspect().then(({ Name }) => Name.slice(1));
