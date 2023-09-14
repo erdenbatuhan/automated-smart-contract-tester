@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/space-before-blocks */
 import type { Container as ContainerType } from 'dockerode';
 import Dockerode from 'dockerode';
 
