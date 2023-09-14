@@ -5,8 +5,9 @@ import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
 import type { IDockerContainerHistory } from '@models/docker-container-history';
 import type { IDockerContainerResults } from '@models/schemas/docker-container-results';
-import Status from '@models/enums/status';
+
 import ContainerPurpose from '@models/enums/container-purpose';
+import DockerExitCode from '@models/enums/docker-exit-code';
 
 import dockerImageService from '@services/docker-image-service';
 import dockerContainerHistoryService from '@services/docker-container-history-service';
@@ -55,17 +56,17 @@ const runImageWithFilesInZipBuffer = async (
     const { dirPath: tempDirPath, extractedPath: tempSrcDirPath } = await fsUtils.readFromZipBuffer(execName, zipBuffer);
 
     // Run the Docker container to execute the tests and update the docker container history
-    dockerContainerHistory.container = await dockerUtils.runImage(
+    const containerResults = await dockerUtils.runImage(
       execName, dockerImage.imageName, commandExecuted, tempSrcDirPath
     ).finally(() => { fsUtils.removeDirectorySync(tempDirPath); }); // Remove the temp directory after running the container
-    dockerContainerHistory.status = dockerContainerHistory.container.statusCode === 0 ? Status.SUCCESS : Status.FAILURE;
 
-    // Extract the test execution results from the test output (if the execution has been successful)
-    if (dockerContainerHistory.status === Status.SUCCESS) {
-      dockerContainerHistory.container.output = processDockerContainerOutput(
-        dockerImage.imageName, dockerContainerHistory.container.output);
+    // Extract the test execution results from the test output (if the execution has exited with a non-error code)
+    if (containerResults.statusCode === DockerExitCode.PURPOSELY_STOPPED) {
+      containerResults.output = processDockerContainerOutput(
+        dockerImage.imageName, containerResults.output);
     }
 
+    dockerContainerHistory.container = containerResults;
     Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image.`);
   } catch (err: Error | unknown) {
     Logger.warn(

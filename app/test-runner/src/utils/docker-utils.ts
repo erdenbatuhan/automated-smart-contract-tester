@@ -6,6 +6,7 @@ import Logger from '@logging/logger';
 
 import type { IDockerImage } from '@models/docker-image';
 import type { IDockerContainerResults } from '@models/schemas/docker-container-results';
+import DockerExitCode from '@models/enums/docker-exit-code';
 
 import conversionUtils from '@utils/conversion-utils';
 import fsUtils from '@utils/fs-utils';
@@ -193,6 +194,31 @@ const createContainerWithFiles = async (
 };
 
 /**
+ * Kills a Docker container if it exceeds a specified timeout and returns the result.
+ *
+ * @param {ContainerType} container - The Docker container to be killed.
+ * @param {number} timeout - The maximum execution time allowed before killing the container (in seconds).
+ *
+ * @returns {Promise<{ StatusCode: number; executionTimeSeconds: number; output: string; }>}
+ *          A promise that resolves with the result of killing the container, including exit status, execution time, and output.
+ */
+const killContainerAfterTimeout = async (
+  container: ContainerType, timeout: number
+): Promise<{ StatusCode: number; executionTimeSeconds: number; output: string; }> => {
+  const message = `Container execution timed out after ${timeout} seconds.`;
+
+  try {
+    Logger.error(message);
+    await container.kill();
+  } catch (err) {
+    // This situation should not occur ideally; attempt to find a way to terminate the container
+    Logger.warn(`Could not stop the container! (Reason: ${(err as Error)?.message})`);
+  }
+
+  return { StatusCode: DockerExitCode.IMMEDIATE_TERMINATION, executionTimeSeconds: timeout, output: message };
+};
+
+/**
  * Starts a Docker container and waits for it to complete execution.
  *
  * @param {Dockerode} dockerode - The Dockerode instance.
@@ -209,33 +235,34 @@ const startContainer = async (
   let timeoutActive = !!options?.timeout;
 
   try {
-    // Start the container
+    // Start the Docker container
     const startTime = Date.now();
     await container.start();
 
-    // Waits for the container to complete execution
+    // Create a promise that waits for the container to finish its execution
     const promises = [container.wait().then(({ StatusCode }) => {
       timeoutActive = false; // Deactivate the timeout
-      return { StatusCode, executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(Date.now() - startTime) };
+
+      // Return the results
+      return container.logs({ stdout: true, stderr: true }).then((buffer) => ({
+        StatusCode,
+        executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(Date.now() - startTime),
+        output: buffer.toString()
+      }));
     })];
 
-    // A special promise that timeouts
+    // If a timeout value is provided, create also a timeout promise that triggers after the specified number of seconds
     if (options?.timeout) {
-      promises.push(new Promise((resolve, reject) => setTimeout(() => {
-        if (!timeoutActive) return resolve({ StatusCode: 999, executionTimeSeconds: -1 }); // Make sure to kill timeout if it is not active
+      promises.push(new Promise((resolve) => setTimeout(() => {
+        if (!timeoutActive) return resolve({ StatusCode: -1, executionTimeSeconds: -1, output: '' }); // Ensure that the timeout is killed if it is not active
 
-        // Kill the container and throw error
-        return container.kill()
-          .catch((err: Error | unknown) => Logger.warn(`Could not stop the container! (Reason: ${(err as Error)?.message})`)) // It shouldn't have happened, try to find a way to kill that container!
-          .finally(() => reject(new Error(`Container execution timed out after ${options.timeout} seconds.`)));
+        // Kill the Docker container
+        return resolve(killContainerAfterTimeout(container, options!.timeout!));
       }, options!.timeout! * 1000)));
     }
 
     // Resolve with the results if the container finishes before the timeout value; otherwise, reject with a timeout error.
-    return {
-      ...await Promise.race(promises) as { StatusCode: number; executionTimeSeconds: number },
-      output: await container.logs({ stdout: true, stderr: true }).then((buffer) => buffer.toString())
-    };
+    return Promise.race(promises);
   } finally {
     if (options?.removeAfter) await pruneDocker(dockerode); // Prune unused containers and images
   }
@@ -277,7 +304,7 @@ const runImage = async (
       cmd: cmdString,
       statusCode: StatusCode,
       executionTimeSeconds,
-      output: StatusCode === 0 ? { data: output } : { error: output }
+      output: StatusCode === DockerExitCode.PURPOSELY_STOPPED ? { data: output } : { error: output }
     };
   } catch (err: Error | unknown) {
     Logger.error(
@@ -287,7 +314,7 @@ const runImage = async (
     return {
       containerName,
       cmd: cmdString,
-      statusCode: 999, // An error code that is not 0 (success) or 1 (failure)
+      statusCode: DockerExitCode.FAILED_TO_RUN,
       output: { error: (err as Error)?.message }
     };
   } finally {

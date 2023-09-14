@@ -92,14 +92,14 @@ const checkUserRole = (res: Response, allowedRoles: UserRole[]): void => {
  * @param {Object} [options] - Options for controlling the error handling behavior.
  * @param {boolean} [options.returnResponseOnError=true] - If true, sends a response; if false, throws the error.
  * @returns {void}
- * @throws {AppError} If the user is not authenticated as an ADMIN or if an error occurs during the check.
+ * @throws {AppError} If the user is not authenticated as an admin or if an error occurs during the check.
  */
 const requireUser = (
   req: Request, res: Response, next: NextFunction,
   options: { returnResponseOnError: boolean } = { returnResponseOnError: true }
 ): void => {
   try {
-    // Check if the user is authenticated as at least a USER, then proceed
+    // Check if the user is authenticated as at least a user, then proceed
     checkUserRole(res, [UserRole.USER, UserRole.ADMIN]); // Make sure 'requireAuth' has been called before!
     next();
   } catch (err: AppError | Error | unknown) {
@@ -116,14 +116,14 @@ const requireUser = (
  * @param {Object} [options] - Options for controlling the error handling behavior.
  * @param {boolean} [options.returnResponseOnError=true] - If true, sends a response; if false, throws the error.
  * @returns {void}
- * @throws {AppError} If the user is not authenticated as an ADMIN or if an error occurs during the check.
+ * @throws {AppError} If the user is not authenticated as an admin or if an error occurs during the check.
  */
 const requireAdmin = (
   req: Request, res: Response, next: NextFunction,
   options: { returnResponseOnError: boolean } = { returnResponseOnError: true }
 ): void => {
   try {
-    // Check if the user is authenticated as an ADMIN, then proceed
+    // Check if the user is authenticated as an admin, then proceed
     checkUserRole(res, [UserRole.ADMIN]); // Make sure 'requireAuth' has been called before!
     next();
   } catch (err: AppError | Error | unknown) {

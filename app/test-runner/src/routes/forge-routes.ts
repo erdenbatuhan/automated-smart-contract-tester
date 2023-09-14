@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 
-import executorEnvironmentConfig from '~data/forge/executor-environment-config.json';
+import ForgeTestExecutionArgument from '@forge/types/enums/forge-test-execution-argument';
 
 const router = Router();
 
@@ -12,7 +12,7 @@ const router = Router();
  * @returns {object} 500 - Internal server error, indicating a failure to retrieve the options.
  */
 router.get('/test/options/execution-arguments', async (req: Request, res: Response) => {
-  res.status(200).json(executorEnvironmentConfig);
+  res.status(200).json(Object.values(ForgeTestExecutionArgument));
 });
 
 export default router;

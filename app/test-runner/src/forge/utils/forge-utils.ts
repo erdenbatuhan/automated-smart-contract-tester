@@ -1,13 +1,13 @@
-import executorEnvironmentConfig from '~data/forge/executor-environment-config.json';
 import Constants from '~constants';
 
 import type TestOutput from '@forge/types/forge-test-output';
+import ForgeTestExecutionArgument from '@forge/types/enums/forge-test-execution-argument';
 
 import forgeSnapshotOutputParser from '@forge/parser/forge-output-parser-snapshot';
 import forgeTestOutputParser from '@forge/parser/forge-output-parser-test';
 import forgeGasOutputParser from '@forge/parser/forge-output-parser-gas';
 
-const VALID_TEST_EXECUTION_ARGUMENTS = Object.keys(executorEnvironmentConfig);
+const VALID_TEST_EXECUTION_ARGUMENTS = Object.keys(ForgeTestExecutionArgument);
 
 /**
  * Converts a camel-cased string to an executable argument format with a double hyphen prefix.

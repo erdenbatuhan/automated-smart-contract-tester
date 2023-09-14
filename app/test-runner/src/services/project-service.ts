@@ -6,8 +6,9 @@ import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
 import type { IDockerContainerHistory } from '@models/docker-container-history';
 import type { IDockerContainerResults } from '@models/schemas/docker-container-results';
-import Status from '@models/enums/status';
+
 import ContainerPurpose from '@models/enums/container-purpose';
+import DockerExitCode from '@models/enums/docker-exit-code';
 
 import dockerImageService from '@services/docker-image-service';
 
@@ -67,18 +68,15 @@ const saveProject = async (
     // Run the Docker container to get the gas snapshot file
     const containerResults = await dockerUtils.runImage(execName, dockerImage!.imageName, Constants.CMD_RETRIEVE_SNAPSHOTS);
 
+    // Process the results and extract the test info from the gas snapshot output (if the execution has exited with a non-error code)
+    if (containerResults.statusCode === DockerExitCode.PURPOSELY_STOPPED) {
+      containerResults.output = processDockerContainerOutput(projectName, containerResults.output);
+    }
+
     // Create a new docker container history
     const dockerContainerHistory = new DockerContainerHistory({
-      dockerImage,
-      status: containerResults.statusCode === 0 ? Status.SUCCESS : Status.FAILURE,
-      purpose: ContainerPurpose.PROJECT_CREATION,
-      container: containerResults
+      dockerImage, purpose: ContainerPurpose.PROJECT_CREATION, container: containerResults
     });
-
-    // Process the results and extract the test info from the gas snapshot output (if the execution has been successful)
-    if (dockerContainerHistory.status === Status.SUCCESS) {
-      dockerContainerHistory.container!.output = processDockerContainerOutput(projectName, containerResults.output);
-    }
 
     // Save (or update it if it already exists) the Docker Image with the Docker Container History for the executed container
     return await dockerImageService.saveDockerImageWithDockerContainerHistory(dockerImage!, dockerContainerHistory)
