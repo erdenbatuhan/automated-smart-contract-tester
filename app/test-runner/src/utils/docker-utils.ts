@@ -260,7 +260,7 @@ const runImage = async (
     Logger.info(`Running a Docker container from '${imageName}' image with the command '${cmdString}' (${execName}).`);
 
     // Create and start the container
-    const container = await createContainerWithFiles(dockerode, imageName, ['/bin/bash'], srcDirPath);
+    const container = await createContainerWithFiles(dockerode, imageName, cmdString.split(' '), srcDirPath);
     const { StatusCode, executionTimeSeconds, output } = await startContainer(
       dockerode, container, { timeout: 10, removeAfter: false });
 
