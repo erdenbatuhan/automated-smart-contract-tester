@@ -2,7 +2,7 @@ import path from 'path';
 
 export default class Constants {
   // Config
-  public static REQUEST_TIMEOUT = 310; // Defined in seconds
+  public static REQUEST_TIMEOUT = 190; // Defined in seconds
 
   // Paths
   public static PATH_ROOT = path.dirname(require.main!.filename);
