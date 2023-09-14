@@ -1,14 +1,12 @@
 /* eslint-disable @typescript-eslint/space-before-blocks */
-import Dockerode from 'dockerode';
 import type { Container as ContainerType } from 'dockerode';
-import { WritableStream } from 'memory-streams'; // Streams to capture stdout and stderr
+import Dockerode from 'dockerode';
 
 import Constants from '~constants';
 import Logger from '@logging/logger';
 
-import Status from '@models/enums/status';
 import type { IDockerImage } from '@models/docker-image';
-import type { IDockerContainerHistory } from '@models/docker-container-history';
+import type { IDockerContainerResults } from '@models/schemas/docker-container-results';
 
 import conversionUtils from '@utils/conversion-utils';
 import fsUtils from '@utils/fs-utils';
@@ -81,34 +79,6 @@ const removeImage = async (
     Logger.info(`Successfully removed the Docker image named '${imageName}'.`);
   } catch (err: Error | unknown) {
     Logger.error(`Could not remove the Docker image named '${imageName}'. (Error: ${(err as Error)?.message})`);
-  } finally {
-    if (shouldPrune) await pruneDocker(dockerodeInstance); // Prune Docker
-  }
-};
-
-/**
- * Removes a Docker volume by name.
- *
- * @param {Dockerode} dockerode - The Dockerode instance.
- * @param {object} options - An options object.
- * @param {Dockerode} [options.dockerode] - The Dockerode instance. If not provided, a new instance will be created with the default socket path.
- * @param {boolean} [options.shouldPrune=false] - Indicates whether to prune unused containers and images after the removal.
- * @returns {Promise<void>} A promise that resolves once the volume is removed.
- */
-const removeVolume = async (
-  volumeName: string, { dockerode, shouldPrune = false }: { dockerode?: Dockerode; shouldPrune?: boolean }
-): Promise<void> => {
-  const dockerodeInstance = dockerode || new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
-
-  try {
-    Logger.info(`Removing the Docker volume named '${volumeName}'.`);
-
-    const dockerVolume = dockerodeInstance.getVolume(volumeName);
-    if (dockerVolume) await dockerVolume.remove();
-
-    Logger.info(`Successfully removed the Docker volume named '${volumeName}'.`);
-  } catch (err: Error | unknown) {
-    Logger.error(`Could not remove the Docker volume named '${volumeName}'. (Error: ${(err as Error)?.message})`);
   } finally {
     if (shouldPrune) await pruneDocker(dockerodeInstance); // Prune Docker
   }
@@ -198,117 +168,127 @@ const createImage = async (imageName: string, dirPath: string): Promise<IDockerI
 };
 
 /**
- * Creates a shared volume for a Docker container and moves source files into it.
+ * Creates a Docker container with optional source files copied into it.
  *
  * @param {Dockerode} dockerode - The Dockerode instance.
- * @param {string} execName - The unique name of the execution.
- * @param {string} srcDirPath - The path to the source directory to be moved into the volume.
- * @param {boolean} [removeAfter=false] - Indicates whether to remove the container after the copy operation.
- * @returns {Promise<string>} A promise that resolves to the name of the created shared volume.
+ * @param {string} imageName - The name of the Docker image.
+ * @param {string[]} command - The command to run inside the container.
+ * @param {string} [srcDirPath] - The path to the source directory to copy into the container.
+ * @returns {Promise<ContainerType>} A promise that resolves to the created Docker container.
  */
-const createSharedVolume = async (
-  dockerode: Dockerode, execName: string, srcDirPath: string, removeAfter: boolean = false
-): Promise<string> => {
-  // Create a shared volume
-  const sharedVolume = `sharedvolume_${execName}`;
-  await dockerode.createVolume({ Name: sharedVolume });
+const createContainerWithFiles = async (
+  dockerode: Dockerode, imageName: string, command: string[], srcDirPath?: string
+): Promise<ContainerType> => {
+  // Create the container
+  const container = await dockerode.createContainer({ Image: imageName, Cmd: command, Tty: true });
 
-  // Create the copy container
-  let copyContainer: ContainerType;
-  try {
-    copyContainer = await dockerode.createContainer({
-      Image: 'ubuntu', WorkingDir: '/app', HostConfig: { Binds: [`${sharedVolume}:/app`] }
-    });
-  } catch (err: Error | unknown) {
-    await removeVolume(sharedVolume, { dockerode }); // Remove the shared volume
-    throw err;
+  // Move source files into the copy container
+  if (srcDirPath) {
+    await container.putArchive(
+      fsUtils.createTarball(srcDirPath),
+      { path: `${Constants.PROJECT_DIR}/${Constants.PROJECT_FOLDERS.SRC}` }
+    );
   }
 
-  // Move source files into the copy container (consequently into the shared volume)
-  try {
-    await copyContainer.putArchive(fsUtils.createTarball(srcDirPath), { path: '/app' });
-  } finally {
-    // Remove the copy container
-    if (removeAfter) await copyContainer.remove();
-  }
-
-  return sharedVolume;
+  return container;
 };
 
 /**
- * Extracts and formats execution results from a Docker container.
+ * Starts a Docker container and waits for it to complete execution.
  *
- * @param {Dockerode.Container} container - The Docker container to extract results from.
- * @param {number} StatusCode - The exit status code of the container execution.
- * @param {number} startTime - The timestamp when container execution started.
- * @param {WritableStream} stdout - The writable stream for capturing standard output.
- * @param {WritableStream} stderr - The writable stream for capturing standard error.
- * @returns {Promise<IDockerContainerHistory>} A promise that resolves to an object containing the extracted container history.
- * @throws {Error} If there is an issue inspecting the container.
+ * @param {Dockerode} dockerode - The Dockerode instance.
+ * @param {ContainerType} container - The Docker container to start.
+ * @param {object} [options] - Optional options.
+ * @param {number} [options.timeout] - Timeout in seconds for container execution.
+ * @param {boolean} [options.removeAfter] - Whether to remove the container after execution.
+ * @returns {Promise<{ StatusCode: number; executionTimeSeconds: number; output: string; }>}
+ *          A promise that resolves to the execution results and container output.
  */
-const extractImageExecutionResults = async (
-  container: Dockerode.Container, StatusCode: number, startTime: number, stdout: WritableStream, stderr: WritableStream
-): Promise<IDockerContainerHistory> => ({
-  containerName: await container.inspect().then(({ Name }) => Name.slice(1)), // Get the container name without the leading slash
-  status: StatusCode === 0 ? Status.SUCCESS : Status.FAILURE, // Status code being 0 means a successful execution
-  statusCode: StatusCode,
-  executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(Date.now() - startTime), // Calculate elapsed time in seconds
-  output: StatusCode === 0 ? { data: stdout.toString() } : { error: stderr.toString() }
-} as IDockerContainerHistory);
+const startContainer = async (
+  dockerode: Dockerode, container: ContainerType, options?: { timeout?: number, removeAfter?: boolean }
+): Promise<{ StatusCode: number; executionTimeSeconds: number; output: string; }> => {
+  let timeoutActive = !!options?.timeout;
+
+  try {
+    // Start the container
+    const startTime = Date.now();
+    await container.start();
+
+    // Waits for the container to complete execution
+    const promises = [container.wait().then(({ StatusCode }) => {
+      timeoutActive = false; // Deactivate the timeout
+      return { StatusCode, executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(Date.now() - startTime) };
+    })];
+
+    // A special promise that timeouts
+    if (options?.timeout) {
+      promises.push(new Promise((resolve, reject) => setTimeout(() => {
+        if (!timeoutActive) return resolve({ StatusCode: 999, executionTimeSeconds: -1 }); // Make sure to kill timeout if it is not active
+        return reject(new Error(`Container execution timed out after ${options.timeout} seconds.`));
+      }, options!.timeout! * 1000)));
+    }
+
+    // Resolve with the results if the container finishes before the timeout value; otherwise, reject with a timeout error.
+    return {
+      ...await Promise.race(promises) as { StatusCode: number; executionTimeSeconds: number },
+      output: await container.logs({ stdout: true, stderr: true }).then((buffer) => buffer.toString())
+    };
+  } finally {
+    if (options?.removeAfter) await pruneDocker(dockerode); // Prune unused containers and images
+  }
+};
 
 /**
  * Runs a Docker container from the specified image with the given command.
  *
  * @param {string} execName - The name of the execution.
  * @param {string} imageName - The name of the Docker image from which the container will be spawned.
- * @param {IDockerContainerHistory} dockerContainerHistory - The Docker container history object.
+ * @param {string} cmdString - The command to be executed.
  * @param {string} [srcDirPath] - The source directory path to bind as a volume.
- * @returns {Promise<IDockerContainerHistory>} A promise that resolves to the updated Docker container history.
- * @throws {Error} If an error occurs during container execution.
+ * @returns {Promise<IDockerContainerResults>} A promise that resolves to an object containing the results.
  */
 const runImage = async (
-  execName: string, imageName: string, dockerContainerHistory: IDockerContainerHistory, srcDirPath?: string
-): Promise<IDockerContainerHistory> => {
-  // Record start time and start Dockerode
-  const startTime = Date.now();
+  execName: string, imageName: string, cmdString: string, srcDirPath?: string
+): Promise<IDockerContainerResults> => {
   const dockerode = new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
-  let sharedVolume: string | undefined;
+  let containerName = null;
 
   try {
-    Logger.info(`Running a Docker container from '${imageName}' image with the command '${dockerContainerHistory.commandExecuted}'.`);
+    Logger.info(`Running a Docker container from '${imageName}' image with the command '${cmdString}' (${execName}).`);
 
-    // Create a shared volume for binding the src directory
-    sharedVolume = srcDirPath && await createSharedVolume(dockerode, execName, srcDirPath);
+    // Create and start the container
+    const container = await createContainerWithFiles(dockerode, imageName, cmdString.split(' '), srcDirPath);
+    const { StatusCode, executionTimeSeconds, output } = await startContainer(
+      dockerode, container, { timeout: 10, removeAfter: false });
 
-    // Run the docker container
-    const [stdout, stderr] = [new WritableStream(), new WritableStream()];
-    const [{ StatusCode }, container]: [{ StatusCode: number }, ContainerType] = await dockerode.run(
-      imageName,
-      dockerContainerHistory.commandExecuted.split(' '),
-      [stdout, stderr],
-      {
-        Tty: false,
-        HostConfig: { Binds: srcDirPath ? [`${sharedVolume}:${Constants.PROJECT_DIR}/${Constants.PROJECT_FOLDERS.SRC}`] : [] }
-      }
-    );
+    // Get the container name without the leading slash
+    containerName = await container.inspect().then(({ Name }) => Name.slice(1));
 
-    // Extract the results and update the docker container history object
-    Object.assign(
-      dockerContainerHistory,
-      await extractImageExecutionResults(container, StatusCode, startTime, stdout, stderr)
-    );
+    Logger.info(
+      `The Docker container '${containerName}' running from the '${imageName}' image `
+    + `exited with code ${StatusCode} (Elapsed time: ${executionTimeSeconds} seconds).`);
 
-    Logger.info(`The Docker container '${dockerContainerHistory.containerName}' running from the '${imageName}' image exited with code ${StatusCode} (Elapsed time: ${dockerContainerHistory.executionTimeSeconds} seconds).`);
-    return dockerContainerHistory;
+    // Return the results and update the docker container history object (Status code being 0 means a successful execution)
+    return {
+      containerName,
+      cmd: cmdString,
+      statusCode: StatusCode,
+      executionTimeSeconds,
+      output: StatusCode === 0 ? { data: output } : { error: output }
+    };
   } catch (err: Error | unknown) {
-    Logger.error(`Could not run a Docker container from '${imageName}' image with the command '${dockerContainerHistory.commandExecuted}'.`);
-    throw err;
-  } finally {
-    // Prune unused containers and images
-    await pruneDocker(dockerode);
+    Logger.error(
+      `Could not run a Docker container from '${imageName}' image `
+    + `with the command '${cmdString}' (${execName}).`);
 
-    // Remove the shared volume
-    if (sharedVolume) await removeVolume(sharedVolume, { dockerode });
+    return {
+      containerName,
+      cmd: cmdString,
+      statusCode: 999, // An error code that is not 0 (success) or 1 (failure)
+      output: { error: (err as Error)?.message }
+    };
+  } finally {
+    await pruneDocker(dockerode); // Prune unused containers and images
   }
 };
 
