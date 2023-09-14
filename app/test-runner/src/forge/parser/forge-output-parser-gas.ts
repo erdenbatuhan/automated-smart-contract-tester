@@ -37,9 +37,10 @@ const extractGasChangeFromForgeTestExecutionOutput = (
   forgeTestExecutionOutput: string | undefined | null
 ): ForgeGasChangeOutput => {
   const jsonEnd = forgeTestExecutionOutput?.lastIndexOf('}') || -1; // End of the JSON
-  const forgeGasChangeOutput = forgeTestExecutionOutput?.substring(jsonEnd + 1).trim().split('\n').map(removeColorCodes) || [];
+  const forgeGasChangeOutput = removeColorCodes(forgeTestExecutionOutput?.substring(jsonEnd + 1).trim() || '');
+  const forgeGasChangeLines = forgeGasChangeOutput.split('\n');
 
-  return forgeGasChangeOutput.reduce((gasChangeResultsProcessed, forgeGasChangeLine) => {
+  return forgeGasChangeLines.reduce((gasChangeResultsProcessed, forgeGasChangeLine) => {
     const isOverall = forgeGasChangeLine.includes(GAS_CHANGE_PREFIX_OVERALL);
     let testName, gasChangePartsString;
 
