@@ -12,6 +12,6 @@ export default new mongoose.Schema<IFile>(
     content: { type: String, required: true }
   },
   {
-    _id: false // Prevent Mongoose from adding an _id field to embedded documents
+    _id: false
   }
 );

@@ -36,6 +36,6 @@ export default new mongoose.Schema<ITestExecutionArguments>(
     etherscanApiKey: String
   },
   {
-    _id: false // Prevent Mongoose from adding an _id field to embedded documents
+    _id: false
   }
 );

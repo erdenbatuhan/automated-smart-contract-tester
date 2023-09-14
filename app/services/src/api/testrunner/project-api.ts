@@ -1,31 +1,33 @@
-import axios, { HttpStatusCode } from 'axios';
 import type { AxiosError } from 'axios';
+import axios, { HttpStatusCode } from 'axios';
 
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
 import { TestRunnerApiEndpointConfig } from '@api/common/config/api-endpoint-config';
 import type ApiError from '@api/testrunner/types/api-error';
-import type ProjectUploadResponse from '@api/testrunner/types/project-upload-response';
+import type ContainerExecutionResponse from '@api/testrunner/types/container-execution-response';
+import ContainerExecutionStatus from '@api/testrunner/types/enums/container-execution-status';
 
 import type { RequestFile } from '@utils/router-utils';
 import apiErrorUtils from '@api/testrunner/utils/api-error-utils';
 import apiFormDataUtils from '@api/testrunner/utils/api-form-data-utils';
 
 /**
- * Uploads a project to the Test Runner service.
+ * Uploads a project to the Test Runner service and initiates the Docker image build process.
  *
  * @param {string} projectName - The name of the project to upload.
  * @param {RequestFile} requestFile - The file containing project data.
- * @returns {Promise<ProjectUploadResponse>} A Promise that resolves to the response data from the Test Runner service.
- * @throws {AppError} If an error occurs during the upload.
+ * @returns {Promise<ContainerExecutionResponse>} A Promise that resolves to the response data
+ *                                                representing the Docker image build results initiated by the upload.
+ * @throws {AppError} If an error occurs during the upload, or if the upload status does not indicate success.
  */
 const uploadProject = async (
   projectName: string, requestFile: RequestFile
-): Promise<ProjectUploadResponse> => {
+): Promise<ContainerExecutionResponse> => {
   Logger.info(`Uploading ${projectName} project to the Test Runner service to build the Docker image.`);
 
-  return apiFormDataUtils.sendFormData<ProjectUploadResponse>(
+  const containerExecutionResponse = await apiFormDataUtils.sendFormData<ContainerExecutionResponse>(
     TestRunnerApiEndpointConfig.CONFIG_PROJECT_UPLOAD(projectName),
     requestFile,
     {
@@ -33,6 +35,13 @@ const uploadProject = async (
       errorMessage: 'An error occurred while uploading the project to the Test Runner service.'
     }
   );
+
+  // Handle error if the status is not success
+  if (containerExecutionResponse.status !== ContainerExecutionStatus.SUCCESS) {
+    throw apiErrorUtils.handleContainerError(containerExecutionResponse);
+  }
+
+  return containerExecutionResponse;
 };
 
 /**

@@ -23,5 +23,7 @@ export default new mongoose.Schema<IDockerContainerResults>(
     statusCode: { type: Number, enum: DockerExitCode },
     output: { type: TestOutput, required: true }
   },
-  { _id: false }
+  {
+    _id: false
+  }
 );

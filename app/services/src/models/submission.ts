@@ -11,7 +11,7 @@ export interface ISubmission extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
   project: IProject;
   upload: IUpload;
-  status: TestStatus;
+  testStatus: TestStatus;
   results: object;
   deployer: IUser; // Virtual Field
 
@@ -27,7 +27,7 @@ const SubmissionSchema = new mongoose.Schema<ISubmission, SubmissionModel>(
   {
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true, select: false },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },
-    status: { type: String, enum: TestStatus, required: true, default: TestStatus.INCONCLUSIVE },
+    testStatus: { type: String, enum: TestStatus, required: true, default: TestStatus.INCONCLUSIVE },
     results: { type: Object }
   },
   {

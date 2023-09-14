@@ -4,20 +4,14 @@ import type { SaveOptions } from 'mongoose';
 import type { IUpload } from '@models/upload';
 import type { IUser } from '@models/user';
 
-// TestExecutionArgumentsSchema
-import TestExecutionArgumentsSchema from '@models/schemas/test-execution-arguments';
-import type { ITestExecutionArguments } from '@models/schemas/test-execution-arguments';
-
-// TestSchema
-import TestSchema from '@models/schemas/test';
-import type { ITest } from '@models/schemas/test';
+import ProjectConfigSchema from '@models/schemas/project-config';
+import type { IProjectConfig } from '@models/schemas/project-config';
 
 export interface IProject extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
   projectName: string;
   upload: IUpload;
-  testExecutionArguments?: ITestExecutionArguments;
-  tests: ITest[];
+  config: IProjectConfig;
   deployer: IUser; // Virtual Field
 
   leanSave(this: IProject, options?: SaveOptions): Promise<IProject>;
@@ -27,8 +21,7 @@ const ProjectSchema = new mongoose.Schema<IProject>(
   {
     projectName: { type: String, unique: true, required: true },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },
-    testExecutionArguments: { type: TestExecutionArgumentsSchema },
-    tests: { type: [TestSchema], required: true }
+    config: { type: ProjectConfigSchema, required: true }
   },
   {
     timestamps: true,

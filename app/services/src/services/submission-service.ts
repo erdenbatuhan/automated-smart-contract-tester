@@ -100,7 +100,7 @@ const runAndCreateSubmission = async (
     Logger.info(`Running a submission for the ${projectName} project.`);
 
     // Step 1: Find the project by name and create a new submission document
-    const project = await projectService.findProjectByName(projectName, null, 'testExecutionArguments', { session });
+    const project = await projectService.findProjectByName(projectName, null, 'config', { session });
     const submission = new Submission({ project });
 
     // Step 2: Upload submission files and get the upload document saved
@@ -109,10 +109,10 @@ const runAndCreateSubmission = async (
 
     // Step 3: Send the files to the test runner service to run the Docker image
     const testExecutionOutput = await testRunnerExecutionApi.executeSubmission(
-      projectName, requestFile, project.testExecutionArguments);
+      projectName, requestFile, project.config);
 
     // Step 4: Extract the status and calculate the score based on the execution output
-    submission.status = executionOutputUtils.extractTestStatus(testExecutionOutput);
+    submission.testStatus = executionOutputUtils.extractTestStatus(testExecutionOutput);
     submission.results = executionOutputUtils.calculateTestScoreAndGenerateResults(testExecutionOutput);
 
     // Step 5: Save the submission

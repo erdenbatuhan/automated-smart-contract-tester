@@ -7,7 +7,7 @@ import forgeSnapshotOutputParser from '@forge/parser/forge-output-parser-snapsho
 import forgeTestOutputParser from '@forge/parser/forge-output-parser-test';
 import forgeGasOutputParser from '@forge/parser/forge-output-parser-gas';
 
-const VALID_TEST_EXECUTION_ARGUMENTS = Object.keys(ForgeTestExecutionArgument);
+const VALID_TEST_EXECUTION_ARGUMENTS = Object.values(ForgeTestExecutionArgument).map((val) => val.toString());
 
 /**
  * Converts a camel-cased string to an executable argument format with a double hyphen prefix.

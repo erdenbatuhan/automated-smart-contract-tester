@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
+import { HttpStatusCode } from 'axios';
 
-import type AppError from '@errors/app-error';
+import AppError from '@errors/app-error';
 
 import { IUser } from '@models/user';
-import type { ITestExecutionArguments } from '@models/schemas/test-execution-arguments';
+import type { IProjectConfig } from '@models/schemas/project-config';
 
 import authMiddlewares from '@middlewares/auth-middlewares';
 import projectService from '@services/project-service';
@@ -20,20 +21,18 @@ const upload = multer({ storage: multer.memoryStorage() });
  *
  * @param {Request} req - The Express request object.
  * @param {Response} res - The Express response object.
- * @param {Function} saveFunction - The function to perform the action (create or update).
+ * @param {typeof projectService.buildAndCreateProject} saveFunction - The function to perform the action (create or update).
  * @returns {Promise<void>}
  */
 const saveProject = async (
-  req: Request, res: Response, saveFunction: (
-    user: IUser, projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
-  ) => Promise<object>
+  req: Request, res: Response, saveFunction: typeof projectService.buildAndCreateProject
 ): Promise<object> => {
   const { user } = res.locals;
   const { projectName } = req.params;
-  const requestFile = routerUtils.getRequestFile(req);
-  const execArgs = routerUtils.parseJsonObjectFromBody(req, 'execArgs') as ITestExecutionArguments;
+  const requestFile = routerUtils.getRequestFile(req) as RequestFile;
+  const projectConfig = routerUtils.parseJsonObjectFromBody(req, 'projectConfig') as IProjectConfig;
 
-  return saveFunction(user as IUser, projectName, requestFile, execArgs);
+  return saveFunction(user as IUser, projectName, requestFile, projectConfig);
 };
 
 /**
@@ -79,7 +78,7 @@ router.get('/:projectName', authMiddlewares.requireUser, async (req: Request, re
  * @param {string} req.params.projectName - The name of the project.
  * @consumes multipart/form-data
  * @param {file} req.file.projectZip - The ZIP file containing project files and folders.
- * @param {string} [req.body.execArgs] - Optional execution arguments for the tests.
+ * @param {IProjectConfig} [req.body.projectConfig] - Optional project config for the tests.
  * @returns {object} 201 - The created project.
  * @throws {object} 400 - If required parameters are missing or if the ZIP file is invalid.
  * @throws {object} 409 - If the project already exists.
@@ -103,7 +102,7 @@ router.post('/:projectName/upload', authMiddlewares.requireAdmin, upload.single(
  * @param {string} req.params.projectName - The name of the project.
  * @consumes multipart/form-data
  * @param {file} req.file.projectZip - The ZIP file containing project files and folders.
- * @param {string} [req.body.execArgs] - Optional execution arguments for the tests.
+ * @param {IProjectConfig} [req.body.projectConfig] - Optional project config for the tests.
  * @returns {object} 200 - The updated project.
  * @throws {object} 400 - If required parameters are missing or if the ZIP file is invalid.
  * @throws {object} 404 - If the project doesn't exist.
@@ -123,9 +122,7 @@ router.put('/:projectName/upload', authMiddlewares.requireAdmin, upload.single('
  *
  * @param {IUser} res.locals.user - The user performing the update (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project to update.
- * @param {object} req.body - The request body containing the following properties:
- * @param {ITest[]} [req.body.testsWithNewWeights] - An optional array of test objects with updated weights.
- * @param {ITestExecutionArguments} [req.body.updatedExecArgs] - Optional updated execution arguments for the project's tests.
+ * @param {IProjectConfig} req.body.updatedConfig - The object containing updated project configuration values for the tests.
  * @returns {object} 200 - The updated project.
  * @returns {object} 204 - If test weights and/or execution arguments are missing to update an existing project.
  * @throws {object} 400 - If required parameters are missing or if the request body is invalid.
@@ -134,10 +131,12 @@ router.put('/:projectName/upload', authMiddlewares.requireAdmin, upload.single('
  */
 router.put('/:projectName/update', authMiddlewares.requireAdmin, async (req: Request, res: Response) => {
   const { projectName } = req.params;
-  const { tests, execArgs } = req.body;
-  if (!tests || !execArgs) return res.status(204).end();
+  const updatedConfig = req.body as IProjectConfig;
+  if (!updatedConfig) {
+    return routerUtils.sendErrorResponse(res, new AppError(HttpStatusCode.BadRequest, 'Missing project config!'));
+  }
 
-  return projectService.updateProjectTestWeightsAndExecutionArguments(projectName, tests, execArgs).then((projectUpdated) => {
+  return projectService.updateProjectConfig(projectName, updatedConfig).then((projectUpdated) => {
     res.status(200).json(projectUpdated);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);

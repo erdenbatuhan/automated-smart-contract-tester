@@ -15,7 +15,9 @@ const ForgeOverallTestResultsSchema = new mongoose.Schema<ForgeOverallTestResult
     totalGasChange: { type: Number },
     totalGasChangePercentage: { type: Number }
   },
-  { _id: false }
+  {
+    _id: false
+  }
 );
 
 const ForgeTestResultSchema = new mongoose.Schema<ForgeTestResult>(
@@ -29,7 +31,9 @@ const ForgeTestResultSchema = new mongoose.Schema<ForgeTestResult>(
     gasChange: { type: Number },
     gasChangePercentage: { type: Number }
   },
-  { _id: false }
+  {
+    _id: false
+  }
 );
 
 export interface ITestOutput extends ForgeTestOutput {
@@ -45,5 +49,7 @@ export default new mongoose.Schema<ITestOutput>(
     overall: { type: ForgeOverallTestResultsSchema },
     tests: { type: [ForgeTestResultSchema] }
   },
-  { _id: false }
+  {
+    _id: false
+  }
 );

@@ -4,10 +4,12 @@ import type { AxiosError } from 'axios';
 import AppError from '@errors/app-error';
 import type ApiError from '@api/testrunner/types/api-error';
 
+import ContainerExecutionResponse from '@api/testrunner/types/container-execution-response';
+
 import errorUtils from '@utils/error-utils';
 
 /**
- * Convert errors returned from the Test Runner API into an AppError, log them, and return an AppError with appropriate details.
+ * Converts errors returned from the Test Runner API into an AppError, log them, and return an AppError with appropriate details.
  *
  * @param {AxiosError<ApiError>} err - The Axios error containing the TestRunnerApiError response.
  * @param {string} message - A descriptive error message to include in the AppError.
@@ -24,4 +26,16 @@ const convertApiErrorToAppError = (err: AxiosError<ApiError>, message: string): 
   );
 };
 
-export default { convertApiErrorToAppError };
+/**
+ * Handles errors occurred during container execution.
+ *
+ * @param {ContainerExecutionResponse} response - The response from the container execution.
+ * @returns {AppError} An AppError with details extracted from the project upload response.
+ */
+const handleContainerError = (response: ContainerExecutionResponse): AppError => errorUtils.handleError(new AppError(
+  HttpStatusCode.BadGateway,
+  response.container?.output?.error,
+  `${response.status} (Docker Container Exit Code = ${response.container?.statusCode})`
+));
+
+export default { convertApiErrorToAppError, handleContainerError };

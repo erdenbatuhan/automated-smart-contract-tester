@@ -8,8 +8,7 @@ import AppError from '@errors/app-error';
 import type { IUser } from '@models/user';
 import Project from '@models/project';
 import type { IProject } from '@models/project';
-import type { ITestExecutionArguments } from '@models/schemas/test-execution-arguments';
-import type { ITest } from '@models/schemas/test';
+import { IProjectConfig } from '@models/schemas/project-config';
 
 import uploadService from '@services/upload-service';
 import testRunnerProjectApi from '@api/testrunner/project-api';
@@ -85,7 +84,7 @@ const saveProject = async (
     // Step 2: Call the test runner service to build the Docker image
     const testRunnerOutput = await testRunnerProjectApi.uploadProject(
       project.projectName, requestFile);
-    project.tests = testRunnerOutput?.output?.tests?.map((test) => ({ test, weight: 1.0 })) || [];
+    project.config.tests = testRunnerOutput?.container?.output?.tests?.map((test) => ({ ...test, weight: 1.0 })) || [];
 
     // Step 3: Create or update project
     const projectSaved = await project.leanSave({ session });
@@ -93,7 +92,7 @@ const saveProject = async (
     // Commit transaction and return results
     return await session.commitTransaction().then(() => {
       Logger.info(`Successfully ${project.isNew ? 'created' : 'updated'} a project with the name '${project.projectName}'.`);
-      return { project: projectSaved, dockerImage: testRunnerOutput?.image };
+      return { project: projectSaved, dockerImage: testRunnerOutput?.dockerImage };
     });
   } catch (err: AppError | Error | unknown) {
     // Abort the transaction
@@ -113,19 +112,21 @@ const saveProject = async (
  * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the new project.
  * @param {RequestFile} requestFile - The file attached to the request containing the project files.
- * @param {ITestExecutionArguments} [execArgs] - Optional additional execution arguments.
+ * @param {IProjectConfig} [config] - The "optional" project configuration
+ *                                    (Providing "tests" is redundant as it will be overridden anyway).
  * @returns {Promise<{ project: IProject; dockerImage: object }>} A promise that resolves to an object
  *                                                                containing the created project and Docker image information.
  * @throws {AppError} If a project with the same name already exists (409) or if any error occurs during project creation.
  */
 const buildAndCreateProject = async (
-  user: IUser, projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
+  user: IUser, projectName: string, requestFile: RequestFile, config?: IProjectConfig
 ): Promise<{ project: IProject; dockerImage: object }> => {
   // Check if a project with the same name already exists
   const projectExists = await Project.exists({ projectName });
   if (projectExists) throw new AppError(HttpStatusCode.Conflict, `A project with the name '${projectName}' already exists.`);
 
-  const newProject = new Project({ projectName, testExecutionArguments: execArgs }); // Create new project
+  // Create a new project
+  const newProject = new Project({ projectName, config: config || {} });
   return await saveProject(user, newProject, requestFile);
 };
 
@@ -136,57 +137,61 @@ const buildAndCreateProject = async (
  * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the existing project to update.
  * @param {RequestFile} requestFile - The file attached to the request containing the project files.
- * @param {ITestExecutionArguments} [execArgs] - Optional additional execution arguments.
+ * @param {IProjectConfig} [config] - The "optional" project configuration
+ *                                    (Providing "tests" is redundant as it will be overridden anyway).
  * @returns {Promise<{ project: IProject; dockerImage: object }>} A promise that resolves to an object
  *                                                                containing the updated project and Docker image information.
  * @throws {AppError} If the project does not exist (404) or if any error occurs during project update.
  */
 const rebuildAndUpdateProject = async (
-  user: IUser, projectName: string, requestFile: RequestFile, execArgs: ITestExecutionArguments
+  user: IUser, projectName: string, requestFile: RequestFile, config?: IProjectConfig
 ): Promise<{ project: IProject; dockerImage: object }> => {
   // Find the existing project
   const existingProject = await findProjectByName(projectName, 'upload');
-  existingProject.testExecutionArguments = execArgs; // Update the existing project's test execution arguments
+
+  // Update the existing project's config, if provided
+  if (config) {
+    existingProject.config = config;
+  }
 
   return await saveProject(user, existingProject, requestFile);
 };
 
 /**
- * Update test weights and execution arguments for an existing project.
+ * Update the configuration of an existing project, including test weights, container timeout and execution arguments.
  *
  * @param {string} projectName - The name of the project to update.
- * @param {ITest[]} [testsWithNewWeights] - An optional array of test objects with updated weights.
- * @param {ITestExecutionArguments} [updatedExecArgs] - Optional updated execution arguments for the project's tests.
+ * @param {IProjectConfig} updatedConfig - The object containing updated project configuration values for the tests.
  * @returns {Promise<IProject>} A promise that resolves to the updated project.
- * @throws {AppError} If the project doesn't exist or if there's a server error during the update.
+ * @throws {AppError} If the project doesn't exist (404), if there's a server error during the update (500),
+ *                    or if any error occurs while updating the project configuration.
  */
-const updateProjectTestWeightsAndExecutionArguments = async (
-  projectName: string,
-  testsWithNewWeights?: ITest[],
-  updatedExecArgs?: ITestExecutionArguments
+const updateProjectConfig = async (
+  projectName: string, updatedConfig: IProjectConfig
 ): Promise<IProject> => {
   // Find the existing project
-  Logger.info(`Updating test weights and execution arguments of the ${projectName} project.`);
+  Logger.info(`Updating the config of the ${projectName} project.`);
   const existingProject = await findProjectByName(projectName, 'upload');
 
   // Update test weights if provided
-  if (testsWithNewWeights) {
-    existingProject.tests = existingProject.tests.map((existingTest: ITest) => {
-      const newWeight = testsWithNewWeights!.find(({ test }) => test === existingTest.test)?.weight;
+  if (updatedConfig.tests) {
+    existingProject.config.tests = existingProject.config.tests.map((existingTest) => {
+      const newWeight = updatedConfig.tests.find(({ test }) => test === existingTest.test)?.weight;
       existingTest.weight = newWeight || existingTest.weight;
 
       return existingTest;
     });
   }
 
-  // Update execution arguments if provided
-  if (updatedExecArgs) existingProject.testExecutionArguments = updatedExecArgs;
+  // Update the rest of the config, if provided
+  if (updatedConfig.containerTimeout) existingProject.config.containerTimeout = updatedConfig.containerTimeout;
+  if (updatedConfig.testExecutionArguments) existingProject.config.testExecutionArguments = updatedConfig.testExecutionArguments;
 
   return existingProject.save().then((project) => {
-    Logger.info(`Successfully updated test weights and execution arguments of the ${projectName} project.`);
+    Logger.info(`Successfully updated the config of the ${projectName} project.`);
     return project;
   }).catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while updating test weights and execution arguments of the ${projectName} project.`);
+    throw errorUtils.handleError(err, `An error occurred while updating the config of the ${projectName} project.`);
   });
 };
 
@@ -248,7 +253,7 @@ export default {
   findProjectByName,
   buildAndCreateProject,
   rebuildAndUpdateProject,
-  updateProjectTestWeightsAndExecutionArguments,
+  updateProjectConfig,
   downloadProjectFiles,
   deleteProject
 };

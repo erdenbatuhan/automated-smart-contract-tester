@@ -12,4 +12,7 @@ export default class Constants {
   public static JWT_NAME = 'token';
   public static MAX_AGE_JWT = 24 * 60 * 60; // 1 day in seconds
   public static MAX_AGE_COOKIE = this.MAX_AGE_JWT * 1000; // Maximum JWT age in milliseconds
+
+  // Project
+  public static CONTAINER_TIMEOUT_DEFAULT = 20; // Defined in seconds
 }
