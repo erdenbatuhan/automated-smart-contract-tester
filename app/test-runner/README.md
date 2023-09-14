@@ -1,10 +1,10 @@
-## Automated Smart Contract Testing - Test Runner
+# Automated Smart Contract Testing - Test Runner
 
-### Running the entire application with Docker
+## Running the entire application with Docker
 
 For instructions on running the entire application using _Docker_, please refer to the [README](../README.md) located in the parent directory.
 
-### Running the service separately
+## Running the service separately
 
 Before running the service, make sure that you have created a **.env.development.local** file and set the following environment variables.
 

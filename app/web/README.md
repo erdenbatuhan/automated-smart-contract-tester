@@ -1,1 +1,1 @@
-## Automated Smart Contract Testing - Web Frontend
+# Automated Smart Contract Testing - Web Frontend

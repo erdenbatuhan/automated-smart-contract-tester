@@ -1,10 +1,10 @@
-## Automated Smart Contract Testing - Backend Services
+# Automated Smart Contract Testing - Backend Services
 
-### Running the entire application with Docker
+## Running the entire application with Docker
 
 For instructions on running the entire application using _Docker_, please refer to the [README](../README.md) located in the parent directory.
 
-### Running the service separately
+## Running the service separately
 
 If you have not already done so, first follow the instructions in the [README](../test-runner/README.md) of the test runner service.
 

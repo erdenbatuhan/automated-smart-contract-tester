@@ -1,6 +1,28 @@
-## Automated Smart Contract Testing
+# Automated Smart Contract Testing
 
-### Setting up the Development Environment
+## Contents
+
+- [System Architecture](#system-architecture)
+- [Data Model](#data-model)
+- [High-level Sequence Diagram](#high-level-sequence-diagram)
+- [Setting up the Development Environment](#setting-up-the-development-environment)
+- [Running the Entire Application with Docker](#running-the-entire-application-with-docker)
+  - [Useful Docker Commands](#useful-docker-commands)
+- [(Optional) Running the services separately](#optional-running-the-services-separately)
+
+## System Architecture
+
+![system-architecture](../img/Smart%20Contract%20Testing%20Service%20%7C%20System%20Architecture.png)
+
+## Data Model
+
+![data-model](../img/Smart%20Contract%20Testing%20Service%20%7C%20Data%20Model.png)
+
+## High-level Sequence Diagram
+
+![high-level-sequence-diagram](../img/Smart%20Contract%20Testing%20Service%20%7C%20High-level%20Sequence%20Diagram%20%7C%20Exercise%20Upload%20&%20Code%20Submission.png)
+
+## Setting up the Development Environment
 
 Enhance project code quality using packages like _ESLint_ and _Prettier_. To set everything up correctly, install the dependencies in this directory with the following command:
 
@@ -12,7 +34,7 @@ _Husky's pre-commit hooks_ and _lint-staged_ ensure that _ESLint_ and _Prettier_
 
 **Bonus:** To get real-time linting warnings and errors, install _ESLint_ in your preferred IDE.
 
-### Running the Entire Application with Docker
+## Running the Entire Application with Docker
 
 Before running the application, create a **.env** file and set the following environment variables:
 
@@ -29,7 +51,7 @@ DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daem
 
 To run the application with _Docker Compose_, use the following commands:
 
-##### Building or rebuilding service(s):
+#### Building or rebuilding service(s):
 
 ```bash
 docker-compose \
@@ -37,7 +59,7 @@ docker-compose \
     -f mongo/docker-compose.mongo.yml -f docker-compose.yml build
 ```
 
-##### Creating and starting container(s):
+#### Creating and starting container(s):
 
 ```bash
 docker-compose \
@@ -45,7 +67,7 @@ docker-compose \
     -f mongo/docker-compose.mongo.yml -f docker-compose.yml up
 ```
 
-##### Stopping and removing container(s), network(s):
+#### Stopping and removing container(s), network(s):
 
 ```bash
 docker-compose \
@@ -53,15 +75,15 @@ docker-compose \
     -f mongo/docker-compose.mongo.yml -f docker-compose.yml down
 ```
 
-#### Useful Commands:
+### Useful Docker Commands
 
-##### Deleting all container(s):
+#### Deleting all container(s):
 
 ```bash
 docker rm -f $(docker ps -a -q)
 ```
 
-##### Deleting all volume(s):
+#### Deleting all volume(s):
 
 _!!! Be careful as it will remove all the data previously stored in the DB. If you wish to keep the data, skip this step. !!!_
 
@@ -69,7 +91,7 @@ _!!! Be careful as it will remove all the data previously stored in the DB. If y
 docker volume rm $(docker volume ls -q)
 ```
 
-### Running the services separately
+## (Optional) Running the services separately
 
 Refer to the respective service's README:
 
