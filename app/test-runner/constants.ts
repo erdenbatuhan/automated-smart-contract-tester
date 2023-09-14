@@ -1,6 +1,9 @@
 import path from 'path';
 
 export default class Constants {
+  // Config
+  public static REQUEST_TIMEOUT = 300; // Defined in seconds
+
   // Paths
   public static PATH_ROOT = path.dirname(require.main!.filename);
   public static PATH_TEMP_DIR = process.env.PATH_TEMP_DIR || path.join(Constants.PATH_ROOT, 'temp');
