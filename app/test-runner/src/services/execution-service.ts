@@ -40,11 +40,14 @@ const processDockerContainerOutput = (
  * @param {Buffer} zipBuffer - The zip buffer containing source files.
  * @param {IDockerImage} dockerImage - The Docker image to be executed.
  * @param {string} commandExecuted - The command to execute inside the Docker container.
+ * @param {object} [options] - Optional additional execution options.
+ * @param {number} [options.containerTimeout] - Timeout for container execution in seconds.
  * @returns {Promise<IDockerContainerHistory>} A promise that resolves to the updated Docker Container History.
  * @throws {Error} If any error occurs during execution.
  */
 const runImageWithFilesInZipBuffer = async (
-  zipBuffer: Buffer, dockerImage: IDockerImage, commandExecuted: string
+  zipBuffer: Buffer, dockerImage: IDockerImage, commandExecuted: string,
+  { containerTimeout }: { containerTimeout?: number; } = {}
 ): Promise<IDockerContainerHistory> => {
   const dockerContainerHistory = new DockerContainerHistory({ dockerImage, purpose: ContainerPurpose.TEST_EXECUTION });
   const execName = `${dockerImage.imageName}_execution_${dockerContainerHistory._id}_${Date.now()}`;
@@ -55,7 +58,7 @@ const runImageWithFilesInZipBuffer = async (
   // Execute tests against smart contracts in the source files using a Docker container
   Logger.info(`Executing the tests using the following command in the ${dockerImage.imageName} image: ${commandExecuted}.`);
   const containerResults = await dockerUtils.runImage(
-    execName, dockerImage.imageName, commandExecuted, { srcDirPath: tempSrcDirPath }
+    execName, dockerImage.imageName, commandExecuted, { srcDirPath: tempSrcDirPath, timeout: containerTimeout }
   ).finally(() => {
     // Remove the temporary directory after running the container
     fsUtils.removeDirectorySync(tempDirPath);
@@ -78,16 +81,20 @@ const runImageWithFilesInZipBuffer = async (
  *
  * @param {string} imageName - The name of the Docker Image.
  * @param {Buffer} zipBuffer - The zip buffer containing source files.
- * @param {object} [execArgs] - Optional additional execution arguments.
+ * @param {object} [options] - Optional additional execution options.
+ * @param {number} [options.containerTimeout] - Timeout for container execution in seconds.
+ * @param {object} [options.execArgs] - Additional execution arguments to pass to the container.
  * @returns {Promise<IDockerContainerHistory>} A promise that resolves to the Docker Container History.
  * @throws {AppError} If any error occurs during the execution.
  */
 const executeTests = async (
-  imageName: string, zipBuffer: Buffer, execArgs?: object
+  imageName: string, zipBuffer: Buffer,
+  { containerTimeout, execArgs }: { containerTimeout?: number; execArgs?: object; } = {}
 ): Promise<IDockerContainerHistory> => {
   const testExecutionCommand = forgeUtils.getTestExecutionCommand(execArgs);
   const dockerImage = await dockerImageService.findDockerImage(imageName);
-  const dockerContainerHistory = await runImageWithFilesInZipBuffer(zipBuffer, dockerImage!, testExecutionCommand);
+  const dockerContainerHistory = await runImageWithFilesInZipBuffer(
+    zipBuffer, dockerImage!, testExecutionCommand, { containerTimeout });
 
   return dockerContainerHistoryService.saveDockerContainerHistory(dockerContainerHistory)
     .then((dockerContainerHistorySaved) => {

@@ -16,10 +16,11 @@ const upload = multer({ storage: multer.memoryStorage() });
  *
  * The uploaded ZIP file must contain the smart contracts in a 'src' folder.
  *
- * @param {string} projectName - The name of the project associated with the tests.
+ * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes & project-middleware).
  * @consumes multipart/form-data
- * @param {file} srcZip - The ZIP file containing the smart contracts to be tested.
- * @param {object} [execArgs] - "Optional" execution arguments for the tests.
+ * @param {file} req.file.srcZip - The ZIP file containing the smart contracts to be tested.
+ * @param {object} [req.query.containerTimeout] - "Optional" timeout for container execution in seconds.
+ * @param {object} [req.body.execArgs] - "Optional" execution arguments for the tests.
  * @returns {object} 200 - The execution result, including test output and details.
  * @returns {object} 400 - Bad request error, such as missing parameters or invalid file format.
  * @returns {object} 500 - Internal server error, indicating a failure during execution.
@@ -28,9 +29,10 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
   try {
     const { projectName } = res.locals;
     const zipBuffer = routerUtils.extractFileBuffer(req);
+    const containerTimeout = req.query?.containerTimeout ? Number(req.query.containerTimeout) : undefined;
     const execArgs = routerUtils.parseJsonObjectFromBody(req, 'execArgs');
 
-    await executionService.executeTests(projectName, zipBuffer, execArgs).then((execution) => {
+    await executionService.executeTests(projectName, zipBuffer, { containerTimeout, execArgs }).then((execution) => {
       res.status(201).json(execution);
     });
   } catch (err: AppError | Error | unknown) {

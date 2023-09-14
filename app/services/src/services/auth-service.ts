@@ -34,7 +34,7 @@ const getAuthResponse = (user: IUser): { payload: { user: IUser }, token: string
  * @returns {Promise<{ payload: { user: IUser }, token: string }>} A promise that resolves to the authentication response object.
  */
 const register = async (
-  { email, password }: { email: string; password: string }
+  { email, password }: { email: string; password: string; }
 ): Promise<{ payload: { user: IUser }, token: string }> => {
   Logger.info(`Registering a new user with the email '${email}'.`);
 
@@ -56,7 +56,7 @@ const register = async (
  * @returns {Promise<{ payload: { user: IUser }, token: string }>} A promise that resolves to the authentication response object.
  */
 const login = async (
-  { email, password }: { email: string; password: string }
+  { email, password }: { email: string; password: string; }
 ): Promise<{ payload: { user: IUser }, token: string }> => {
   Logger.info(`Logging a new user in with the email '${email}'.`);
 

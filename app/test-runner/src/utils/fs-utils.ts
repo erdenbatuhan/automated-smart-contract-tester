@@ -67,7 +67,7 @@ const unzip = async (
  * @throws {AppError} If required files or folders are missing in the directory.
  */
 const checkDirectoryContents = async (
-  dirPath: string, { requiredFiles, requiredFolders }: { requiredFiles: string[], requiredFolders: string[] }
+  dirPath: string, { requiredFiles, requiredFolders }: { requiredFiles: string[]; requiredFolders: string[]; }
 ): Promise<void> => {
   const files = await fs.promises.readdir(dirPath);
   const directories = await fs.promises.readdir(dirPath, { withFileTypes: true })

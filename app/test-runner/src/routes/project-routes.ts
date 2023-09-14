@@ -16,9 +16,9 @@ const upload = multer({ storage: multer.memoryStorage() });
  *
  * The uploaded ZIP file should contain the necessary files and folders (Refer to @utils/constant-utils.ts).
  *
- * @param {string} projectName - The name of the project.
+ * @param {string} res.locals.projectName - The name of the project (see api-routes & project-middleware).
  * @consumes multipart/form-data
- * @param {file} projectZip - The ZIP file containing project files and folders.
+ * @param {file} req.file.projectZip - The ZIP file containing project files and folders.
  * @returns {object} 201 - If the project is created successfully, returns the created project.
  * @returns {object} 200 - If the project is updated successfully, returns the updated project.
  * @throws {object} 400 - If required parameters are missing or if the ZIP file is invalid.

@@ -7,8 +7,9 @@ import type { ITestOutput } from '@models/schemas/forge-test-output';
 export interface IDockerContainerResults {
   containerName?: string | null;
   cmd: string;
-  statusCode?: DockerExitCode;
+  timeoutValue: number;
   executionTimeSeconds?: number;
+  statusCode?: DockerExitCode;
   output: ITestOutput;
 }
 
@@ -17,8 +18,9 @@ export default new mongoose.Schema<IDockerContainerResults>(
   {
     containerName: { type: String },
     cmd: { type: String, required: true },
-    statusCode: { type: Number, enum: DockerExitCode },
+    timeoutValue: { type: Number, required: true },
     executionTimeSeconds: { type: Number },
+    statusCode: { type: Number, enum: DockerExitCode },
     output: { type: TestOutput, required: true }
   },
   { _id: false }

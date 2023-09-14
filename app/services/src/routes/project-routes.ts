@@ -102,7 +102,7 @@ router.post('/:projectName/upload', authMiddlewares.requireAdmin, upload.single(
  * @param {IUser} res.locals.user - The user performing the upload (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project.
  * @consumes multipart/form-data
- * @param {file} projectZip - The ZIP file containing project files and folders.
+ * @param {file} req.file.projectZip - The ZIP file containing project files and folders.
  * @param {string} [req.body.execArgs] - Optional execution arguments for the tests.
  * @returns {object} 200 - The updated project.
  * @throws {object} 400 - If required parameters are missing or if the ZIP file is invalid.
