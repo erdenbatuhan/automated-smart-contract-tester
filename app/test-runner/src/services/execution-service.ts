@@ -4,6 +4,7 @@ import type AppError from '@errors/app-error';
 import type { IDockerImage } from '@models/docker-image';
 import DockerContainerHistory from '@models/docker-container-history';
 import type { IDockerContainerHistory } from '@models/docker-container-history';
+import type { IDockerContainerResults } from '@models/schemas/docker-container-results';
 import Status from '@models/enums/status';
 import ContainerPurpose from '@models/enums/container-purpose';
 
@@ -19,12 +20,12 @@ import forgeUtils from '@forge/utils/forge-utils';
  * Processes the docker container output, which is the test execution output.
  *
  * @param {string} imageName - The name of the Docker Image.
- * @param {IDockerContainerHistory['output']} output - The "unprocessed" execution output.
- * @returns {IDockerContainerHistory['output']} The extracted test results.
+ * @param {IDockerContainerResults['output']} output - The "unprocessed" execution output.
+ * @returns {IDockerContainerResults['output']} The extracted test results.
  */
 const processDockerContainerOutput = (
-  imageName: string, output: IDockerContainerHistory['output']
-): IDockerContainerHistory['output'] => {
+  imageName: string, output: IDockerContainerResults['output']
+): IDockerContainerResults['output'] => {
   try {
     return forgeUtils.processForgeTestOutput(output?.data);
   } catch (err: Error | unknown) {
@@ -44,36 +45,33 @@ const processDockerContainerOutput = (
 const runImageWithFilesInZipBuffer = async (
   zipBuffer: Buffer, dockerImage: IDockerImage, commandExecuted: string
 ): Promise<IDockerContainerHistory> => {
-  let dockerContainerHistory = new DockerContainerHistory({
-    dockerImage, commandExecuted, purpose: ContainerPurpose.TEST_EXECUTION
-  });
+  const dockerContainerHistory = new DockerContainerHistory({ dockerImage, purpose: ContainerPurpose.TEST_EXECUTION });
 
   try {
     Logger.info(`Running the tests using the following command in the ${dockerImage.imageName} image: ${commandExecuted}.`);
     const execName = `${dockerImage.imageName}_execution_${dockerContainerHistory._id}_${Date.now()}`;
 
     // Read the source files from the zip buffer
-    const {
-      dirPath: tempDirPath,
-      extractedPath: tempSrcDirPath
-    } = await fsUtils.readFromZipBuffer(execName, zipBuffer);
+    const { dirPath: tempDirPath, extractedPath: tempSrcDirPath } = await fsUtils.readFromZipBuffer(execName, zipBuffer);
 
     // Run the Docker container to execute the tests and update the docker container history
-    dockerContainerHistory = await dockerUtils.runImage(
-      execName, dockerImage.imageName, dockerContainerHistory, tempSrcDirPath
-    ).finally(() => {
-      fsUtils.removeDirectorySync(tempDirPath); // Remove the temp directory after running the container
-      Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image.`);
-    });
-  } catch (err: Error | unknown) {
-    dockerContainerHistory.output = { error: (err as Error)?.message };
-    Logger.warn(`Failed to execute the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image! (Error: ${(err as Error)?.message})`);
-  }
+    dockerContainerHistory.container = await dockerUtils.runImage(
+      execName, dockerImage.imageName, commandExecuted, tempSrcDirPath
+    ).finally(() => { fsUtils.removeDirectorySync(tempDirPath); }); // Remove the temp directory after running the container
+    dockerContainerHistory.status = dockerContainerHistory.container.statusCode === 0 ? Status.SUCCESS : Status.FAILURE;
 
-  // Extract the test execution results from the test output (if the execution has been successful) and update the Docker Container History with the execution results
-  if (dockerContainerHistory.status === Status.SUCCESS) {
-    dockerContainerHistory.output = processDockerContainerOutput(
-      dockerImage.imageName, dockerContainerHistory.output);
+    // Extract the test execution results from the test output (if the execution has been successful)
+    if (dockerContainerHistory.status === Status.SUCCESS) {
+      dockerContainerHistory.container.output = processDockerContainerOutput(
+        dockerImage.imageName, dockerContainerHistory.container.output);
+    }
+
+    Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image.`);
+  } catch (err: Error | unknown) {
+    Logger.warn(
+      `Failed to execute the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image! `
+      + `(Error: ${(err as Error)?.message})`
+    );
   }
 
   return dockerContainerHistory;
