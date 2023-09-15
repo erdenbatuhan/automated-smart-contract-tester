@@ -1,10 +1,8 @@
 # Docker Compose Configuration (To be run with ./mongo/docker-compose.mongo.yml)
 
 version: "3"
-name: ${APP_NAME}
 networks:
   isolated-network-runner:
-    name: ${APP_NAME}-isolated-network-runner
 services:
   # Service: Services
   services:
