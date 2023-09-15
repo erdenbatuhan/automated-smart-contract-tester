@@ -55,8 +55,3 @@ services:
       MONGO_DB_URI: mongodb://${MONGO_HOSTS}/${TESTRUNNER_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
     depends_on:
       - mongo-manager
-      - ubuntu
-  # ubuntu image (needed in the test runner service)
-  ubuntu:
-    container_name: ubuntu
-    image: ubuntu:latest
