@@ -42,14 +42,14 @@ const uploadZipBuffer = async (
 };
 
 /**
- * Downloads uploaded files in a zip buffer.
+ * Downloads uploaded files associated with a context into a zip buffer.
  *
  * @param {string} contextName - The name associated with the upload.
- * @param {IUpload} upload - The Upload document storing the documents to download.
- * @returns {Promise<Buffer>} A promise that resolves to the downloaded zip buffer.
+ * @param {IUpload} upload - The Upload document storing the files to download.
+ * @returns {Buffer} The downloaded zip buffer.
  * @throws {AppError} If an error occurs during the download, it will throw an AppError with a relevant status code.
  */
-const downloadUploadedFiles = async (contextName: string, upload: IUpload): Promise<Buffer> => {
+const downloadUploadedFiles = (contextName: string, upload: IUpload): Buffer => {
   try {
     Logger.info(`Downloading the uploaded files for ${contextName} (Upload ID = ${upload._id}).`);
 

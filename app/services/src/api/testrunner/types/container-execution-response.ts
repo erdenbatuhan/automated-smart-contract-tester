@@ -6,13 +6,20 @@ interface ContainerTestResult extends ITest {
   status?: string;
   reason?: string;
   logs?: string;
+  gas?: number | null;
   gasChange?: number | null;
   gasChangePercentage?: number | null;
 }
 
 export default interface ContainerExecutionResponse {
-  dockerImage: object;
+  dockerImage: {
+    imageID: string;
+    imageName: string;
+    imageBuildTimeSeconds: number;
+    imageSizeMB: number;
+  };
   status: ContainerExecutionStatus;
+  purpose: number;
   container?: {
     containerName?: string;
     cmd: string;

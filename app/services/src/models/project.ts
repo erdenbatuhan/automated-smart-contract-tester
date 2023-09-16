@@ -7,11 +7,14 @@ import type { IUser } from '@models/user';
 import ProjectConfigSchema from '@models/schemas/project-config';
 import type { IProjectConfig } from '@models/schemas/project-config';
 
+import ContainerExecutionResponse from '@api/testrunner/types/container-execution-response';
+
 export interface IProject extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
   projectName: string;
   upload: IUpload;
   config: IProjectConfig;
+  output: ContainerExecutionResponse;
   deployer: IUser; // Virtual Field
 
   leanSave(this: IProject, options?: SaveOptions): Promise<IProject>;
@@ -21,7 +24,8 @@ const ProjectSchema = new mongoose.Schema<IProject>(
   {
     projectName: { type: String, unique: true, required: true },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },
-    config: { type: ProjectConfigSchema, required: true }
+    config: { type: ProjectConfigSchema, required: true },
+    output: { type: Object }
   },
   {
     timestamps: true,

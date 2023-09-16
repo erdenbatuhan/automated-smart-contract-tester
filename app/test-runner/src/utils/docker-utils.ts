@@ -114,12 +114,13 @@ const removeImage = async (
 /**
  * Follows the progress of a Docker image build and retrieves the image ID.
  *
+ * @param {string} imageName - The name of the Docker image to create.
  * @param {Dockerode} dockerode - The Dockerode instance.
  * @param {NodeJS.ReadableStream} buildStream - The Docker build stream.
  * @returns {Promise<string>} A promise that resolves to the Docker image ID once the build is complete.
  */
 const followImageProgressAndRetrieveImageID = async (
-  dockerode: Dockerode, buildStream: NodeJS.ReadableStream
+  imageName: string, dockerode: Dockerode, buildStream: NodeJS.ReadableStream
 ): Promise<string> => new Promise((resolve, reject) => {
   dockerode.modem.followProgress(
     buildStream,
@@ -140,7 +141,7 @@ const followImageProgressAndRetrieveImageID = async (
     // The callback function triggered at each step
     ({ stream: stepStream }: BuildStreamResult) => {
       try {
-        if (stepStream && /^Step \d+\/\d+ : .+$/.test(stepStream)) Logger.info(stepStream);
+        if (stepStream && /^Step \d+\/\d+ : .+$/.test(stepStream)) Logger.info(`[${imageName}] ${stepStream}`);
       } catch (err: Error | unknown) {
         reject(err);
       }
@@ -173,7 +174,7 @@ const createImage = async (imageName: string, dirPath: string): Promise<IDockerI
     }, { t: imageName });
 
     // Follow the process of image creation and retrieve the image information
-    const imageID = await followImageProgressAndRetrieveImageID(dockerode, buildStream);
+    const imageID = await followImageProgressAndRetrieveImageID(imageName, dockerode, buildStream);
     const imageSizeMB = await dockerode.getImage(imageID).inspect()
       .then(({ Size }) => conversionUtils.convertBytesToMB(Size));
 

@@ -1,5 +1,17 @@
 import type { Request, Response, NextFunction } from 'express';
 
+import projectService from '@services/project-service';
+
+/**
+ * Prepare the test runner service by uploading all projects to it.
+ *
+ * Do not handle any errors! The program should exit if this fails.
+ *
+ * @throws {AppError} - If the upload fails, throw an error and do not handle it.
+ * @returns {Promise<void>} A Promise that resolves when the preparation is complete.
+ */
+const prepareTestRunnerService = async (): Promise<void> => { await projectService.uploadAllProjectsToTestRunner(); };
+
 /**
  * Middleware that extracts the 'projectName' parameter from the request and stores it in 'res.locals'.
  *
@@ -13,4 +25,4 @@ const passProjectName = (req: Request, res: Response, next: NextFunction): void 
   next();
 };
 
-export default { passProjectName };
+export default { prepareTestRunnerService, passProjectName };
