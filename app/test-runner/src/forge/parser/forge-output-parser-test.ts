@@ -2,7 +2,7 @@ import type ForgeUnprocessedTestResults from '@forge/types/forge-unproc-test-res
 import type ForgeTestOutput from '@forge/types/forge-test-output';
 import type { ForgeTestResult } from '@forge/types/forge-test-output';
 
-import forgeCommonParser from '@/forge/parser/forge-parser-common';
+import forgeCommonParser from '@forge/parser/forge-parser-common';
 
 /**
  * Converts Forge execution results into a more structured test output format.

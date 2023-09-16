@@ -25,10 +25,13 @@ services:
       PORT: ${SERVICES_PORT}
       JWT_SECRET: ${SERVICES_JWT_SECRET}
       MONGO_DB_URI: mongodb://${MONGO_HOSTS}/${SERVICES_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
-      TESTRUNNER_HOST: ${TESTRUNNER_CONTAINER_NAME}:${TESTRUNNER_PORT} # app name + service name
+      TESTRUNNER_SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
+      TESTRUNNER_HOST: ${TESTRUNNER_CONTAINER_NAME}:${TESTRUNNER_PORT}
     depends_on:
-      - mongo-manager
-      - runner
+      mongo-manager:
+        condition: service_completed_successfully
+      runner:
+        condition: service_healthy
   # Service: Test Runner
   runner:
     container_name: ${TESTRUNNER_CONTAINER_NAME}
@@ -51,5 +54,11 @@ services:
       SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
       PORT: ${TESTRUNNER_PORT}
       MONGO_DB_URI: mongodb://${MONGO_HOSTS}/${TESTRUNNER_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
+    healthcheck:
+      test: curl --fail http://localhost:${TESTRUNNER_PORT} || exit 1
+      interval: 3s
+      timeout: 5s
+      retries: 10
     depends_on:
-      - mongo-manager
+      mongo-manager:
+        condition: service_completed_successfully

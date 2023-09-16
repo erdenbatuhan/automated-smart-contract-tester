@@ -1,6 +1,6 @@
 import type ForgeGasChangeOutput from '@forge/types/forge-gas-change';
 
-import forgeCommonParser from '@/forge/parser/forge-parser-common';
+import forgeCommonParser from '@forge/parser/forge-parser-common';
 
 // Regular expression that matches ANSI color codes
 const REGEX_COLOR_CODES: RegExp = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
