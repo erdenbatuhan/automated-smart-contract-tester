@@ -15,7 +15,6 @@ services:
         PORT: ${SERVICE_PORT}
     restart: unless-stopped
     networks:
-      - isolated-network-mongo
       - isolated-network-runner
     ports:
       - 8000:${SERVICE_PORT}

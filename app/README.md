@@ -44,7 +44,7 @@ SERVICES_MONGODB_URI= # Specify the MongoDB URI of the services app
 SERVICES_JWT_SECRET= # Specify the secret used to sign JWTs in services app
 ```
 
-You can override some of the environment variables defined in application.properties by specifying them in the .env file. To ensure successful overriding, it's crucial to import .env after application.properties. When building and running the Docker Compose project, please follow the precise order provided in the commands below.
+You can also override some of the environment variables defined in **application.properties** by specifying them in the **.env** file. To ensure successful overriding, it's crucial to import **.env** after **application.properties**. When building and running the _Docker Compose_ project, please follow the precise order provided in the commands below.
 
 The following variables can be overridden based on the configuration of the host machine on which you are running this:
 
