@@ -13,13 +13,18 @@ import conversionUtils from '@utils/conversion-utils';
 import fsUtils from '@utils/fs-utils';
 import errorUtils from '@utils/error-utils';
 
+interface DockerHttpError extends Error {
+  statusCode: number;
+  json: { message: string; };
+}
+
 interface BuildStreamResult {
   error?: string;
   stream?: string;
 }
 
 interface ContainerExecutionOutput {
-  StatusCode: number;
+  statusCode: number;
   executionTimeSeconds: number;
   output: string;
 }
@@ -65,20 +70,30 @@ const extractImageIDFromStreamResult = (streamRes: BuildStreamResult[] | null): 
  * Prunes unused Docker containers and images.
  *
  * @param {Dockerode} dockerode - The Dockerode instance.
+ * @param {object} options - Options for pruning.
+ * @param {string} [options.maxAge='24h'] - The maximum age of containers and images to keep before pruning.
+ *                                          This should be a duration string (e.g., '24h' for 24 hours).
  * @returns {Promise<void>} A promise that resolves once the pruning is complete.
  */
-const pruneDocker = async (dockerode: Dockerode): Promise<void> => {
+const pruneUnused = async (dockerode: Dockerode, { maxAge = '24h' }: { maxAge?: string; } = {}): Promise<void> => {
   try {
-    Logger.info('Pruning unused containers and images..');
+    Logger.info(`Pruning unused containers and images (those older than ${maxAge}).`);
 
     // Prune unused containers and images
-    await dockerode.pruneContainers();
-    await dockerode.pruneImages();
+    await dockerode.pruneContainers({ filters: { until: [maxAge] } });
+    await dockerode.pruneImages({ filters: { until: [maxAge] } });
 
-    Logger.info('Pruned unused containers and images!');
-  } catch (err: Error | unknown) {
-    Logger.error(`An error occurred while pruning! (Error: ${(err as Error)?.message})`);
-    throw err;
+    Logger.info(`Pruned unused containers and images (those older than ${maxAge}).`);
+  } catch (err: DockerHttpError | Error | unknown) {
+    const errMessage = `Could not prune unused container and images (those older than ${maxAge})`;
+
+    // If a prune operation is already running and caused the error, do not throw an error
+    if ((err as DockerHttpError).statusCode === HttpStatusCode.Conflict) {
+      Logger.warn(`${errMessage}: ${(err as DockerHttpError)?.message} - It's okay though :)`);
+    } else {
+      Logger.error(`${errMessage}: ${(err as Error)?.message}`);
+      throw err;
+    }
   }
 };
 
@@ -107,7 +122,7 @@ const removeImage = async (
   } catch (err: Error | unknown) {
     Logger.error(`Could not remove the Docker image named '${imageName}'. (Error: ${(err as Error)?.message})`);
   } finally {
-    if (shouldPrune) await pruneDocker(dockerodeInstance); // Prune Docker
+    if (shouldPrune) await pruneUnused(dockerodeInstance); // Prune unused containers and images
   }
 };
 
@@ -191,7 +206,7 @@ const createImage = async (imageName: string, dirPath: string): Promise<IDockerI
     throw err;
   } finally {
     // Prune unused containers and images
-    await pruneDocker(dockerode);
+    await pruneUnused(dockerode);
   }
 };
 
@@ -247,7 +262,7 @@ const handleContainerTimeout = async (
     }
   }
 
-  return { StatusCode: DockerExitCode.IMMEDIATE_TERMINATION, executionTimeSeconds: timeout, output: message };
+  return { statusCode: DockerExitCode.IMMEDIATE_TERMINATION, executionTimeSeconds: timeout, output: message };
 };
 
 /**
@@ -257,42 +272,37 @@ const handleContainerTimeout = async (
  * @param {ContainerType} container - The Docker container to start.
  * @param {object} [options] - Optional options.
  * @param {number} [options.timeout] - Timeout in seconds for container execution.
- * @param {boolean} [options.removeAfter] - Whether to remove the container after execution.
  * @returns {Promise<ContainerExecutionOutput>} A promise that resolves to the execution results and container output.
  */
 const startContainer = async (
-  dockerode: Dockerode, container: ContainerType, options?: { timeout?: number; removeAfter?: boolean; }
+  dockerode: Dockerode, container: ContainerType, options?: { timeout?: number; }
 ): Promise<ContainerExecutionOutput> => {
   let timeoutActive = !!options?.timeout;
 
-  try {
-    const promises: Promise<ContainerExecutionOutput>[] = []; // Promises to run concurrently, racing to complete first
-    const startTime = Date.now(); // Start time
+  const promises: Promise<ContainerExecutionOutput>[] = []; // Promises to run concurrently, racing to complete first
+  const startTime = Date.now(); // Start time
 
-    // Create a promise that starts the Docker container and waits for it to complete execution
-    promises.push(container.start().then(() => container.wait().then(({ StatusCode }) => {
-      timeoutActive = false; // Deactivate the timeout (see handleContainerTimeout function)
+  // Create a promise that starts the Docker container and waits for it to complete execution
+  promises.push(container.start().then(() => container.wait().then(({ StatusCode }) => {
+    timeoutActive = false; // Deactivate the timeout (see handleContainerTimeout function)
 
-      // Return the results
-      return container.logs({ stdout: true, stderr: true }).then((buffer) => ({
-        StatusCode,
-        executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(Date.now() - startTime),
-        output: buffer.toString()
-      }));
-    })));
+    // Return the results
+    return container.logs({ stdout: true, stderr: true }).then((buffer) => ({
+      statusCode: StatusCode,
+      executionTimeSeconds: conversionUtils.convertMillisecondsToSeconds(Date.now() - startTime),
+      output: buffer.toString()
+    }));
+  })));
 
-    // If a timeout value is provided, create also a timeout promise that triggers after the specified number of seconds
-    if (options?.timeout) {
-      promises.push(new Promise((resolve) => setTimeout(() => (
-        resolve(handleContainerTimeout(container, options!.timeout!, timeoutActive)) // Handle container timeout
-      ), options!.timeout! * 1000)));
-    }
-
-    // Resolve with the results if the container finishes before the timeout value; otherwise, reject with a timeout error.
-    return Promise.race(promises);
-  } finally {
-    if (options?.removeAfter) await pruneDocker(dockerode); // Prune unused containers and images
+  // If a timeout value is provided, create also a timeout promise that triggers after the specified number of seconds
+  if (options?.timeout) {
+    promises.push(new Promise((resolve) => setTimeout(() => (
+      resolve(handleContainerTimeout(container, options!.timeout!, timeoutActive)) // Handle container timeout
+    ), options!.timeout! * 1000)));
   }
+
+  // Resolve with the results if the container finishes before the timeout value; otherwise, reject with a timeout error.
+  return Promise.race(promises);
 };
 
 /**
@@ -312,20 +322,21 @@ const runImage = async (
   { srcDirPath, timeout = Constants.DOCKER_CONTAINER_TIMEOUT_DEFAULT }: { srcDirPath?: string; timeout?: number; } = {}
 ): Promise<IDockerContainerResults> => {
   const dockerode = new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
+
+  let container;
   let containerResults: IDockerContainerResults = { containerName: null, cmd: cmdString, timeoutValue: timeout, output: {} };
 
   try {
     Logger.info(`Running a Docker container from '${imageName}' image with the command '${cmdString}' (${execName}).`);
 
     // Create and start the container
-    const container = await createContainerWithFiles(dockerode, imageName, cmdString.split(' '), srcDirPath);
-    const { StatusCode: statusCode, executionTimeSeconds, output: stdoutput } = await startContainer(
-      dockerode, container, { timeout, removeAfter: false });
+    container = await createContainerWithFiles(dockerode, imageName, cmdString.split(' '), srcDirPath);
+    const { statusCode, executionTimeSeconds, output: stdOutput } = await startContainer(dockerode, container, { timeout });
     const containerName = await container.inspect().then(({ Name }) => Name.slice(1)); // Container name without the leading slash
 
     // Add the results to the container results object
     containerResults = { ...containerResults, containerName, statusCode, executionTimeSeconds };
-    containerResults.output = statusCode === DockerExitCode.PURPOSELY_STOPPED ? { data: stdoutput } : { error: stdoutput };
+    containerResults.output = statusCode === DockerExitCode.PURPOSELY_STOPPED ? { data: stdOutput } : { error: stdOutput };
 
     Logger.info(`${imageName}/${containerName} container exited with code ${statusCode} (Elapsed time: ${executionTimeSeconds} seconds).`);
     return containerResults;
@@ -333,7 +344,12 @@ const runImage = async (
     Logger.error(`Could not run a Docker container from '${imageName}' image with the command '${cmdString}' (${execName}).`);
     return { ...containerResults, statusCode: DockerExitCode.FAILED_TO_RUN, output: { error: (err as Error)?.message } };
   } finally {
-    await pruneDocker(dockerode); // Prune unused containers and images
+    // Remove the container
+    try {
+      await container?.remove();
+    } catch (err: Error | unknown) {
+      Logger.warn(`Could not remove the container '${containerResults.containerName}' after running it.`);
+    }
   }
 };
 

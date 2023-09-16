@@ -25,11 +25,19 @@ app.use(cookieParser()); // Enable cookie parsing
 app.get('/', healthCheckMiddlewares.performHealthCheck); // Endpoint to perform a health check on the service to see if it's healthy
 app.use(`/api/${APP_NAME}/${SERVICE_NAME}/v1`, apiRoutes); // Mount modular routes with the common prefix
 
-// Establish a connection to MongoDB, prepare the test runner service, and start the application server on the specified port.
-mongoose.connect(MONGODB_URI)
-  .then(() => (
-    projectMiddlewares.prepareTestRunnerService().then(() => {
-      app.listen(PORT, () => { Logger.info(`${APP_NAME}/${SERVICE_NAME} is running on port ${PORT}!`); });
-    })
-  ))
-  .catch((err: Error | unknown) => { Logger.error((err as Error)?.message || 'Could not connect to the DB!'); });
+// (1) Establish a connection to MongoDB
+mongoose.connect(MONGODB_URI).then(() => {
+  // (2) Prepare the test runner service by uploading all projects to it
+  projectMiddlewares.prepareTestRunnerService().then(() => {
+    // (3) Start the application server on the specified port
+    app.listen(PORT, () => {
+      Logger.info(`The service '${APP_NAME}/${SERVICE_NAME}' is running on port ${PORT}!`);
+    });
+  }).catch((err: Error | unknown) => {
+    Logger.error(`Could not prepare the test runner service: ${(err as Error)?.message}`);
+    throw err;
+  });
+}).catch((err: Error | unknown) => {
+  Logger.error(`Could not connect to the DB: ${(err as Error)?.message}`);
+  throw err;
+});
