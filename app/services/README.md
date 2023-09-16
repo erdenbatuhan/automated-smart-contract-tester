@@ -11,20 +11,18 @@ If you have not already done so, first follow the instructions in the [README](.
 Before running the service, make sure that you have created a **.env.development.local** file and set the following environment variables.
 
 ```bash
-# Application Config
+ENV=dev # The staging environment (dev, qa, prod, etc.)
 APP_NAME=automated-smart-contract-testing
-
-# Service Configuration
 SERVICE_NAME=services
-PORT=4000
-MONGO_DB_URI= # Specify your MongoDB URI here
+PORT=8000
 
-# Service Secrets
+# Secrets
+MONGODB_URI= # Specify your MongoDB URI here
 JWT_SECRET= # Specify the secret used to sign JWTs
 
-# Service Configuration: Test Runner
+# Test Runner
 TESTRUNNER_SERVICE_NAME=runner
-TESTRUNNER_HOST=localhost:4001
+TESTRUNNER_HOST=localhost:8001
 ```
 
 First, install the required packages:

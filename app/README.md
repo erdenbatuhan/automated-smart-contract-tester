@@ -39,13 +39,17 @@ _Husky's pre-commit hooks_ and _lint-staged_ ensure that _ESLint_ and _Prettier_
 Before running the application, create a **.env** file and set the following environment variables:
 
 ```bash
-# Application Config
-STAGING=dev # The staging environment (dev, qa, prod, etc.)
-
-# Service Secrets: Services
+# Secrets
+SERVICES_MONGODB_URI= # Specify the MongoDB URI of the services app
 SERVICES_JWT_SECRET= # Specify the secret used to sign JWTs in services app
+```
 
-# Docker
+You can override some of the environment variables defined in application.properties by specifying them in the .env file. To ensure successful overriding, it's crucial to import .env after application.properties. When building and running the Docker Compose project, please follow the precise order provided in the commands below.
+
+The following variables can be overridden based on the configuration of the host machine on which you are running this:
+
+```bash
+ENV=dev # The staging environment (dev, qa, prod, etc.)
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on
 ```
 

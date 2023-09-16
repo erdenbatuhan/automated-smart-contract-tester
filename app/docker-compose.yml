@@ -4,58 +4,56 @@ version: "3"
 networks:
   isolated-network-runner:
 services:
-  # Service: Services
+  # Services
   services:
-    container_name: ${SERVICES_CONTAINER_NAME}
+    container_name: ${SERVICE_NAME_SERVICES}
     build:
       context: ./services
       dockerfile: Dockerfile
       args:
-        STAGING: ${STAGING}
-        PORT: ${SERVICES_PORT}
+        ENV: ${ENV}
+        PORT: ${SERVICE_PORT}
     restart: unless-stopped
     networks:
       - isolated-network-mongo
       - isolated-network-runner
     ports:
-      - ${SERVICES_PORT}:${SERVICES_PORT}
+      - 8000:${SERVICE_PORT}
     environment:
       APP_NAME: ${APP_NAME}
-      SERVICE_NAME: ${SERVICES_SERVICE_NAME}
-      PORT: ${SERVICES_PORT}
+      SERVICE_NAME: ${SERVICE_NAME_SERVICES}
+      PORT: ${SERVICE_PORT}
+      MONGODB_URI: ${SERVICES_MONGODB_URI}
       JWT_SECRET: ${SERVICES_JWT_SECRET}
-      MONGO_DB_URI: mongodb://${MONGO_HOSTS}/${SERVICES_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
-      TESTRUNNER_SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
-      TESTRUNNER_HOST: ${TESTRUNNER_CONTAINER_NAME}:${TESTRUNNER_PORT}
+      TESTRUNNER_SERVICE_NAME: ${SERVICE_NAME_TESTRUNNER}
+      TESTRUNNER_HOST: ${SERVICE_NAME_TESTRUNNER}:${SERVICE_PORT}
     depends_on:
-      mongo-manager:
-        condition: service_completed_successfully
       runner:
         condition: service_healthy
-  # Service: Test Runner
+  # Test Runner
   runner:
-    container_name: ${TESTRUNNER_CONTAINER_NAME}
+    container_name: ${SERVICE_NAME_TESTRUNNER}
     build:
       context: ./test-runner
       dockerfile: Dockerfile
       args:
-        STAGING: ${STAGING}
-        PORT: ${TESTRUNNER_PORT}
+        ENV: ${ENV}
+        PORT: ${SERVICE_PORT}
     restart: unless-stopped
     networks:
       - isolated-network-mongo
       - isolated-network-runner
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
-    ports:
-      - ${TESTRUNNER_PORT}:${TESTRUNNER_PORT} # Remove later; it should only be accessible through runner-isolated-network!
+    #    ports:
+    #      - 8001:${SERVICE_PORT} # Uncomment only for testing purposes; should be accessible exclusively through the runner-isolated-network!
     environment:
       APP_NAME: ${APP_NAME}
-      SERVICE_NAME: ${TESTRUNNER_SERVICE_NAME}
-      PORT: ${TESTRUNNER_PORT}
-      MONGO_DB_URI: mongodb://${MONGO_HOSTS}/${TESTRUNNER_DB}?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
+      SERVICE_NAME: ${SERVICE_NAME_TESTRUNNER}
+      PORT: ${SERVICE_PORT}
+      MONGODB_URI: mongodb://${MONGO_HOSTS}/testrunner_db?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
     healthcheck:
-      test: curl --fail http://localhost:${TESTRUNNER_PORT} || exit 1
+      test: curl --fail http://localhost:${SERVICE_PORT} || exit 1
       interval: 3s
       timeout: 5s
       retries: 10

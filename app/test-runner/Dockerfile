@@ -6,8 +6,8 @@ WORKDIR /app
 
 # Install the project dependencies
 COPY package*.json ./
-ARG STAGING
-RUN NODE_ENV=$STAGING npm install
+ARG ENV
+RUN NODE_ENV=$ENV npm install
 
 # Bundle the app source
 COPY . .

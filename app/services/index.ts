@@ -11,8 +11,8 @@ import healthCheckMiddleware from '@middlewares/health-check-middleware';
 import apiRoutes from './api-routes';
 
 // Read environment variables
-const { APP_NAME, SERVICE_NAME, PORT, MONGO_DB_URI } = process.env;
-if (!APP_NAME || !SERVICE_NAME || !PORT || !MONGO_DB_URI) throw new Error('Missing environment variables!');
+const { APP_NAME, SERVICE_NAME, PORT, MONGODB_URI } = process.env;
+if (!APP_NAME || !SERVICE_NAME || !PORT || !MONGODB_URI) throw new Error('Missing environment variables!');
 
 // Initialize the Express app with middleware configurations
 const app = express();
@@ -24,6 +24,6 @@ app.get('/', healthCheckMiddleware.performHealthCheck); // Endpoint to perform a
 app.use(`/api/${APP_NAME}/${SERVICE_NAME}/v1`, apiRoutes); // Mount modular routes with the common prefix
 
 // Establish a connection to MongoDB and start the application server on the specified port
-mongoose.connect(MONGO_DB_URI)
+mongoose.connect(MONGODB_URI)
   .then(() => { app.listen(PORT, () => { Logger.info(`${APP_NAME}/${SERVICE_NAME} is running on port ${PORT}!`); }); })
   .catch((err: Error | unknown) => { Logger.error((err as Error)?.message || 'Could not connect to the DB!'); });
