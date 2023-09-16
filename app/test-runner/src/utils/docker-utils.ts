@@ -1,5 +1,6 @@
 import type { Container as ContainerType } from 'dockerode';
 import Dockerode from 'dockerode';
+import { HttpStatusCode } from 'axios';
 
 import Constants from '~constants';
 import Logger from '@logging/logger';
@@ -10,6 +11,7 @@ import DockerExitCode from '@models/enums/docker-exit-code';
 
 import conversionUtils from '@utils/conversion-utils';
 import fsUtils from '@utils/fs-utils';
+import errorUtils from '@utils/error-utils';
 
 interface BuildStreamResult {
   error?: string;
@@ -21,6 +23,25 @@ interface ContainerExecutionOutput {
   executionTimeSeconds: number;
   output: string;
 }
+
+/**
+ * Checks if the Docker daemon is accessible using the specified socket path.
+ *
+ * @throws {AppError} If the Docker daemon cannot be accessed (Code = 503 Service Unavailable).
+ * @returns {Promise<{ socketPath: string, info: object }>} A Promise that resolves to an object
+ *                                                          containing the socket path and Dockerode info if accessible.
+ */
+const ensureDockerDaemonAccessibility = async (): Promise<{ socketPath: string, info: object }> => {
+  try {
+    const dockerode = new Dockerode({ socketPath: Constants.DOCKER_SOCKET_PATH });
+    await dockerode.ping();
+
+    return { socketPath: Constants.DOCKER_SOCKET_PATH, info: await dockerode.info() };
+  } catch (err: Error | unknown) {
+    const errMessage = `Failed to access the Docker daemon running on socket '${Constants.DOCKER_SOCKET_PATH}'`;
+    throw errorUtils.handleError(err, errMessage, HttpStatusCode.ServiceUnavailable);
+  }
+};
 
 /**
  * Extracts the image ID from a Docker build stream result.
@@ -315,4 +336,4 @@ const runImage = async (
   }
 };
 
-export default { removeImage, createImage, runImage };
+export default { ensureDockerDaemonAccessibility, removeImage, createImage, runImage };
