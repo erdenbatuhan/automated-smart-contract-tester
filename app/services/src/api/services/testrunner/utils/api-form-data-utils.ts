@@ -4,7 +4,7 @@ import FormData from 'form-data';
 
 import Logger from '@logging/logger';
 import type AppError from '@errors/app-error';
-import type ApiError from '@api/testrunner/types/api-error';
+import type ApiError from '@api/services/testrunner/types/api-error';
 
 import type { RequestFile } from '@utils/router-utils';
 import apiErrorUtils from './api-error-utils';

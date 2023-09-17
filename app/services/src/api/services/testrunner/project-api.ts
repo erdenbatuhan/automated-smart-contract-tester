@@ -4,14 +4,14 @@ import axios, { HttpStatusCode } from 'axios';
 import Logger from '@logging/logger';
 import AppError from '@errors/app-error';
 
-import { TestRunnerApiEndpointConfig } from '@api/common/config/api-endpoint-config';
-import type ApiError from '@api/testrunner/types/api-error';
-import type ContainerExecutionResponse from '@api/testrunner/types/container-execution-response';
-import ContainerExecutionStatus from '@api/testrunner/types/enums/container-execution-status';
+import { TestRunnerApiEndpointConfig } from '@api/config/api-endpoint-config';
+import type ApiError from '@api/services/testrunner/types/api-error';
+import type ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
+import ContainerExecutionStatus from '@api/services/testrunner/enums/container-execution-status';
 
 import type { RequestFile } from '@utils/router-utils';
-import apiErrorUtils from '@api/testrunner/utils/api-error-utils';
-import apiFormDataUtils from '@api/testrunner/utils/api-form-data-utils';
+import apiErrorUtils from '@api/services/testrunner/utils/api-error-utils';
+import apiFormDataUtils from '@api/services/testrunner/utils/api-form-data-utils';
 
 /**
  * Uploads a project to the Test Runner service and initiates the Docker image build process.

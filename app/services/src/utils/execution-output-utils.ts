@@ -2,7 +2,7 @@ import Logger from '@logging/logger';
 
 import TestStatus from '@models/enums/test-status';
 
-import type ContainerExecutionResponse from '@api/testrunner/types/container-execution-response';
+import type ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
 
 /**
  * Extracts the test status from the execution output of a submission.

@@ -1,6 +1,6 @@
 import type { ITest } from '@models/schemas/test';
 
-import ContainerExecutionStatus from '@api/testrunner/types/enums/container-execution-status';
+import ContainerExecutionStatus from '@api/services/testrunner/enums/container-execution-status';
 
 interface ContainerTestResult extends ITest {
   status?: string;

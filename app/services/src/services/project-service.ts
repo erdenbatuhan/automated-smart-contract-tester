@@ -12,8 +12,8 @@ import { IProjectConfig } from '@models/schemas/project-config';
 
 import uploadService from '@services/upload-service';
 
-import testRunnerProjectApi from '@api/testrunner/project-api';
-import type ContainerExecutionResponse from '@api/testrunner/types/container-execution-response';
+import testRunnerProjectApi from '@api/services/testrunner/project-api';
+import type ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
 
 import errorUtils from '@utils/error-utils';
 import type { RequestFile } from '@utils/router-utils';

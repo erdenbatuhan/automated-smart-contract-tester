@@ -2,9 +2,9 @@ import { HttpStatusCode } from 'axios';
 import type { AxiosError } from 'axios';
 
 import AppError from '@errors/app-error';
-import type ApiError from '@api/testrunner/types/api-error';
+import type ApiError from '@api/services/testrunner/types/api-error';
 
-import ContainerExecutionResponse from '@api/testrunner/types/container-execution-response';
+import ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
 
 import errorUtils from '@utils/error-utils';
 

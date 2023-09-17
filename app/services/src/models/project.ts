@@ -7,7 +7,7 @@ import type { IUser } from '@models/user';
 import ProjectConfigSchema from '@models/schemas/project-config';
 import type { IProjectConfig } from '@models/schemas/project-config';
 
-import ContainerExecutionResponse from '@api/testrunner/types/container-execution-response';
+import ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
 
 export interface IProject extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;

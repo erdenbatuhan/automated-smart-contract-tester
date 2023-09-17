@@ -12,7 +12,7 @@ import type { ISubmission } from '@models/submission';
 import projectService from '@services/project-service';
 import uploadService from '@services/upload-service';
 
-import testRunnerExecutionApi from '@api/testrunner/execution-api';
+import testRunnerExecutionApi from '@api/services/testrunner/execution-api';
 
 import errorUtils from '@utils/error-utils';
 import type { RequestFile } from '@utils/router-utils';
