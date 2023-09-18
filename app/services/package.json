@@ -28,6 +28,7 @@
     "@logging": "dist/src/logging",
     "@middlewares": "dist/src/middlewares",
     "@models": "dist/src/models",
+    "@rabbitmq": "dist/src/rabbitmq",
     "@routes": "dist/src/routes",
     "@services": "dist/src/services",
     "@utils": "dist/src/utils"

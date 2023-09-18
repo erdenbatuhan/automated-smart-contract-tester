@@ -15,4 +15,8 @@ export default class Constants {
 
   // Project
   public static CONTAINER_TIMEOUT_DEFAULT = 20; // Defined in seconds
+  public static PROJECT_DOC_TTL = 5 * 60; // 5 minutes in seconds
+
+  // Submission
+  public static SUBMISSION_DOC_TTL = 5 * 60; // 5 minutes in seconds
 }

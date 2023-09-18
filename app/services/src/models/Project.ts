@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import type { SaveOptions } from 'mongoose';
 
+import Constants from '~Constants';
+
 import type { IUpload } from '@models/Upload';
 import type { IUser } from '@models/User';
 
@@ -31,6 +33,12 @@ const ProjectSchema = new mongoose.Schema<IProject>(
     timestamps: true,
     optimisticConcurrency: true
   }
+);
+
+// Set a TTL for the project (It will be deleted after X seconds if the status is still PENDING)
+ProjectSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: Constants.PROJECT_DOC_TTL, partialFilterExpression: { output: null } }
 );
 
 // Virtual Field: deployer

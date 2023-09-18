@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import type { SaveOptions } from 'mongoose';
 
+import Constants from '~Constants';
+
 import type { IProject } from '@models/Project';
 import Upload from '@models/Upload';
 import type { IUpload } from '@models/Upload';
@@ -34,6 +36,12 @@ const SubmissionSchema = new mongoose.Schema<ISubmission, SubmissionModel>(
     timestamps: { createdAt: true, updatedAt: false },
     versionKey: false
   }
+);
+
+// Set a TTL for the project (It will be deleted after X seconds if the status is still PENDING)
+SubmissionSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: Constants.SUBMISSION_DOC_TTL, partialFilterExpression: { testStatus: TestStatus.INCONCLUSIVE } }
 );
 
 // Virtual Field: deployer
