@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 
-import Constants from '~constants';
-import Logger from '@logging/logger';
+import Constants from '~Constants';
+import Logger from '@logging/Logger';
 
-import User from '@models/user';
-import type { IUser } from '@models/user';
+import User from '@models/User';
+import type { IUser } from '@models/User';
 
-import errorUtils from '@utils/error-utils';
+import errorUtils from '@utils/errorUtils';
 
 // Read JWT secret from environment variables
 const { JWT_SECRET } = process.env;

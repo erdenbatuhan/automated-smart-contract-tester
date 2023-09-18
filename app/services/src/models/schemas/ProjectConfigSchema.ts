@@ -2,11 +2,11 @@ import mongoose from 'mongoose';
 
 import Constants from '~Constants';
 
-import TestSchema from '@models/schemas/Test';
-import type { ITest } from '@models/schemas/Test';
+import TestSchema from '@models/schemas/TestSchema';
+import type { ITest } from '@models/schemas/TestSchema';
 
-import TestExecutionArgumentsSchema from '@models/schemas/TestExecutionArguments';
-import type { ITestExecutionArguments } from '@models/schemas/TestExecutionArguments';
+import TestExecutionArgumentsSchema from '@models/schemas/TestExecutionArgumentsSchema';
+import type { ITestExecutionArguments } from '@models/schemas/TestExecutionArgumentsSchema';
 
 export interface IProjectConfig {
   tests: ITest[];

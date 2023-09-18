@@ -3,15 +3,15 @@ import type { Request, Response } from 'express';
 import multer from 'multer';
 import { HttpStatusCode } from 'axios';
 
-import AppError from '@errors/app-error';
+import AppError from '@errors/AppError';
 
-import { IUser } from '@models/user';
-import type { IProjectConfig } from '@models/schemas/project-config';
+import { IUser } from '@models/User';
+import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 
-import authMiddlewares from '@middlewares/auth-middlewares';
-import projectServices from '@services/project-service';
+import authMiddlewares from '@middlewares/authMiddlewares';
+import projectServices from '@services/projectServices';
 
-import routerUtils, { RequestFile } from '@utils/router-utils';
+import routerUtils, { RequestFile } from '@utils/routerUtils';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });

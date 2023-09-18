@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 
-import type { IUser } from '@models/user';
+import type { IUser } from '@models/User';
 
 // FileSchema
-import FileSchema from '@models/schemas/file';
-import type { IFile } from '@models/schemas/file';
+import FileSchema from '@models/schemas/FileSchema';
+import type { IFile } from '@models/schemas/FileSchema';
 
 export interface IUpload extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;

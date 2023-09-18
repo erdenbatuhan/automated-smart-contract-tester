@@ -4,11 +4,11 @@ import validator from 'validator';
 import bcrypt from 'bcrypt';
 import { HttpStatusCode } from 'axios';
 
-import AppError from '@errors/app-error';
+import AppError from '@errors/AppError';
 
-import UserRole from '@models/enums/user-role';
+import UserRole from '@models/enums/UserRole';
 
-import errorUtils from '@utils/error-utils';
+import errorUtils from '@utils/errorUtils';
 
 export interface IUser extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;

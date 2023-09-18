@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import { IUser } from '@models/user';
+import { IUser } from '@models/User';
 
-import authMiddlewares, { handleAccessErrors } from '@middlewares/auth-middlewares';
-import submissionServices from '@services/submission-service';
+import authMiddlewares, { handleAccessErrors } from '@middlewares/authMiddlewares';
+import submissionServices from '@services/submissionServices';
 
 /**
  * Determines the appropriate function to retrieve submissions based on the user's role.

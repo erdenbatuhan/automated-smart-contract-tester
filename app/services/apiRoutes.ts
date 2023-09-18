@@ -1,15 +1,15 @@
 import { Router } from 'express';
 import timeout from 'connect-timeout';
 
-import Constants from '~constants';
+import Constants from '~Constants';
 
-import authMiddlewares from '@middlewares/auth-middlewares';
-import projectMiddlewares from '@middlewares/project-middlewares';
+import authMiddlewares from '@middlewares/authMiddlewares';
+import projectMiddlewares from '@middlewares/projectMiddlewares';
 
-import authRoutes from '@routes/auth-routes';
-import userRoutes from '@routes/user-routes';
-import projectRoutes from '@routes/project-routes';
-import submissionRoutes from '@routes/submission-routes';
+import authRoutes from '@routes/authRoutes';
+import userRoutes from '@routes/userRoutes';
+import projectRoutes from '@routes/projectRoutes';
+import submissionRoutes from '@routes/submissionRoutes';
 
 const router = Router();
 router.use(timeout(Constants.REQUEST_TIMEOUT * 1000)); // Set request timeout

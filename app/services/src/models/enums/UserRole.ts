@@ -1,4 +1,4 @@
-import enumUtils from '@models/enums/common/enum-utils';
+import enumUtils from '@models/enums/common/enumUtils';
 
 enum UserRole {
   USER = 'User',

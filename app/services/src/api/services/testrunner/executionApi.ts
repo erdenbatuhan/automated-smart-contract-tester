@@ -1,14 +1,14 @@
-import Logger from '@logging/logger';
+import Logger from '@logging/Logger';
 
-import { IProjectConfig } from '@models/schemas/project-config';
+import { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 
-import { TestRunnerApiEndpointConfig } from '@api/config/api-endpoint-config';
-import type ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
-import ContainerExecutionStatus from '@api/services/testrunner/enums/container-execution-status';
+import { TestRunnerApiEndpointConfig } from '@api/config/ApiEndpointConfig';
+import type ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
+import ContainerExecutionStatus from '@api/services/testrunner/enums/ContainerExecutionStatus';
 
-import type { RequestFile } from '@utils/router-utils';
-import apiFormDataUtils from '@api/services/testrunner/utils/api-form-data-utils';
-import apiErrorUtils from '@api/services/testrunner/utils/api-error-utils';
+import type { RequestFile } from '@utils/routerUtils';
+import apiFormDataUtils from '@api/services/testrunner/utils/apiFormDataUtils';
+import apiErrorUtils from '@api/services/testrunner/utils/apiErrorUtils';
 
 /**
  * Transfers source files to the Test Runner service for test execution in the specified project.

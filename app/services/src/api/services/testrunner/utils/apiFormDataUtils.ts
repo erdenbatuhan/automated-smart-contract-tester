@@ -2,12 +2,12 @@ import axios from 'axios';
 import type { AxiosRequestConfig, AxiosError } from 'axios';
 import FormData from 'form-data';
 
-import Logger from '@logging/logger';
-import type AppError from '@errors/app-error';
-import type ApiError from '@api/services/testrunner/types/api-error';
+import Logger from '@logging/Logger';
+import type AppError from '@errors/AppError';
+import type ApiError from '@api/services/testrunner/types/ApiError';
 
-import type { RequestFile } from '@utils/router-utils';
-import apiErrorUtils from './api-error-utils';
+import type { RequestFile } from '@utils/routerUtils';
+import apiErrorUtils from './apiErrorUtils';
 
 /**
  * Send a FormData request with a file and optional additional data to the specified URL.

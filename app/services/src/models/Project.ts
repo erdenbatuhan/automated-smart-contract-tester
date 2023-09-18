@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
 import type { SaveOptions } from 'mongoose';
 
-import type { IUpload } from '@models/upload';
-import type { IUser } from '@models/user';
+import type { IUpload } from '@models/Upload';
+import type { IUser } from '@models/User';
 
-import ProjectConfigSchema from '@models/schemas/project-config';
-import type { IProjectConfig } from '@models/schemas/project-config';
+import ProjectConfigSchema from '@models/schemas/ProjectConfigSchema';
+import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 
-import ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
+import ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
 
 export interface IProject extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;

@@ -2,8 +2,8 @@ import mongoose, { CallbackWithoutResultAndOptionalError } from 'mongoose';
 
 import type { IDockerImage } from '@models/DockerImage';
 
-import type { IDockerContainerResults } from '@models/schemas/DockerContainerResults';
-import DockerContainerResults from '@models/schemas/DockerContainerResults';
+import type { IDockerContainerResults } from '@models/schemas/DockerContainerResultsSchema';
+import DockerContainerResultsSchema from '@models/schemas/DockerContainerResultsSchema';
 
 import Status from '@models/enums/Status';
 import ContainerPurpose from '@models/enums/ContainerPurpose';
@@ -24,7 +24,7 @@ const DockerContainerHistorySchema = new mongoose.Schema<IDockerContainerHistory
     dockerImage: { type: mongoose.Schema.Types.ObjectId, ref: 'DockerImage', required: true },
     status: { type: String, enum: Status, required: true, default: Status.ERROR },
     purpose: { type: Number, enum: ContainerPurpose, required: true, default: ContainerPurpose.PROJECT_CREATION },
-    container: { type: DockerContainerResults }
+    container: { type: DockerContainerResultsSchema }
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

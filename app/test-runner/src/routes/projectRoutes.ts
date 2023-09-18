@@ -4,7 +4,7 @@ import multer from 'multer';
 
 import type AppError from '@errors/AppError';
 
-import projectService from '@services/projectService';
+import projectServices from '@services/projectServices';
 
 import routerUtils from '@utils/routerUtils';
 
@@ -29,7 +29,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
     const { projectName } = req.params;
     const zipBuffer = routerUtils.extractFileBuffer(req);
 
-    await projectService.saveProject(projectName, zipBuffer).then(({ isNew, project }) => {
+    await projectServices.saveProject(projectName, zipBuffer).then(({ isNew, project }) => {
       res.status(isNew ? 201 : 200).json(project);
     });
   } catch (err: AppError | Error | unknown) {

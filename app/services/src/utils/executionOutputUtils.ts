@@ -1,8 +1,8 @@
-import Logger from '@logging/logger';
+import Logger from '@logging/Logger';
 
-import TestStatus from '@models/enums/test-status';
+import TestStatus from '@models/enums/TestStatus';
 
-import type ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
+import type ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
 
 /**
  * Extracts the test status from the execution output of a submission.

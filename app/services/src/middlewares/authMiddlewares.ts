@@ -3,13 +3,13 @@ import { HttpStatusCode } from 'axios';
 import jwt from 'jsonwebtoken';
 import type { JwtPayload } from 'jsonwebtoken';
 
-import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
+import Logger from '@logging/Logger';
+import AppError from '@errors/AppError';
 
-import type { IUser } from '@models/user';
-import UserRole from '@models/enums/user-role';
+import type { IUser } from '@models/User';
+import UserRole from '@models/enums/UserRole';
 
-import routerUtils from '@utils/router-utils';
+import routerUtils from '@utils/routerUtils';
 
 // Read JWT secret from environment variables
 const { JWT_SECRET } = process.env;

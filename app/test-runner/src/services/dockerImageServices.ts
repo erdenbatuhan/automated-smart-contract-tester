@@ -10,7 +10,7 @@ import DockerImage from '@models/DockerImage';
 import type { IDockerImage } from '@models/DockerImage';
 import type { IDockerContainerHistory } from '@models/DockerContainerHistory';
 
-import dockerContainerHistoryServices from './dockerContainerHistoryService';
+import dockerContainerHistoryServices from './dockerContainerHistoryServices';
 
 import errorUtils from '@utils/errorUtils';
 import dockerUtils from '@utils/dockerUtils';

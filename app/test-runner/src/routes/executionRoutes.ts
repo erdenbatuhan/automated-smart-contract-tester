@@ -4,7 +4,7 @@ import multer from 'multer';
 
 import type AppError from '@errors/AppError';
 
-import executionService from '@services/executionService';
+import executionServices from '@services/executionServices';
 
 import routerUtils from '@utils/routerUtils';
 
@@ -32,7 +32,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
     const containerTimeout = req.query?.containerTimeout ? Number(req.query.containerTimeout) : undefined;
     const execArgs = routerUtils.parseJsonObjectFromBody(req, 'execArgs');
 
-    await executionService.executeTests(projectName, zipBuffer, { containerTimeout, execArgs }).then((execution) => {
+    await executionServices.executeTests(projectName, zipBuffer, { containerTimeout, execArgs }).then((execution) => {
       res.status(201).json(execution);
     });
   } catch (err: AppError | Error | unknown) {

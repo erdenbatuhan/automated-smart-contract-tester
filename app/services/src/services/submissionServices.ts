@@ -2,21 +2,21 @@ import mongoose from 'mongoose';
 import type { ProjectionType, SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
+import Logger from '@logging/Logger';
+import AppError from '@errors/AppError';
 
-import type { IUser } from '@models/user';
-import Submission from '@models/submission';
-import type { ISubmission } from '@models/submission';
+import type { IUser } from '@models/User';
+import Submission from '@models/Submission';
+import type { ISubmission } from '@models/Submission';
 
-import projectServices from '@services/project-service';
-import uploadServices from '@services/upload-service';
+import projectServices from '@services/projectServices';
+import uploadServices from '@services/uploadServices';
 
-import testRunnerExecutionApi from '@api/services/testrunner/execution-api';
+import testRunnerExecutionApi from '@api/services/testrunner/executionApi';
 
-import errorUtils from '@utils/error-utils';
-import type { RequestFile } from '@utils/router-utils';
-import executionOutputUtils from '@utils/execution-output-utils';
+import errorUtils from '@utils/errorUtils';
+import type { RequestFile } from '@utils/routerUtils';
+import executionOutputUtils from '@utils/executionOutputUtils';
 
 /**
  * Finds all submissions.

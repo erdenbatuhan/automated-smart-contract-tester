@@ -26,9 +26,20 @@ services:
       JWT_SECRET: ${SERVICES_JWT_SECRET}
       TESTRUNNER_SERVICE_NAME: ${SERVICE_NAME_TESTRUNNER}
       TESTRUNNER_HOST: ${SERVICE_NAME_TESTRUNNER}:${SERVICE_PORT}
+    healthcheck:
+      test: curl --fail http://localhost:${SERVICE_PORT} || exit 1
+      interval: 3s
+      timeout: 5s
+      retries: 10
     depends_on:
       runner:
         condition: service_healthy
+  # RabbitMQ
+  #
+  # First, replace the REST communication between services and runner with message queueing (RabbitMQ).
+  # Then, try to use Docker Swarm do horizontally scale.
+  # Also think about how mongo replicas would scale with Docker Swarm. It might be possible.
+  #
   # Test Runner
   runner:
     container_name: ${SERVICE_NAME_TESTRUNNER}

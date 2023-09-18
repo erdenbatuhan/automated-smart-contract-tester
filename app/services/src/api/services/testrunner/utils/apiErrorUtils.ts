@@ -1,12 +1,12 @@
 import { HttpStatusCode } from 'axios';
 import type { AxiosError } from 'axios';
 
-import AppError from '@errors/app-error';
+import AppError from '@errors/AppError';
 import type ApiError from '@api/services/testrunner/types/ApiError';
 
 import ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
 
-import errorUtils from '@utils/error-utils';
+import errorUtils from '@utils/errorUtils';
 
 /**
  * Converts errors returned from the Test Runner API into an AppError, log them, and return an AppError with appropriate details.

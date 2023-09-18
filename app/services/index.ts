@@ -5,12 +5,12 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 
-import Logger from '@logging/logger';
+import Logger from '@logging/Logger';
 
-import healthCheckMiddlewares from '@middlewares/health-check-middlewares';
-import projectMiddlewares from '@middlewares/project-middlewares';
+import healthCheckMiddlewares from '@middlewares/healthCheckMiddlewares';
+import projectMiddlewares from '@middlewares/projectMiddlewares';
 
-import apiRoutes from './api-routes';
+import apiRoutes from './apiRoutes';
 
 // Read environment variables
 const { APP_NAME, SERVICE_NAME, PORT, MONGODB_URI } = process.env;

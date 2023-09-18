@@ -2,21 +2,21 @@ import mongoose from 'mongoose';
 import type { ProjectionType, SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
+import Logger from '@logging/Logger';
+import AppError from '@errors/AppError';
 
-import type { IUser } from '@models/user';
-import Project from '@models/project';
-import type { IProject } from '@models/project';
-import { IProjectConfig } from '@models/schemas/project-config';
+import type { IUser } from '@models/User';
+import Project from '@models/Project';
+import type { IProject } from '@models/Project';
+import { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 
-import uploadServices from '@services/upload-service';
+import uploadServices from '@services/uploadServices';
 
-import testRunnerProjectApi from '@api/services/testrunner/project-api';
-import type ContainerExecutionResponse from '@api/services/testrunner/types/container-execution-response';
+import testRunnerProjectApi from '@api/services/testrunner/projectApi';
+import type ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
 
-import errorUtils from '@utils/error-utils';
-import type { RequestFile } from '@utils/router-utils';
+import errorUtils from '@utils/errorUtils';
+import type { RequestFile } from '@utils/routerUtils';
 
 /**
  * Finds all projects.

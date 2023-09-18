@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 
 import type AppError from '@errors/AppError';
 
-import dockerImageService from '@services/dockerImageService';
+import dockerImageServices from '@services/dockerImageServices';
 
 import routerUtils from '@utils/routerUtils';
 
@@ -16,7 +16,7 @@ const router = Router();
  * @throws {object} 500 - If there's a server error.
  */
 router.get('/', async (req: Request, res: Response) => {
-  dockerImageService.findAllDockerImages().then((dockerImages) => {
+  dockerImageServices.findAllDockerImages().then((dockerImages) => {
     res.status(200).json(dockerImages);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
@@ -34,7 +34,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:imageName', async (req: Request, res: Response) => {
   const { imageName } = req.params;
 
-  dockerImageService.findDockerImage(imageName).then((dockerImage) => {
+  dockerImageServices.findDockerImage(imageName).then((dockerImage) => {
     res.status(200).json(dockerImage);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
@@ -52,7 +52,7 @@ router.get('/:imageName', async (req: Request, res: Response) => {
 router.delete('/:imageName', async (req: Request, res: Response) => {
   const { imageName } = req.params;
 
-  dockerImageService.deleteDockerImage(imageName).then(() => {
+  dockerImageServices.deleteDockerImage(imageName).then(() => {
     res.status(204).end();
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);

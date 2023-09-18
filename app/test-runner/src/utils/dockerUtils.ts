@@ -6,7 +6,7 @@ import Constants from '~Constants';
 import Logger from '@logging/Logger';
 
 import type { IDockerImage } from '@models/DockerImage';
-import type { IDockerContainerResults } from '@models/schemas/DockerContainerResults';
+import type { IDockerContainerResults } from '@models/schemas/DockerContainerResultsSchema';
 import DockerExitCode from '@models/enums/DockerExitCode';
 
 import conversionUtils from '@utils/conversionUtils';

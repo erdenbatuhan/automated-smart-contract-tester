@@ -1,13 +1,13 @@
 import type { SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
+import Logger from '@logging/Logger';
+import AppError from '@errors/AppError';
 
-import User from '@models/user';
-import type { IUser } from '@models/user';
+import User from '@models/User';
+import type { IUser } from '@models/User';
 
-import errorUtils from '@utils/error-utils';
+import errorUtils from '@utils/errorUtils';
 
 /**
  * Finds all users (without passwords).

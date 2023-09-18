@@ -1,7 +1,7 @@
 import { HttpStatusCode } from 'axios';
 
-import AppError from '@errors/app-error';
-import Logger from '@logging/logger';
+import AppError from '@errors/AppError';
+import Logger from '@logging/Logger';
 
 /**
  * Handles an error by logging it and returning a new AppError object with a custom message or the original error message.

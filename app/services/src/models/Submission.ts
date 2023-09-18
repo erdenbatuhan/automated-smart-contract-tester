@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 import type { SaveOptions } from 'mongoose';
 
-import type { IProject } from '@models/project';
-import Upload from '@models/upload';
-import type { IUpload } from '@models/upload';
-import type { IUser } from '@models/user';
-import TestStatus from '@models/enums/test-status';
+import type { IProject } from '@models/Project';
+import Upload from '@models/Upload';
+import type { IUpload } from '@models/Upload';
+import type { IUser } from '@models/User';
+import TestStatus from '@models/enums/TestStatus';
 
 export interface ISubmission extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;

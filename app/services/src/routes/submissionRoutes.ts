@@ -2,17 +2,17 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
 
-import type AppError from '@errors/app-error';
+import type AppError from '@errors/AppError';
 
-import { IUser } from '@models/user';
-import { ISubmission } from '@models/submission';
+import { IUser } from '@models/User';
+import { ISubmission } from '@models/Submission';
 
-import authMiddlewares from '@middlewares/auth-middlewares';
-import submissionMiddlewares from '@middlewares/submission-middlewares';
+import authMiddlewares from '@middlewares/authMiddlewares';
+import submissionMiddlewares from '@middlewares/submissionMiddlewares';
 
-import submissionServices from '@services/submission-service';
+import submissionServices from '@services/submissionServices';
 
-import routerUtils from '@utils/router-utils';
+import routerUtils from '@utils/routerUtils';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });

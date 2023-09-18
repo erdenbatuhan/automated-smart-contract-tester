@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 
-import type AppError from '@errors/app-error';
+import type AppError from '@errors/AppError';
 
-import authMiddlewares from '@middlewares/auth-middlewares';
-import userServices from '@services/user-service';
+import authMiddlewares from '@middlewares/authMiddlewares';
+import userServices from '@services/userServices';
 
-import routerUtils from '@utils/router-utils';
+import routerUtils from '@utils/routerUtils';
 
 const router = Router();
 

@@ -3,14 +3,14 @@ import path from 'path';
 import AdmZip from 'adm-zip';
 import { HttpStatusCode } from 'axios';
 
-import Constants from '~constants';
-import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
+import Constants from '~Constants';
+import Logger from '@logging/Logger';
+import AppError from '@errors/AppError';
 
-import { IUpload } from '@models/upload';
-import type { IFile } from '@models/schemas/file';
+import { IUpload } from '@models/Upload';
+import type { IFile } from '@models/schemas/FileSchema';
 
-import errorUtils from '@utils/error-utils';
+import errorUtils from '@utils/errorUtils';
 
 /**
  * Extracts the contents of a zip file to a specified directory.

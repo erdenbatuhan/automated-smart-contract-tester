@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express';
 import { HttpStatusCode } from 'axios';
 
-import AppError from '@errors/app-error';
+import AppError from '@errors/AppError';
 
-import errorUtils from './error-utils';
+import errorUtils from './errorUtils';
 
 export interface RequestFile extends Express.Multer.File {}
 

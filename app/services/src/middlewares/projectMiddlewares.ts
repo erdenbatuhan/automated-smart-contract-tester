@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import projectServices from '@services/project-service';
+import projectServices from '@services/projectServices';
 
 /**
  * Prepare the test runner service by uploading all projects to it.

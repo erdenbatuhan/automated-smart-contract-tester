@@ -1,15 +1,15 @@
 import type { SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/logger';
-import AppError from '@errors/app-error';
+import Logger from '@logging/Logger';
+import AppError from '@errors/AppError';
 
-import type { IUser } from '@models/user';
-import Upload from '@models/upload';
-import type { IUpload } from '@models/upload';
+import type { IUser } from '@models/User';
+import Upload from '@models/Upload';
+import type { IUpload } from '@models/Upload';
 
-import fsUtils from '@utils/fs-utils';
-import errorUtils from '@utils/error-utils';
+import fsUtils from '@utils/fsUtils';
+import errorUtils from '@utils/errorUtils';
 
 /**
  * Uploads a zip buffer.
