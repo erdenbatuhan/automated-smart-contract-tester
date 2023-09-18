@@ -17,7 +17,7 @@ dist/
 npm-debug.log
 
 # Local environment file
-.env.local
+.env**
 
 # Dependency directories
 node_modules/

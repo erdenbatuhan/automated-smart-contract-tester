@@ -4,10 +4,10 @@ import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 
-import Logger from '@logging/logger';
+import Logger from '@logging/Logger';
 
-import healthCheckMiddlewares from '@middlewares/health-check-middlewares';
-import apiRoutes from './api-routes';
+import healthCheckMiddlewares from '@middlewares/healthCheckMiddlewares';
+import apiRoutes from './apiRoutes';
 
 // Read environment variables
 const { APP_NAME, SERVICE_NAME, PORT, MONGODB_URI } = process.env;

@@ -21,7 +21,7 @@
     "README.md"
   ],
   "_moduleAliases": {
-    "~constants": "dist/constants",
+    "~Constants": "dist/Constants",
     "@errors": "dist/src/errors",
     "@forge": "dist/src/forge",
     "@logging": "dist/src/logging",
