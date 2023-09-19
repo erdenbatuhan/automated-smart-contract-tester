@@ -2,11 +2,11 @@
 
 version: "3"
 networks:
-  isolated-network-runner:
+  isolated-rabbit-network: # Isolated Network for RabbitMQ
 services:
   # Services
   services:
-    container_name: ${SERVICE_NAME_SERVICES}
+    container_name: services
     build:
       context: ./services
       dockerfile: Dockerfile
@@ -15,34 +15,47 @@ services:
         PORT: ${SERVICE_PORT}
     restart: unless-stopped
     networks:
-      - isolated-network-runner
+      isolated-rabbit-network: # Isolated Network for RabbitMQ
     ports:
       - 8000:${SERVICE_PORT}
     environment:
       APP_NAME: ${APP_NAME}
-      SERVICE_NAME: ${SERVICE_NAME_SERVICES}
+      SERVICE_NAME: services
       PORT: ${SERVICE_PORT}
       MONGODB_URI: ${SERVICES_MONGODB_URI}
       JWT_SECRET: ${SERVICES_JWT_SECRET}
-      TESTRUNNER_SERVICE_NAME: ${SERVICE_NAME_TESTRUNNER}
-      TESTRUNNER_HOST: ${SERVICE_NAME_TESTRUNNER}:${SERVICE_PORT}
+      RABBITMQ_HOST: rabbitmq # The service and container name of RabbitMQ
     healthcheck:
       test: curl --fail http://localhost:${SERVICE_PORT} || exit 1
       interval: 3s
       timeout: 5s
       retries: 10
     depends_on:
+      rabbitmq:
+        condition: service_healthy
       runner:
         condition: service_healthy
   # RabbitMQ
-  #
-  # First, replace the REST communication between services and runner with message queueing (RabbitMQ).
-  # Then, try to use Docker Swarm do horizontally scale.
-  # Also think about how mongo replicas would scale with Docker Swarm. It might be possible.
-  #
+  rabbitmq:
+    container_name: rabbitmq
+    image: "rabbitmq:management"
+    restart: unless-stopped
+    networks:
+      isolated-rabbit-network: # Isolated Network for RabbitMQ
+    ports:
+      - "5672:5672" # RabbitMQ AMQP port
+      - "15672:15672" # RabbitMQ management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 3
   # Test Runner
   runner:
-    container_name: ${SERVICE_NAME_TESTRUNNER}
+    container_name: runner
     build:
       context: ./test-runner
       dockerfile: Dockerfile
@@ -51,17 +64,18 @@ services:
         PORT: ${SERVICE_PORT}
     restart: unless-stopped
     networks:
-      - isolated-network-mongo
-      - isolated-network-runner
+      isolated-network-mongo: # Isolated Network for MongoDB
+      isolated-rabbit-network: # Isolated Network for RabbitMQ
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
     #    ports:
-    #      - 8001:${SERVICE_PORT} # Uncomment only for testing purposes; should be accessible exclusively through the runner-isolated-network!
+    #      - 8001:${SERVICE_PORT} # Uncomment only for testing purposes; should be accessible exclusively through the isolated rabbit network!
     environment:
       APP_NAME: ${APP_NAME}
-      SERVICE_NAME: ${SERVICE_NAME_TESTRUNNER}
+      SERVICE_NAME: runner
       PORT: ${SERVICE_PORT}
       MONGODB_URI: mongodb://${MONGO_HOSTS}/testrunner_db?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
+      RABBITMQ_HOST: rabbitmq # The service and container name of RabbitMQ
     healthcheck:
       test: curl --fail http://localhost:${SERVICE_PORT} || exit 1
       interval: 3s
@@ -70,3 +84,5 @@ services:
     depends_on:
       mongo-manager:
         condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
