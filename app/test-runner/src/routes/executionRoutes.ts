@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
+import { HttpStatusCode } from 'axios';
 
 import type AppError from '@errors/AppError';
 
@@ -33,7 +34,7 @@ router.post('/', upload.single('srcZip'), async (req: Request, res: Response) =>
     const execArgs = routerUtils.parseJsonObjectFromBody(req, 'execArgs');
 
     await executionServices.executeTests(projectName, zipBuffer, { containerTimeout, execArgs }).then((execution) => {
-      res.status(201).json(execution);
+      res.status(HttpStatusCode.Created).json(execution);
     });
   } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);

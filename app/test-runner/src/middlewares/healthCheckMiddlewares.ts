@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { HttpStatusCode } from 'axios';
 
 import dockerUtils from '@utils/dockerUtils';
 import routerUtils from '@utils/routerUtils';
@@ -15,7 +16,7 @@ import AppError from '@errors/AppError';
  */
 const performHealthCheck = (req: Request, res: Response): void => {
   dockerUtils.ensureDockerDaemonAccessibility().then(({ socketPath, info }) => {
-    res.status(200).send({
+    res.status(HttpStatusCode.Ok).send({
       message: `The health check succeeded, and the Docker daemon is running on socket '${socketPath}'. The service is in a healthy state.`,
       docker: info
     });

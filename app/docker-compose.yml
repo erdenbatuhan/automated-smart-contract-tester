@@ -4,7 +4,7 @@ version: "3"
 networks:
   isolated-rabbit-network: # Isolated Network for RabbitMQ
 volumes:
-  volume-rabbitmq.data:
+  volume-rabbitmq.data: # Data volume for RabbitMQ
 services:
   # Services
   services:
@@ -47,7 +47,7 @@ services:
     networks:
       isolated-rabbit-network: # Isolated Network for RabbitMQ
     volumes:
-      - volume-rabbitmq.data:/var/lib/rabbitmq
+      - volume-rabbitmq.data:/var/lib/rabbitmq # Bind the data volume for RabbitMQ
     ports:
       - "15672:15672" # RabbitMQ management UI
     environment:

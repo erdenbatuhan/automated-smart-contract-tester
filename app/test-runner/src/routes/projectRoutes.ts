@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
+import { HttpStatusCode } from 'axios';
 
 import type AppError from '@errors/AppError';
 
@@ -30,7 +31,7 @@ router.put('/:projectName/upload', upload.single('projectZip'), async (req: Requ
     const zipBuffer = routerUtils.extractFileBuffer(req);
 
     await projectServices.saveProject(projectName, zipBuffer).then(({ isNew, project }) => {
-      res.status(isNew ? 201 : 200).json(project);
+      res.status(isNew ? HttpStatusCode.Created : HttpStatusCode.Ok).json(project);
     });
   } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);

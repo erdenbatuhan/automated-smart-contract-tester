@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { HttpStatusCode } from 'axios';
 
 /**
  * Perform a health check and respond with a success message if the service is healthy.
@@ -8,7 +9,7 @@ import { Request, Response } from 'express';
  * @returns {Promise<void>} - A Promise that resolves when the response is sent.
  */
 const performHealthCheck = (req: Request, res: Response): void => {
-  res.status(200).send('The health check indicates success, and the service is in a healthy state.');
+  res.status(HttpStatusCode.Ok).send('The health check indicates success, and the service is in a healthy state.');
 };
 
 export default { performHealthCheck };

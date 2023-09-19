@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { HttpStatusCode } from 'axios';
 
 import type AppError from '@errors/AppError';
 
@@ -17,7 +18,7 @@ const router = Router();
  */
 router.get('/', async (req: Request, res: Response) => {
   dockerImageServices.findAllDockerImages().then((dockerImages) => {
-    res.status(200).json(dockerImages);
+    res.status(HttpStatusCode.Ok).json(dockerImages);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -35,7 +36,7 @@ router.get('/:imageName', async (req: Request, res: Response) => {
   const { imageName } = req.params;
 
   dockerImageServices.findDockerImage(imageName).then((dockerImage) => {
-    res.status(200).json(dockerImage);
+    res.status(HttpStatusCode.Ok).json(dockerImage);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -53,7 +54,7 @@ router.delete('/:imageName', async (req: Request, res: Response) => {
   const { imageName } = req.params;
 
   dockerImageServices.deleteDockerImage(imageName).then(() => {
-    res.status(204).end();
+    res.status(HttpStatusCode.NoContent).end();
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });

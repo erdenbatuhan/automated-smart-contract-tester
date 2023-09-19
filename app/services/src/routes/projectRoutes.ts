@@ -44,7 +44,7 @@ const saveProject = async (
  */
 router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response) => {
   projectServices.findAllProjects().then((projects) => {
-    res.status(200).json(projects);
+    res.status(HttpStatusCode.Ok).json(projects);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -63,7 +63,7 @@ router.get('/:projectName', authMiddlewares.requireUser, async (req: Request, re
   const { projectName } = req.params;
 
   projectServices.findProjectByName(projectName).then((project) => {
-    res.status(200).json(project);
+    res.status(HttpStatusCode.Ok).json(project);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -87,7 +87,7 @@ router.get('/:projectName', authMiddlewares.requireUser, async (req: Request, re
  */
 router.post('/:projectName/upload', authMiddlewares.requireAdmin, upload.single('projectZip'), async (req: Request, res: Response) => {
   saveProject(req, res, projectServices.buildAndCreateProject).then((projectCreated) => {
-    res.status(201).json(projectCreated);
+    res.status(HttpStatusCode.Created).json(projectCreated);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -111,7 +111,7 @@ router.post('/:projectName/upload', authMiddlewares.requireAdmin, upload.single(
  */
 router.put('/:projectName/upload', authMiddlewares.requireAdmin, upload.single('projectZip'), async (req: Request, res: Response) => {
   saveProject(req, res, projectServices.rebuildAndUpdateProject).then((projectUpdated) => {
-    res.status(200).json(projectUpdated);
+    res.status(HttpStatusCode.Ok).json(projectUpdated);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -137,7 +137,7 @@ router.put('/:projectName/update', authMiddlewares.requireAdmin, async (req: Req
   }
 
   return projectServices.updateProjectConfig(projectName, updatedConfig).then((projectUpdated) => {
-    res.status(200).json(projectUpdated);
+    res.status(HttpStatusCode.Ok).json(projectUpdated);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -159,7 +159,7 @@ router.get('/:projectName/download', authMiddlewares.requireAdmin, async (req: R
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="project_${projectName}.zip"`);
 
-    res.status(200).send(zipBuffer);
+    res.status(HttpStatusCode.Ok).send(zipBuffer);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -178,7 +178,7 @@ router.delete('/:projectName', authMiddlewares.requireAdmin, async (req: Request
   const { projectName } = req.params;
 
   projectServices.deleteProject(projectName).then(() => {
-    res.status(204).end();
+    res.status(HttpStatusCode.NoContent).end();
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });

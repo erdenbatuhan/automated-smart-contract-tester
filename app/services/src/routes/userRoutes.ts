@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { HttpStatusCode } from 'axios';
 
 import type AppError from '@errors/AppError';
 
@@ -19,7 +20,7 @@ const router = Router();
  */
 router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response) => {
   userServices.findAllUsers().then((users) => {
-    res.status(200).json(users);
+    res.status(HttpStatusCode.Ok).json(users);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -38,7 +39,7 @@ router.get('/:userId', authMiddlewares.requireUser, async (req: Request, res: Re
   const { userId } = req.params;
 
   userServices.findUserById(userId).then((user) => {
-    res.status(200).json(user);
+    res.status(HttpStatusCode.Ok).json(user);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -57,7 +58,7 @@ router.delete('/:userId', authMiddlewares.requireAdmin, async (req: Request, res
   const { userId } = req.params;
 
   userServices.deleteUserById(userId).then(() => {
-    res.status(204).end();
+    res.status(HttpStatusCode.NoContent).end();
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });

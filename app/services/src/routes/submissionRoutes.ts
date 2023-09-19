@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
+import { HttpStatusCode } from 'axios';
 
 import type AppError from '@errors/AppError';
 
@@ -31,7 +32,7 @@ router.get('/', submissionMiddlewares.determineFindFunctionBasedOnUserRole, asyn
   const { findFunction } = res.locals;
 
   findFunction.then((submissions: ISubmission) => {
-    res.status(200).json(submissions);
+    res.status(HttpStatusCode.Ok).json(submissions);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -52,7 +53,7 @@ router.get('/:submissionId', submissionMiddlewares.requireSubmissionOwned, async
   const { submissionId } = req.params;
 
   submissionServices.findSubmissionById(projectName, submissionId).then((submission) => {
-    res.status(200).json(submission);
+    res.status(HttpStatusCode.Ok).json(submission);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -79,7 +80,7 @@ router.post('/', authMiddlewares.requireUser, upload.single('srcZip'), async (re
     const requestFile = routerUtils.getRequestFile(req);
 
     await submissionServices.runAndCreateSubmission(user as IUser, projectName, requestFile).then((submission) => {
-      res.status(201).json(submission);
+      res.status(HttpStatusCode.Created).json(submission);
     });
   } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);
@@ -104,7 +105,7 @@ router.get('/:submissionId/download', submissionMiddlewares.requireSubmissionOwn
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="project_${projectName}_submission_${submissionId}.zip"`);
 
-    res.status(200).send(zipBuffer);
+    res.status(HttpStatusCode.Ok).send(zipBuffer);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -125,7 +126,7 @@ router.delete('/:submissionId', authMiddlewares.requireAdmin, async (req: Reques
   const { submissionId } = req.params;
 
   submissionServices.deleteSubmissionById(projectName, submissionId).then(() => {
-    res.status(204).end();
+    res.status(HttpStatusCode.NoContent).end();
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });

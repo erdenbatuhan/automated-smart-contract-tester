@@ -16,7 +16,7 @@ export interface IProject extends mongoose.Document {
   projectName: string;
   upload: IUpload;
   config: IProjectConfig;
-  output: ContainerExecutionResponse;
+  output?: ContainerExecutionResponse;
   deployer: IUser; // Virtual Field
 
   leanSave(this: IProject, options?: SaveOptions): Promise<IProject>;

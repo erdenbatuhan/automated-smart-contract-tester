@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { HttpStatusCode } from 'axios';
 
 import Constants from '~Constants';
 import type AppError from '@errors/AppError';
@@ -36,7 +37,7 @@ const returnJwtResponse = (res: Response, code: number, payload: object, token: 
  */
 router.post('/signup', async (req: Request, res: Response) => {
   authServices.register(req.body).then(({ payload, token }) => {
-    returnJwtResponse(res, 201, payload, token);
+    returnJwtResponse(res, HttpStatusCode.Created, payload, token);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -54,7 +55,7 @@ router.post('/signup', async (req: Request, res: Response) => {
  */
 router.post('/login', async (req: Request, res: Response) => {
   authServices.login(req.body).then(({ payload, token }) => {
-    returnJwtResponse(res, 200, payload, token);
+    returnJwtResponse(res, HttpStatusCode.Ok, payload, token);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -67,7 +68,7 @@ router.post('/login', async (req: Request, res: Response) => {
  */
 router.get('/logout', authMiddlewares.requireAuth, async (req: Request, res: Response) => {
   res.cookie(Constants.JWT_NAME, '', { maxAge: 1 });
-  res.status(204).end();
+  res.status(HttpStatusCode.NoContent).end();
 });
 
 export default router;
