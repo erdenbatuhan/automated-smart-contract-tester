@@ -7,6 +7,8 @@ import mongoose from 'mongoose';
 import Logger from '@logging/Logger';
 
 import healthCheckMiddlewares from '@middlewares/healthCheckMiddlewares';
+import errorUtils from '@utils/errorUtils';
+
 import apiRoutes from './apiRoutes';
 
 // Read environment variables
@@ -21,13 +23,14 @@ app.use(bodyParser.json({ limit: '50mb' })); // Parse JSON requests and set body
 app.get('/', healthCheckMiddlewares.performHealthCheck); // Endpoint to perform a health check on the service to see if it's healthy
 app.use(`/api/${APP_NAME}/${SERVICE_NAME}/v1`, apiRoutes); // Mount modular routes with the common prefix
 
-// (1) Establish a connection to MongoDB
-mongoose.connect(MONGODB_URI).then(() => {
+Promise.all([
+  // (1) Establish a connection to MongoDB
+  mongoose.connect(MONGODB_URI).catch((err: Error | unknown) => {
+    throw errorUtils.handleError(err, 'Could not connect to the DB.');
+  })
+]).then(() => {
   // (2) Start the application server on the specified port
   app.listen(PORT, () => {
-    Logger.info(`${APP_NAME}/${SERVICE_NAME} is running on port ${PORT}!`);
+    Logger.info(`The service '${APP_NAME}/${SERVICE_NAME}' is running on port ${PORT}!`);
   });
-}).catch((err: Error | unknown) => {
-  Logger.error(`Could not connect to the DB: ${(err as Error)?.message}`);
-  throw err;
 });
