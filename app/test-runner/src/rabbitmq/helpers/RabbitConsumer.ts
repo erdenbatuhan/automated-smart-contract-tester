@@ -2,12 +2,11 @@ import type { Channel, ConsumeMessage } from 'amqplib';
 
 import Logger from '@logging/Logger';
 
-import RabbitInstance from '@rabbitmq/classes/RabbitInstance';
+import RabbitInstance from '@rabbitmq/helpers/RabbitInstance';
 
 export default class RabbitConsumer {
   protected incomingChannel!: Channel;
   protected outgoingChannel!: Channel;
-  protected consumers: Map<string, string[]> = new Map();
 
   protected setUpChannels = async (): Promise<void> => {
     // Establish channels if they haven't been created previously
@@ -34,6 +33,7 @@ export default class RabbitConsumer {
       { correlationId: message.properties.correlationId }
     );
   };
+
   protected consumeIncomingMessage = async (
     incomingQueue: string,
     messageCallback: (message: string) => Promise<object>,

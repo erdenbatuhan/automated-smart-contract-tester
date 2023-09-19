@@ -1,7 +1,7 @@
 import Logger from '@logging/Logger';
 
-import RabbitInstance from '@rabbitmq/classes/RabbitInstance';
-import RabbitProducer from '@rabbitmq/classes/RabbitProducer';
+import RabbitInstance from '@rabbitmq/helpers/RabbitInstance';
+import RabbitProducer from '@rabbitmq/helpers/RabbitProducer';
 
 export default class RabbitExchangeProducer extends RabbitProducer {
   public static setUp = async (
@@ -11,7 +11,7 @@ export default class RabbitExchangeProducer extends RabbitProducer {
     const instance = new RabbitExchangeProducer();
 
     await instance.setUpChannels();
-    await instance.outgoingChannel.assertExchange(outgoingExchange, exchangeType, { durable: false });
+    await instance.outgoingChannel.assertExchange(outgoingExchange, exchangeType, { durable: true });
 
     return instance;
   };

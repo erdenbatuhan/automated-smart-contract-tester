@@ -41,12 +41,12 @@ DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daem
 
 # RabbitMQ
 RABBITMQ_PORT=5673
-RABBITMQ_HOST=127.0.0.1:${RABBITMQ_PORT}
+RABBITMQ_HOST=127.0.0.1:5673
 
 # RabbitMQ - Communication Channels
-RABBITMQ_EXCHANGE_PROJECTS=exchange_projects
-RABBITMQ_QUEUE_PROJECTS=queue_projects
-RABBITMQ_QUEUE_SUBMISSIONS=queue_submissions
+RABBITMQ_EXCHANGE_PROJECT_UPLOAD=exchange_projects_upload
+RABBITMQ_EXCHANGE_PROJECT_REMOVAL=exchange_projects_removal
+RABBITMQ_QUEUE_SUBMISSION_UPLOAD=queue_submissions_upload
 
 # RabbitMQ - Management Portal
 RABBITMQ_MANAGEMENT_PORT=15673

@@ -1,13 +1,13 @@
 import Logger from '@logging/Logger';
 
-import RabbitProducer from '@rabbitmq/classes/RabbitProducer';
+import RabbitProducer from '@rabbitmq/helpers/RabbitProducer';
 
 export default class RabbitQueueProducer extends RabbitProducer {
   public static setUp = async (outgoingQueue: string): Promise<RabbitQueueProducer> => {
     const instance = new RabbitQueueProducer();
 
     await instance.setUpChannels();
-    await instance.outgoingChannel.assertQueue(outgoingQueue, { autoDelete: true, durable: false });
+    await instance.outgoingChannel.assertQueue(outgoingQueue, { autoDelete: true, durable: true });
 
     return instance;
   };

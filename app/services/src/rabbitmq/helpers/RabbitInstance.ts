@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 import type { Connection, Channel } from 'amqplib';
 import axios from 'axios';
 
-import RabbitConstants from '@rabbitmq/classes/RabbitConstants';
+import RabbitConstants from '@rabbitmq/helpers/RabbitConstants';
 
 const { RABBITMQ_HOST, RABBITMQ_MANAGEMENT_USERNAME, RABBITMQ_MANAGEMENT_PASSWORD } = process.env;
 if (!RABBITMQ_HOST || !RABBITMQ_MANAGEMENT_USERNAME || !RABBITMQ_MANAGEMENT_PASSWORD) throw new Error('Missing environment variables!');

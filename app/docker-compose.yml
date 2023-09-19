@@ -3,6 +3,8 @@
 version: "3"
 networks:
   isolated-rabbit-network: # Isolated Network for RabbitMQ
+volumes:
+  volume-rabbitmq.data:
 services:
   # Services
   services:
@@ -18,6 +20,8 @@ services:
       isolated-rabbit-network: # Isolated Network for RabbitMQ
     ports:
       - 8000:${SERVICE_PORT}
+    env_file:
+      - rabbitmq.properties
     environment:
       APP_NAME: ${APP_NAME}
       SERVICE_NAME: services
@@ -42,6 +46,8 @@ services:
     restart: unless-stopped
     networks:
       isolated-rabbit-network: # Isolated Network for RabbitMQ
+    volumes:
+      - volume-rabbitmq.data:/var/lib/rabbitmq
     ports:
       - "15672:15672" # RabbitMQ management UI
     environment:
@@ -69,6 +75,8 @@ services:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
     #    ports:
     #      - 8001:${SERVICE_PORT} # Uncomment only for testing purposes; should be accessible exclusively through the isolated rabbit network!
+    env_file:
+      - rabbitmq.properties
     environment:
       APP_NAME: ${APP_NAME}
       SERVICE_NAME: runner

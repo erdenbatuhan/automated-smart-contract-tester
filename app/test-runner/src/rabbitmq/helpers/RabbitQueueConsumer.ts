@@ -1,4 +1,4 @@
-import RabbitConsumer from '@rabbitmq/classes/RabbitConsumer';
+import RabbitConsumer from '@rabbitmq/helpers/RabbitConsumer';
 
 export default class RabbitQueueConsumer extends RabbitConsumer {
   public consumeQueue = async (
@@ -10,7 +10,7 @@ export default class RabbitQueueConsumer extends RabbitConsumer {
     await this.setUpChannels();
 
     // Create a queue and bind it to the exchange
-    await this.incomingChannel.assertQueue(incomingQueue, { autoDelete: true, durable: false });
+    await this.incomingChannel.assertQueue(incomingQueue, { autoDelete: true, durable: true });
 
     // Consume incoming message
     return this.consumeIncomingMessage(incomingQueue, messageCallback, { removeConsumerImmediately });

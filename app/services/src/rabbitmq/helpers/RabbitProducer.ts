@@ -2,8 +2,8 @@ import type { Channel } from 'amqplib';
 
 import Logger from '@logging/Logger';
 
-import RabbitConstants from '@rabbitmq/classes/RabbitConstants';
-import RabbitInstance from '@rabbitmq/classes/RabbitInstance';
+import RabbitConstants from '@rabbitmq/helpers/RabbitConstants';
+import RabbitInstance from '@rabbitmq/helpers/RabbitInstance';
 
 export default class RabbitProducer {
   protected outgoingChannel!: Channel;

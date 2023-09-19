@@ -33,10 +33,12 @@ clean: remove_image
 .PHONY: rabbit_clean
 rabbit_clean:
 	docker rm -f rabbitmq
+	docker volume rm -f rabbitmq.datavolume
 
 .PHONY: rabbit_run
 rabbit_run: rabbit_clean
-	docker run $(ARGS) -p ${RABBITMQ_PORT}:5672 -p ${RABBITMQ_MANAGEMENT_PORT}:15672 --name rabbitmq rabbitmq:management
+	docker volume create volume-rabbitmq.data
+	docker run $(ARGS) -p ${RABBITMQ_PORT}:5672 -p ${RABBITMQ_MANAGEMENT_PORT}:15672 -v rabbitmq.datavolume:/var/lib/rabbitmq  --name rabbitmq rabbitmq:management
 
 ### ----------------------------------------------------------------------- ###
 ###  Caution: Use the following commands carefully!                         ###
