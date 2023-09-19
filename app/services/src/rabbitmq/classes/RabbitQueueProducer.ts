@@ -1,4 +1,4 @@
-import Logger from 'automated-smart-contract-testing-runner/src/logging/Logger';
+import Logger from '@logging/Logger';
 
 import RabbitProducer from '@rabbitmq/classes/RabbitProducer';
 
