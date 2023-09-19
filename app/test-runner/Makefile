@@ -36,7 +36,7 @@ rabbit_clean:
 
 .PHONY: rabbit_run
 rabbit_run: rabbit_clean
-	docker run $(ARGS) -p ${RABBITMQ_PORT}:5672 -p 15672:15672 --name rabbitmq rabbitmq:management
+	docker run $(ARGS) -p ${RABBITMQ_PORT}:5672 -p ${RABBITMQ_MANAGEMENT_PORT}:15672 --name rabbitmq rabbitmq:management
 
 ### ----------------------------------------------------------------------- ###
 ###  Caution: Use the following commands carefully!                         ###

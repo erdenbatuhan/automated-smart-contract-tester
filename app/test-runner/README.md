@@ -40,13 +40,16 @@ MONGODB_URI= # Specify your MongoDB URI here
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on
 
 # RabbitMQ
-RABBITMQ_PORT=5672
+RABBITMQ_PORT=5673
 RABBITMQ_HOST=127.0.0.1:${RABBITMQ_PORT}
 
 # RabbitMQ - Communication Channels
 RABBITMQ_EXCHANGE_PROJECTS=exchange_projects
 RABBITMQ_QUEUE_PROJECTS=queue_projects
 RABBITMQ_QUEUE_SUBMISSIONS=queue_submissions
+
+# RabbitMQ - Management Portal
+RABBITMQ_MANAGEMENT_PORT=15673
 ```
 
 ### Option 1) Using Docker

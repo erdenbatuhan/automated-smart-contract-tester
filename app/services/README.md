@@ -29,16 +29,16 @@ MONGODB_URI= # Specify your MongoDB URI here
 JWT_SECRET= # Specify the secret used to sign JWTs
 
 # RabbitMQ
-RABBITMQ_HOST=127.0.0.1:5672
-
-# RabbitMQ - Management Portal Credentials
-RABBITMQ_MANAGEMENT_USERNAME=guest
-RABBITMQ_MANAGEMENT_PASSWORD=guest
+RABBITMQ_HOST=127.0.0.1:5673
 
 # RabbitMQ - Communication Channels
 RABBITMQ_EXCHANGE_PROJECTS=exchange_projects
 RABBITMQ_QUEUE_PROJECTS=queue_projects
 RABBITMQ_QUEUE_SUBMISSIONS=queue_submissions
+
+# RabbitMQ - Management Portal
+RABBITMQ_MANAGEMENT_USERNAME=guest
+RABBITMQ_MANAGEMENT_PASSWORD=guest
 ```
 
 ### Option 1) Using Docker
