@@ -7,7 +7,12 @@
 - [High-level Sequence Diagram](#high-level-sequence-diagram)
 - [Setting up the Development Environment](#setting-up-the-development-environment)
 - [Running the Entire Application with Docker](#running-the-entire-application-with-docker)
-  - [Useful Docker Commands](#useful-docker-commands)
+  - [Start Docker Containers](#start-docker-containers)
+  - [Stop Docker Containers](#stop-docker-containers)
+  - [Clean Up Docker Resources](#clean-up-docker-resources)
+  - [Clean Up the DB](#clean-up-the-db)
+  - [Prune Docker Resources](#prune-docker-resources)
+  - [Prune Docker Resources with Volumes](#prune-docker-resources-with-volumes)
 - [(Optional) Running the services separately](#optional-running-the-services-separately)
 
 ## System Architecture
@@ -53,46 +58,46 @@ ENV=dev # The staging environment (dev, qa, prod, etc.)
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on
 ```
 
-To run the application with _Docker Compose_, use the following commands:
+### Start Docker Containers
 
-#### Building or rebuilding service(s):
+To start Docker containers for the application, use the following command:
 
 ```bash
-docker-compose \
-    --env-file mongo/mongo.properties --env-file application.properties --env-file .env \
-    -f mongo/docker-compose.mongo.yml -f docker-compose.yml build
+make run ARGS=-d # Run the containers in background
 ```
 
-#### Creating and starting container(s):
+This command also stops any existing containers related to this application before starting new ones.
+
+### Stop Docker Containers
+
+To stop all Docker containers related to this application, use the following command:
 
 ```bash
-docker-compose \
-    --env-file mongo/mongo.properties --env-file application.properties --env-file .env \
-    -f mongo/docker-compose.mongo.yml -f docker-compose.yml up
+make stop
 ```
 
-#### Stopping and removing container(s), network(s):
+### Clean Up Docker Resources
+
+To clean up Docker resources, including removing containers, images, and volumes, use the following command:
 
 ```bash
-docker-compose \
-    --env-file mongo/mongo.properties --env-file application.properties --env-file .env \
-    -f mongo/docker-compose.mongo.yml -f docker-compose.yml down
+make clean
 ```
 
-### Useful Docker Commands
+This command will:
 
-#### Deleting all container(s):
+- Stop any existing containers related to the application and remove them
+- Remove Docker images related to the application
+- Remove dangling Docker volumes, excluding those with names ending in ".db"
+
+### Clean Up the DB
+
+To clean up the database, use the following command:
+
+Please note that this action is irreversible and will result in the removal of all your data!
 
 ```bash
-docker rm -f $(docker ps -a -q)
-```
-
-#### Deleting all volume(s):
-
-_!!! Be careful as it will remove all the data previously stored in the DB. If you wish to keep the data, skip this step. !!!_
-
-```bash
-docker volume rm $(docker volume ls -q)
+make clean_db
 ```
 
 ## (Optional) Running the services separately

@@ -1,6 +1,6 @@
 // Read environment variables
 const { APP_NAME, TESTRUNNER_SERVICE_NAME, TESTRUNNER_HOST } = process.env;
-if (!APP_NAME || !TESTRUNNER_SERVICE_NAME || !TESTRUNNER_HOST) throw new Error('Missing environment variables!');
+if (!APP_NAME) throw new Error('Missing environment variables!');
 
 // Test Runner
 export class TestRunnerApiEndpointConfig {

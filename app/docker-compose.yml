@@ -45,8 +45,8 @@ services:
     ports:
       - "15672:15672" # RabbitMQ management UI
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_MANAGEMENT_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_MANAGEMENT_PASSWORD}
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 10s

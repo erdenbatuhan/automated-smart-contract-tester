@@ -12,14 +12,6 @@
     "url": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app/issues"
   },
   "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app#readme",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "package.json",
-    "package-lock.json",
-    "README.md"
-  ],
   "_moduleAliases": {
     "~Constants": "dist/Constants",
     "@errors": "dist/src/errors",
@@ -36,7 +28,8 @@
     "prepare": "cd .. && if [ -f \"./package.json\" ] && [ -d './.husky' ]; then npm install; fi",
     "dev": "node --loader ts-node/esm -r dotenv/config index.ts dotenv_config_path=./.env.development.local | npx pino-pretty",
     "build": "rm -rf dist && tsc && cp -r templates dist/templates",
-    "serve": "npm run build && node -r module-alias/register dist/index.js | npx pino-pretty",
+    "serve": "npm run build && node -r module-alias/register dist/index.js",
+    "start": "if [ \"$ENV\" = \"dev\" ]; then npm run dev; else npm run serve; fi",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

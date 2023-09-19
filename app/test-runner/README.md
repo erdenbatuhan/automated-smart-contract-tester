@@ -8,14 +8,19 @@ For instructions on running the entire application using _Docker Compose_, pleas
 
 ### Requirements
 
-#### RabbitMQ
-
-This service relies on message queuing to receive messages from other services. Therefore, it's a must to have [RabbitMQ](https://www.rabbitmq.com), an open-source message broker, up and running to handle requests from other services. While REST endpoints are also implemented, they should strictly be avoided in production. The intended design is for this service to remain undisclosed, with communication exclusively managed by RabbitMQ. This approach isolates each service within its network and enforces queue limits, ensuring that this service only processes a defined number of requests (messages) at any given time.
+- **[Docker](https://www.docker.com)**
+- **[RabbitMQ](https://www.rabbitmq.com):** This service relies on message queuing to receive messages from other services. Therefore, it's a must to have RabbitMQ, an open-source message broker, up and running to handle requests from other services. While REST endpoints are also implemented, they should strictly be avoided in production. The intended design is for this service to remain undisclosed, with communication exclusively managed by RabbitMQ. This approach isolates each service within its network and enforces queue limits, ensuring that this service only processes a defined number of requests (messages) at any given time.
 
 To run a RabbitMQ instance, execute the following command:
 
 ```bash
-docker run -d -p 5672:5672 -p 25672:15672 --name rabbitmq rabbitmq:management
+make rabbit_run ARGS=-d # Run the RabbitMQ instance in background
+```
+
+To remove the RabbitMQ instance:
+
+```bash
+make rabbit_clean
 ```
 
 ### Environment Setup
@@ -35,31 +40,36 @@ MONGODB_URI= # Specify your MongoDB URI here
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on
 
 # RabbitMQ
-RABBITMQ_HOST=127.0.0.1:5672
+RABBITMQ_PORT=5672
+RABBITMQ_HOST=127.0.0.1:${RABBITMQ_PORT}
+
+# RabbitMQ - Communication Channels
+RABBITMQ_EXCHANGE_PROJECTS=exchange_projects
+RABBITMQ_QUEUE_PROJECTS=queue_projects
+RABBITMQ_QUEUE_SUBMISSIONS=queue_submissions
 ```
 
-### Project Execution
+### Option 1) Using Docker
 
-#### Option 1: Docker
-
-Build the Docker image using the following command:
+#### Building the Docker image:
 
 ```bash
-docker build -t automated-smart-contract-testing-runner:local .
+make build
 ```
 
-To run the Docker image, follow these steps:
-
-1. Make sure that the port on which the service will listen inside the Docker container matches the port specified in the **.env.development.local** file.
-2. Bind the Docker socket volumes, ensuring that they also match the configuration in the **.env.development.local** file.
-
-Use the following command:
+#### Starting the Docker container:
 
 ```bash
-docker run -d -p 8001:8001 -v /var/run/docker.sock:/var/run/docker.sock --env-file .env.development.local automated-smart-contract-testing-runner:local
+make run
 ```
 
-#### Option 2: Node Package Manager (npm)
+#### Cleaning up Docker resources, including removing the container and the image:
+
+```bash
+make clean
+```
+
+### Option 2) Using Node Package Manager (npm)
 
 First, install the required packages:
 

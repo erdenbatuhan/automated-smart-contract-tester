@@ -4,8 +4,8 @@ import axios from 'axios';
 
 import RabbitConstants from '@rabbitmq/classes/RabbitConstants';
 
-const { RABBITMQ_HOST, RABBITMQ_USERNAME, RABBITMQ_PASSWORD } = process.env;
-if (!RABBITMQ_HOST || !RABBITMQ_USERNAME || !RABBITMQ_PASSWORD) throw new Error('Missing environment variables!');
+const { RABBITMQ_HOST, RABBITMQ_MANAGEMENT_USERNAME, RABBITMQ_MANAGEMENT_PASSWORD } = process.env;
+if (!RABBITMQ_HOST || !RABBITMQ_MANAGEMENT_USERNAME || !RABBITMQ_MANAGEMENT_PASSWORD) throw new Error('Missing environment variables!');
 
 const RABBIT_API_URL_QUEUES = `http://${RABBITMQ_HOST}:15672/api/queues`;
 
@@ -45,7 +45,7 @@ export default class RabbitInstance {
 
   public static getQueues = <T = RabbitApiResponseQueues['response']['data']>(): Promise<T> => (
     axios.get<T>(RABBIT_API_URL_QUEUES, {
-      auth: { username: RABBITMQ_USERNAME!, password: RABBITMQ_PASSWORD! }
+      auth: { username: RABBITMQ_MANAGEMENT_USERNAME!, password: RABBITMQ_MANAGEMENT_PASSWORD! }
     }).then(({ data }) => data)
   );
 }

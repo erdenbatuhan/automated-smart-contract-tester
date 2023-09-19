@@ -7,7 +7,7 @@ WORKDIR /app
 # Install the project dependencies
 COPY package*.json ./
 ARG ENV
-RUN NODE_ENV=$ENV npm install
+RUN if [ "$ENV" = "dev" ]; then NODE_ENV=$ENV npm i; else NODE_ENV=$ENV npm ci; fi
 
 # Bundle the app source
 COPY . .
@@ -17,4 +17,4 @@ ARG PORT
 EXPOSE $PORT
 
 # Start the app
-CMD [ "npm", "run", "serve" ]
+CMD [ "npm", "run", "start" ]
