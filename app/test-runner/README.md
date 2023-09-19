@@ -15,7 +15,7 @@ This service relies on message queuing to receive messages from other services. 
 To run a RabbitMQ instance, execute the following command:
 
 ```bash
-docker run -d -p 5672:5672 -p 15672:15672 --name rabbitmq rabbitmq:management
+docker run -d -p 5672:5672 -p 25672:15672 --name rabbitmq rabbitmq:management
 ```
 
 ### Environment Setup

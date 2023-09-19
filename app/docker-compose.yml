@@ -43,7 +43,6 @@ services:
     networks:
       isolated-rabbit-network: # Isolated Network for RabbitMQ
     ports:
-      - "5672:5672" # RabbitMQ AMQP port
       - "15672:15672" # RabbitMQ management UI
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
