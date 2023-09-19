@@ -39,7 +39,7 @@ export default class RabbitProducer {
   ): Promise<void> => {
     try {
       Logger.info(`[${correlationId}] Waiting for the reply message(s) on the queue '${replyQueue}'.`);
-      await this.replyChannel.assertQueue(replyQueue, { autoDelete: true, durable: false });
+      await this.replyChannel.assertQueue(replyQueue, { exclusive: true, autoDelete: true, durable: false });
 
       // Consume messages on the reply queue
       let numMessagesReceived = 0;
