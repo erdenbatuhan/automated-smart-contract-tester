@@ -2,7 +2,7 @@ import Logger from '@Logger';
 
 import TestStatus from '@models/enums/TestStatus';
 
-import type ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
+import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses/ContainerExecutionResponse';
 
 /**
  * Extracts the test status from the execution output of a submission.

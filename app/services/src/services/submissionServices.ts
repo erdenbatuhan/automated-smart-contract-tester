@@ -12,11 +12,6 @@ import type { ISubmission } from '@models/Submission';
 import projectServices from '@services/projectServices';
 import uploadServices from '@services/uploadServices';
 
-import testRunnerExecutionApi from '@api/services/testrunner/executionApi';
-
-import type { RequestFile } from '@utils/routerUtils';
-import executionOutputUtils from '@utils/executionOutputUtils';
-
 /**
  * Finds all submissions.
  *
@@ -86,12 +81,12 @@ const isSubmissionUploadedByGivenUser = (
  *
  * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the project for which the submission is run.
- * @param {RequestFile} requestFile - The file containing project data.
+ * @param {Buffer} zipBuffer - The zip buffer containing project data.
  * @returns {Promise<ISubmission>} A Promise that resolves to the saved submission document.
  * @throws {AppError} If an error occurs during any step of the submission process.
  */
 const runAndCreateSubmission = async (
-  user: IUser, projectName: string, requestFile: RequestFile
+  user: IUser, projectName: string, zipBuffer: Buffer
 ): Promise<ISubmission> => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -99,23 +94,23 @@ const runAndCreateSubmission = async (
   try {
     Logger.info(`Running a submission for the ${projectName} project.`);
 
-    // Step 1: Find the project by name and create a new submission document
+    // Find the project by name and create a new submission document
     const project = await projectServices.findProjectByName(projectName, null, 'config', { session });
     const submission = new Submission({ project });
 
-    // Step 2: Upload submission files and get the upload document saved
+    // Upload submission files and get the upload document saved
     submission.upload = await uploadServices.uploadZipBuffer(
-      user, `project_${projectName}_submission_${submission._id}`, requestFile.buffer, null, { session });
+      user, `project_${projectName}_submission_${submission._id}`, zipBuffer, null, { session });
 
-    // Step 3: Send the files to the test runner service to run the Docker image
-    const testExecutionOutput = await testRunnerExecutionApi.executeSubmission(
-      projectName, requestFile, project.config);
+    // // Step 3: Send the files to the test runner service to run the Docker image
+    // const testExecutionOutput = await testRunnerExecutionApi.executeSubmission(
+    //   projectName, requestFile, project.config);
+    //
+    // // Step 4: Extract the status and calculate the score based on the execution output
+    // submission.testStatus = executionOutputUtils.extractTestStatus(testExecutionOutput);
+    // submission.results = executionOutputUtils.calculateTestScoreAndGenerateResults(testExecutionOutput);
 
-    // Step 4: Extract the status and calculate the score based on the execution output
-    submission.testStatus = executionOutputUtils.extractTestStatus(testExecutionOutput);
-    submission.results = executionOutputUtils.calculateTestScoreAndGenerateResults(testExecutionOutput);
-
-    // Step 5: Save the submission
+    // Save the submission
     const submissionSaved = await submission.leanSave({ session });
 
     // Commit transaction and return results

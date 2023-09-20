@@ -9,13 +9,9 @@ import type { IUser } from '@models/User';
 import Project from '@models/Project';
 import type { IProject } from '@models/Project';
 import { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
+import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses/ContainerExecutionResponse';
 
 import uploadServices from '@services/uploadServices';
-
-import testRunnerProjectApi from '@api/services/testrunner/projectApi';
-import type ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
-
-import type { RequestFile } from '@utils/routerUtils';
 
 /**
  * Finds all projects.
@@ -45,7 +41,7 @@ const findAllProjects = async (populatePath?: string | null): Promise<IProject[]
  * @throws {AppError} If the project is not found (HTTP 404) or if an error occurs during the operation.
  */
 const findProjectByName = async (
-  projectName: string, populatePath?: string | null, projection?: ProjectionType<IProject>, sessionOption?: SessionOption
+  projectName: string, populatePath?: string | null, projection?: ProjectionType<IProject> | null, sessionOption?: SessionOption
 ): Promise<IProject> => {
   // If a populate path is provided, add population to the query
   let findQuery = Project.findOne({ projectName }, projection, sessionOption);
@@ -62,35 +58,24 @@ const findProjectByName = async (
 /**
  * Creates a new project or updates an existing one.
  *
- * This function sends the project files to the test runner service to build a Docker image for the project.
- * Afterward, it creates an Upload document associated with the project files and saves the project with these changes.
- *
  * @param {IUser} user - The user performing the upload.
  * @param {IProject} project - The project to create or update.
- * @param {RequestFile} requestFile - The file attached to the request containing the project files.
+ * @param {Buffer} zipBuffer - The zip buffer containing the project files.
  * @returns {Promise<IProject>} A promise that resolves to the created or updated project.
  * @throws {AppError} If any error occurs during project creation or update.
  */
-const saveProject = async (user: IUser, project: IProject, requestFile: RequestFile): Promise<IProject> => {
+const saveProject = async (user: IUser, project: IProject, zipBuffer: Buffer): Promise<IProject> => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
     Logger.info(`${project.isNew ? 'Creating' : 'Updating'} a project with the name '${project.projectName}'.`);
 
-    // Step 1: Upload files and get the upload document saved
+    // Upload files and get the upload document saved
     project.upload = await uploadServices.uploadZipBuffer(
-      user, project.projectName, requestFile.buffer, project.upload, { session });
+      user, project.projectName, zipBuffer, project.upload, { session });
 
-    // Step 2: Call the test runner service to build the Docker image
-    const testRunnerOutput = await testRunnerProjectApi.uploadProject(
-      project.projectName, requestFile);
-
-    // Step 3: Update project config and output based on the test runner output
-    project.config.tests = testRunnerOutput?.container?.output?.tests?.map((test) => ({ ...test, weight: 1.0 })) || [];
-    project.output = testRunnerOutput;
-
-    // Step 4: Create or update project
+    // Create or update project
     const projectSaved = await project.leanSave({ session });
 
     // Commit transaction and return results
@@ -115,14 +100,14 @@ const saveProject = async (user: IUser, project: IProject, requestFile: RequestF
  *
  * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the new project.
- * @param {RequestFile} requestFile - The file attached to the request containing the project files.
+ * @param {Buffer} zipBuffer - The zip buffer containing the project files.
  * @param {IProjectConfig} [config] - The "optional" project configuration
  *                                    (Providing "tests" is redundant as it will be overridden anyway).
  * @returns {Promise<IProject>} A promise that resolves to the created project.
  * @throws {AppError} If a project with the same name already exists (409) or if any error occurs during project creation.
  */
 const buildAndCreateProject = async (
-  user: IUser, projectName: string, requestFile: RequestFile, config?: IProjectConfig
+  user: IUser, projectName: string, zipBuffer: Buffer, config?: IProjectConfig
 ): Promise<IProject> => {
   // Check if a project with the same name already exists
   const projectExists = await Project.exists({ projectName });
@@ -130,7 +115,7 @@ const buildAndCreateProject = async (
 
   // Create a new project
   const newProject = new Project({ projectName, config: config || {} });
-  return await saveProject(user, newProject, requestFile);
+  return await saveProject(user, newProject, zipBuffer);
 };
 
 /**
@@ -139,24 +124,58 @@ const buildAndCreateProject = async (
  *
  * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the existing project to update.
- * @param {RequestFile} requestFile - The file attached to the request containing the project files.
+ * @param {Buffer} zipBuffer - The zip buffer containing the project files.
  * @param {IProjectConfig} [config] - The "optional" project configuration
  *                                    (Providing "tests" is redundant as it will be overridden anyway).
  * @returns {Promise<IProject>} A promise that resolves to the updated project.
  * @throws {AppError} If the project does not exist (404) or if any error occurs during project update.
  */
 const rebuildAndUpdateProject = async (
-  user: IUser, projectName: string, requestFile: RequestFile, config?: IProjectConfig
+  user: IUser, projectName: string, zipBuffer: Buffer, config?: IProjectConfig
 ): Promise<IProject> => {
   // Find the existing project
   const existingProject = await findProjectByName(projectName, 'upload');
 
-  // Update the existing project's config, if provided
-  if (config) {
-    existingProject.config = config;
-  }
+  // Clear the project's previous config and output
+  existingProject.config = { tests: [] };
+  existingProject.output = {};
 
-  return await saveProject(user, existingProject, requestFile);
+  // Update the existing project's config, if provided
+  if (config) existingProject.config = config;
+
+  return await saveProject(user, existingProject, zipBuffer);
+};
+
+/**
+ * Updates a project with the test runner's output data (see projectMessageProducers)
+ *
+ * @param {string} projectName - The name of the project to update.
+ * @param {ContainerExecutionResponse} testRunnerOutput - The output data from the test runner.
+ * @returns {Promise<IProject>} A promise that resolves to the updated project.
+ */
+const updateProjectWithTestRunnerOutput = async (
+  projectName: string, testRunnerOutput: ContainerExecutionResponse
+): Promise<IProject> => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const project = await findProjectByName(projectName, 'upload', null, { session });
+
+    // Process output, e.g. calculate the test score
+    project.config.tests = testRunnerOutput?.container?.output?.tests?.map((test) => ({ ...test, weight: 1.0 })) || [];
+    project.output = testRunnerOutput;
+
+    // Save the project and commit transaction
+    const updatedProject = await project.leanSave({ session });
+    return await session.commitTransaction().then(() => updatedProject);
+  } catch (err: AppError | Error | unknown) {
+    // Abort the transaction
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    await session.endSession();
+  }
 };
 
 /**
@@ -208,13 +227,13 @@ const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProje
   .then(({ upload }) => uploadServices.downloadUploadedFiles(`${projectName} project`, upload));
 
 /**
- * Deletes a project, including its associated upload, and also its Docker image managed by the Test Runner service.
+ * Deletes a project, including its associated upload.
  *
  * @param {string} projectName - The name of the project to delete.
- * @returns {Promise<void>} A promise that resolves once the project and its associated resources are successfully deleted.
+ * @returns {Promise<IProject>} A promise that resolves with the deleted project once the deletion process is successful.
  * @throws {AppError} If there's an error during the deletion process (HTTP 500).
  */
-const deleteProject = async (projectName: string): Promise<void> => {
+const deleteProject = async (projectName: string): Promise<IProject> => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -222,8 +241,8 @@ const deleteProject = async (projectName: string): Promise<void> => {
     Logger.info(`Deleting the ${projectName} project.`);
 
     // Step 1: Delete the upload associated with the project
-    await findProjectByName(projectName, 'upload', 'upload', { session })
-      .then(({ upload }) => uploadServices.deleteUpload(upload, { session }));
+    const project = await findProjectByName(projectName, 'upload', null, { session });
+    await uploadServices.deleteUpload(project.upload, { session });
 
     // Step 2: Delete the project from the DB
     await Project.deleteOne({ projectName }, { session }).exec().then(({ deletedCount }) => {
@@ -232,12 +251,11 @@ const deleteProject = async (projectName: string): Promise<void> => {
       throw new AppError(HttpStatusCode.InternalServerError, `Failed to delete the ${projectName} project.`, (err as Error)?.message); // Should not happen normally!
     });
 
-    // Step 3: Send a deletion request to the Test Runner service to delete the project's image
-    await testRunnerProjectApi.sendProjectDeletionRequest(projectName);
-
-    // Commit transaction
-    await session.commitTransaction();
-    Logger.info(`Successfully deleted the ${projectName} project.`);
+    // Commit transaction and return results
+    return await session.commitTransaction().then(() => {
+      Logger.info(`Successfully deleted the ${projectName} project.`);
+      return project;
+    });
   } catch (err: AppError | Error | unknown) {
     // Abort the transaction
     await session.abortTransaction();
@@ -258,35 +276,36 @@ const deleteProject = async (projectName: string): Promise<void> => {
  * @returns {Promise<ContainerExecutionResponse['dockerImage']['imageID'][]>} A Promise that resolves to an array of
  *                                                                            Docker image IDs for the uploaded projects.
  */
-const uploadAllProjectsToTestRunner = async (): Promise<ContainerExecutionResponse['dockerImage']['imageID'][]> => {
-  Logger.info('Fetching all projects from the DB.');
-  const projects = await findAllProjects('upload');
-
-  Logger.info(`Uploading ${projects.length} project(s) to the test runner service.`);
-  return Promise.all(projects.map(({ projectName, upload }) => {
-    const zipBuffer = uploadServices.downloadUploadedFiles(`${projectName} project`, upload);
-    const requestFile = {
-      fieldname: 'projectZip',
-      originalname: `${projectName}.zip`,
-      buffer: zipBuffer
-    } as unknown as RequestFile;
-
-    return testRunnerProjectApi.uploadProject(projectName, requestFile);
-  })).then((responses) => {
-    const dockerImageIds = responses.map(({ dockerImage }) => dockerImage.imageID);
-
-    Logger.info(`Successfully uploaded all projects to the test runner service and created the docker images: ${dockerImageIds.join(', ')}`);
-    return dockerImageIds;
-  }).catch((err: AppError | Error | unknown) => {
-    throw AppError.createAppError(err, 'An error occurred while uploading all projects to the test runner service.');
-  });
-};
+const uploadAllProjectsToTestRunner = async (): Promise<ContainerExecutionResponse['dockerImage']['imageID'][] | null> => null;
+// Logger.info('Fetching all projects from the DB.');
+// const projects = await findAllProjects('upload');
+//
+// Logger.info(`Uploading ${projects.length} project(s) to the test runner service.`);
+// return Promise.all(projects.map(({ projectName, upload }) => {
+//   const zipBuffer = uploadServices.downloadUploadedFiles(`${projectName} project`, upload);
+//   const requestFile = {
+//     fieldname: 'projectZip',
+//     originalname: `${projectName}.zip`,
+//     buffer: zipBuffer
+//   };
+//
+//   // return testRunnerProjectApi.uploadProject(projectName, requestFile);
+//   return [{ dockerImage: { imageID: 'null' } }];
+// })).then((responses) => {
+//   const dockerImageIds = responses.map(({ dockerImage }) => dockerImage.imageID);
+//
+//   Logger.info(`Successfully uploaded all projects to the test runner service and created the docker images: ${dockerImageIds.join(', ')}`);
+//   return dockerImageIds;
+// }).catch((err: AppError | Error | unknown) => {
+//   throw AppError.createAppError(err, 'An error occurred while uploading all projects to the test runner service.');
+// });
 
 export default {
   findAllProjects,
   findProjectByName,
   buildAndCreateProject,
   rebuildAndUpdateProject,
+  updateProjectWithTestRunnerOutput,
   updateProjectConfig,
   downloadProjectFiles,
   deleteProject,

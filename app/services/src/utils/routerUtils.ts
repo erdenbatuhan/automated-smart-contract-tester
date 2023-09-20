@@ -3,8 +3,6 @@ import { HttpStatusCode } from 'axios';
 
 import AppError from '@errors/AppError';
 
-export interface RequestFile extends Express.Multer.File {}
-
 /**
  * Parses a JSON string from the request body and returns it as an object.
  *
@@ -28,16 +26,15 @@ const parseJsonObjectFromBody = (req: Request, objectKey: string, required: bool
 };
 
 /**
- * Get the file attached to a request.
+ * Get the file buffer attached to an HTTP request.
  *
  * @param {Request} req - The HTTP request object.
- * @returns {RequestFile} The file attached to the request.
+ * @returns {Buffer} The file buffer attached to the request.
  * @throws {AppError} If the request does not contain a file or an error occurs while reading the file buffer.
  */
-const getRequestFile = (req: Request): RequestFile => {
+const getZipBuffer = (req: Request): Buffer => {
   try {
-    if (!req.file!.buffer) throw new Error('Cannot read the buffer.');
-    return req.file!;
+    return req.file!.buffer;
   } catch (err: Error | unknown) {
     throw AppError.createAppError(err, 'An error occurred while reading the file buffer.', HttpStatusCode.BadRequest);
   }
@@ -64,4 +61,4 @@ const sendErrorResponse = (res: Response, err: AppError | Error | unknown): void
   res.status(httpErr.statusCode).json({ error: httpErr });
 };
 
-export default { parseJsonObjectFromBody, getRequestFile, sendErrorResponse };
+export default { parseJsonObjectFromBody, getZipBuffer, sendErrorResponse };

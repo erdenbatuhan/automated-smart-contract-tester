@@ -1,4 +1,4 @@
-export default class RabbitResponse {
+export default class ReplyMessage {
   statusCode: number;
   data: object;
 

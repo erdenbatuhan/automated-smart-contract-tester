@@ -38,7 +38,7 @@ const SubmissionSchema = new mongoose.Schema<ISubmission, SubmissionModel>(
   }
 );
 
-// Set a TTL for the project (It will be deleted after X seconds if the status is still PENDING)
+// Set a TTL for the submission (It will be deleted after X seconds if the test status is still INCONCLUSIVE)
 SubmissionSchema.index(
   { createdAt: 1 },
   { expireAfterSeconds: Constants.SUBMISSION_DOC_TTL, partialFilterExpression: { testStatus: TestStatus.INCONCLUSIVE } }

@@ -9,14 +9,12 @@ import type { IUser } from '@models/User';
 import ProjectConfigSchema from '@models/schemas/ProjectConfigSchema';
 import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 
-import ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
-
 export interface IProject extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
   projectName: string;
   upload: IUpload;
   config: IProjectConfig;
-  output?: ContainerExecutionResponse;
+  output?: object;
   deployer: IUser; // Virtual Field
 
   leanSave(this: IProject, options?: SaveOptions): Promise<IProject>;
@@ -35,7 +33,7 @@ const ProjectSchema = new mongoose.Schema<IProject>(
   }
 );
 
-// Set a TTL for the project (It will be deleted after X seconds if the status is still PENDING)
+// Set a TTL for the project (It will be deleted after X seconds if the output is still null)
 ProjectSchema.index(
   { createdAt: 1 },
   { expireAfterSeconds: Constants.PROJECT_DOC_TTL, partialFilterExpression: { output: null } }

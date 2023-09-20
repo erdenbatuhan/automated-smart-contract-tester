@@ -77,9 +77,9 @@ router.get('/:submissionId', submissionMiddlewares.requireSubmissionOwned, async
 router.post('/', authMiddlewares.requireUser, upload.single('srcZip'), async (req: Request, res: Response) => {
   try {
     const { user, projectName } = res.locals;
-    const requestFile = routerUtils.getRequestFile(req);
+    const zipBuffer = routerUtils.getZipBuffer(req);
 
-    await submissionServices.runAndCreateSubmission(user as IUser, projectName, requestFile).then((submission) => {
+    await submissionServices.runAndCreateSubmission(user as IUser, projectName, zipBuffer).then((submission) => {
       res.status(HttpStatusCode.Created).json(submission);
     });
   } catch (err: AppError | Error | unknown) {

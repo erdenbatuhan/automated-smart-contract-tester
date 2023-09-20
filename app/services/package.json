@@ -32,6 +32,28 @@
     "start": "if [ \"$ENV\" = \"dev\" ]; then npm run dev; else npm run serve; fi",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "amqplib": "^0.10.3",
+    "axios": "^1.5.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "connect-timeout": "^1.9.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.0.1",
+    "form-data": "^4.0.0",
+    "fs-extra": "^11.1.1",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "module-alias": "^2.2.3",
+    "mongoose": "^7.4.3",
+    "multer": "^1.4.5-lts.1",
+    "pino": "^8.15.0",
+    "validator": "^13.11.0"
+  },
   "devDependencies": {
     "@types/adm-zip": "^0.5.1",
     "@types/amqplib": "^0.10.1",
@@ -49,26 +71,5 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "adm-zip": "^0.5.10",
-    "amqplib": "^0.10.3",
-    "axios": "^1.5.0",
-    "bcrypt": "^5.1.1",
-    "body-parser": "^1.20.2",
-    "connect-timeout": "^1.9.0",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "form-data": "^4.0.0",
-    "fs-extra": "^11.1.1",
-    "helmet": "^7.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "module-alias": "^2.2.3",
-    "mongoose": "^7.4.3",
-    "multer": "^1.4.5-lts.1",
-    "pino": "^8.15.0",
-    "validator": "^13.11.0"
   }
 }

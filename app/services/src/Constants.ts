@@ -19,4 +19,7 @@ export default class Constants {
 
   // Submission
   public static SUBMISSION_DOC_TTL = 5 * 60; // 5 minutes in seconds
+
+  // Message Request
+  public static MESSAGE_REQUEST_DOC_TTL = 10 * 60; // 10 minutes in seconds
 }

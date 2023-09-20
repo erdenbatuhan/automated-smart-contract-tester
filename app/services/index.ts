@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 
 import Logger from '@Logger';
@@ -22,6 +23,7 @@ app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
 app.use(helmet()); // Enhance security using Helmet middleware
 app.use(bodyParser.json({ limit: '50mb' })); // Parse JSON requests and set body size limit
 app.use(cookieParser()); // Enable cookie parsing
+app.use(rateLimit({ windowMs: 2 * 60 * 1000, limit: 20, keyGenerator: (req) => req.ip })); // Apply rate limiting: Allow a maximum of 20 requests per IP address in a 2-minute window
 app.use(`/api/${APP_NAME}/${SERVICE_NAME}/v1`, apiRouter); // Mount modular routes with the common prefix
 
 Promise.all([

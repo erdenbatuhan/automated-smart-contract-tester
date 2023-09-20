@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import { IUser } from '@models/User';
+import type { IUser } from '@models/User';
 
 import authMiddlewares, { handleAccessErrors } from '@middlewares/authMiddlewares';
 import submissionServices from '@services/submissionServices';

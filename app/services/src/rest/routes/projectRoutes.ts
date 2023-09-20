@@ -9,9 +9,11 @@ import { IUser } from '@models/User';
 import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 
 import authMiddlewares from '@middlewares/authMiddlewares';
-import projectServices from '@services/projectServices';
 
-import routerUtils, { RequestFile } from '@utils/routerUtils';
+import projectServices from '@services/projectServices';
+import projectMessageProducers from '@rabbitmq/test-runner/producers/projectMessageProducers';
+
+import routerUtils from '@utils/routerUtils';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -29,10 +31,16 @@ const saveProject = async (
 ): Promise<object> => {
   const { user } = res.locals;
   const { projectName } = req.params;
-  const requestFile = routerUtils.getRequestFile(req) as RequestFile;
+  const zipBuffer = routerUtils.getZipBuffer(req) as Buffer;
   const projectConfig = routerUtils.parseJsonObjectFromBody(req, 'projectConfig') as IProjectConfig;
 
-  return saveFunction(user as IUser, projectName, requestFile, projectConfig);
+  // Create or update the project
+  const project = await saveFunction(user as IUser, projectName, zipBuffer, projectConfig);
+
+  // Upload the project to the test runner service
+  const messageRequest = await projectMessageProducers.produceProjectUploadMessage(user, projectName, zipBuffer);
+
+  return { messageRequest, project };
 };
 
 /**
@@ -170,18 +178,25 @@ router.get('/:projectName/download', authMiddlewares.requireAdmin, async (req: R
  *
  * @param {IUser} res.locals.user - The user performing the removal (see auth-middleware).
  * @param {string} req.params.projectName - The name of the project to delete.
- * @returns {object} 204 - If the project deletion is successful.
+ * @returns {object} 200 - If the project deletion is successful.
  * @throws {object} 404 - If the project doesn't exist.
  * @throws {object} 500 - If there's a server error.
  */
 router.delete('/:projectName', authMiddlewares.requireAdmin, async (req: Request, res: Response) => {
-  const { projectName } = req.params;
+  try {
+    const { user } = res.locals;
+    const { projectName } = req.params;
 
-  projectServices.deleteProject(projectName).then(() => {
-    res.status(HttpStatusCode.NoContent).end();
-  }).catch((err: AppError | Error | unknown) => {
+    // Delete the project
+    const project = await projectServices.deleteProject(projectName);
+
+    // Send the deletion request to test runner service
+    const messageRequest = await projectMessageProducers.produceProjectRemovalMessage(user, project);
+
+    res.status(HttpStatusCode.Ok).json({ messageRequest, project: projectName });
+  } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);
-  });
+  }
 });
 
 export default router;

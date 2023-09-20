@@ -1,6 +1,6 @@
 import type { ITest } from '@models/schemas/TestSchema';
 
-import ContainerExecutionStatus from '@api/services/testrunner/enums/ContainerExecutionStatus';
+import ContainerExecutionStatus from '@rabbitmq/test-runner/dto/responses/enums/ContainerExecutionStatus';
 
 interface ContainerTestResult extends ITest {
   status?: string;

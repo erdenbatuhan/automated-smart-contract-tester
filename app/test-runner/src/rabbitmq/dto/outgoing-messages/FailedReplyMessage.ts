@@ -2,9 +2,9 @@ import { HttpStatusCode } from 'axios';
 
 import AppError from '@errors/AppError';
 
-import RabbitResponse from '@rabbitmq/dto/responses/RabbitResponse';
+import ReplyMessage from '@rabbitmq/dto/outgoing-messages/ReplyMessage';
 
-export default class RabbitErrorResponse extends RabbitResponse {
+export default class FailedReplyMessage extends ReplyMessage {
   constructor(err: AppError | Error | unknown) {
     super(
       (err as AppError)?.statusCode || HttpStatusCode.InternalServerError,
