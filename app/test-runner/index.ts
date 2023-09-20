@@ -26,7 +26,7 @@ Promise.all([
   mongoose.connect(MONGODB_URI).catch((err: Error | unknown) => {
     throw AppError.createAppError(err, 'Could not connect to the DB.');
   }),
-  // (2) Initialize the message queue handlers
+  // (2) Initialize the message consumers
   messageConsumers.initializeMessageConsumers()
 ]).then(() => {
   // (3) Start the application server on the specified port
