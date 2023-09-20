@@ -12,15 +12,14 @@ import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses
  * Finds a message request by its ID.
  *
  * @param {Types.ObjectId | string} messageRequestId - The ID of the message request to find.
- * @param {boolean} [toObject=false] - Optional flag to convert the result to an object with virtuals.
  * @returns {Promise<IMessageRequest>} A promise that resolves to the found message request.
  * @throws {AppError} If the message request with the specified ID is not found (HTTP 404).
  */
 const findMessageRequest = (
-  messageRequestId: Schema.Types.ObjectId | string, toObject: boolean = false
+  messageRequestId: Schema.Types.ObjectId | string
 ): Promise<IMessageRequest> => MessageRequest.findById(messageRequestId).exec().then((messageRequest) => {
   if (!messageRequest) throw new AppError(HttpStatusCode.NotFound, `Message request with ID=${messageRequestId} not found.`);
-  return !toObject ? messageRequest : messageRequest.toObject({ virtuals: true });
+  return messageRequest;
 });
 
 /**
@@ -53,18 +52,20 @@ const saveMessageRequest = (messageRequest: IMessageRequest): Promise<IMessageRe
  * @param {Schema.Types.ObjectId} associatedDocumentId - The ID of the associated document.
  * @param {string} associatedDocumentType - The type of the associated document.
  * @param {{ isError: boolean; data: ContainerExecutionResponse | AppError }} [response] - Optional response data.
+ * @param {number} [positionInTheQueue=0] - The position of the message in the queue (Optional).
  * @returns {Promise<IMessageRequest>} A promise that resolves to the updated message request.
  */
 const updateMessageRequest = (
   messageRequest: IMessageRequest,
   associatedDocumentId: Schema.Types.ObjectId,
   associatedDocumentType: string,
-  response?: { isError: boolean; data: ContainerExecutionResponse | AppError | object }
+  response?: { isError: boolean; data: ContainerExecutionResponse | AppError | object },
+  positionInTheQueue?: number
 ): Promise<IMessageRequest> => findMessageRequest(messageRequest._id).then((messageRequestFound) => {
   Object.assign(messageRequestFound, {
     associatedDocumentId,
     associatedDocumentType,
-    startingPositionInQueue: 0,
+    startingPositionInQueue: positionInTheQueue || 0,
     completed: true,
     isError: response?.isError,
     output: response?.data

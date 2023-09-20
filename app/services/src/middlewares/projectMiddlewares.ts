@@ -23,8 +23,8 @@ const prepareTestRunnerService = async (): Promise<string[]> => {
     return [];
   }
 
-  return Promise.all(projectFiles.map(({ projectName, zipBuffer }) => (
-    projectMessageProducers.produceProjectUploadMessage(null, projectName, zipBuffer)
+  return Promise.all(projectFiles.map(({ project, zipBuffer }) => (
+    projectMessageProducers.produceProjectUploadMessage(null, zipBuffer, project)
   ))).then((messageRequests) => {
     const messageRequestIds = messageRequests.map(({ _id }) => String(_id));
 

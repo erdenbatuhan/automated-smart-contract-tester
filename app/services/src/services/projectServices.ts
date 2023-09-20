@@ -8,7 +8,7 @@ import AppError from '@errors/AppError';
 import type { IUser } from '@models/User';
 import Project from '@models/Project';
 import type { IProject } from '@models/Project';
-import { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
+import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses/ContainerExecutionResponse';
 
 import uploadServices from '@services/uploadServices';
@@ -76,7 +76,7 @@ const saveProject = async (user: IUser, project: IProject, zipBuffer: Buffer): P
       user, project.projectName, zipBuffer, project.upload, { session });
 
     // Create or update project
-    const projectSaved = await project.leanSave({ session });
+    const projectSaved = await project.save({ session });
 
     // Commit transaction and return results
     return await session.commitTransaction().then(() => {
@@ -147,32 +147,37 @@ const rebuildAndUpdateProject = async (
 };
 
 /**
- * Updates a project with the test runner's output data (see projectMessageProducers)
+ * Updates a project with the test runner's output data.
  *
  * @param {string} projectName - The name of the project to update.
- * @param {ContainerExecutionResponse} testRunnerOutput - The output data from the test runner.
- * @returns {Promise<IProject>} A promise that resolves to the updated project.
+ * @param {ContainerExecutionResponse} testRunnerOutput - The test runner's execution output.
+ * @returns {Promise<IProject['_id']>} A Promise that resolves to the ID of the updated project.
+ * @throws {AppError} If an error occurs while updating the project.
  */
 const updateProjectWithTestRunnerOutput = async (
   projectName: string, testRunnerOutput: ContainerExecutionResponse
-): Promise<IProject> => {
+): Promise<IProject['_id']> => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const project = await findProjectByName(projectName, 'upload', null, { session });
+    Logger.info(`Updating project '${projectName}' with test runner output.`);
+    const project = await findProjectByName(projectName, null, null, { session });
 
-    // Process output, e.g. calculate the test score
+    // Process output, e.g., extract tests
     project.config.tests = testRunnerOutput?.container?.output?.tests?.map((test) => ({ ...test, weight: 1.0 })) || [];
     project.output = testRunnerOutput;
 
-    // Save the project and commit transaction
-    const updatedProject = await project.leanSave({ session });
-    return await session.commitTransaction().then(() => updatedProject);
+    // Update the project and commit transaction
+    const updatedProjectId = await project.save({ session }).then(({ _id }) => _id);
+    await session.commitTransaction();
+
+    Logger.info(`Project '${projectName}' updated successfully.`);
+    return updatedProjectId;
   } catch (err: AppError | Error | unknown) {
     // Abort the transaction
     await session.abortTransaction();
-    throw err;
+    throw AppError.createAppError(err, `Error updating project '${projectName}': ${(err as Error).message}`);
   } finally {
     await session.endSession();
   }
@@ -229,18 +234,20 @@ const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProje
 /**
  * Downloads uploaded files for all projects in the database.
  *
- * @returns {Promise<{ projectName: string; zipBuffer: Buffer }[]>} A promise that resolves to an array of objects, each containing the project name and the corresponding ZIP buffer of uploaded files.
+ * @returns {Promise<{ project: IProject; zipBuffer: Buffer }[]>} A promise that resolves to an array of objects,
+ *                                                                each containing the project along with the corresponding
+ *                                                                ZIP buffer of uploaded files.
  * @throws {AppError} If an error occurs during the operation.
  */
-const downloadFilesForAllProjects = async (): Promise<{ projectName: string; zipBuffer: Buffer }[]> => {
+const downloadFilesForAllProjects = async (): Promise<{ project: IProject; zipBuffer: Buffer }[]> => {
   Logger.info('Fetching all projects from the DB.');
   const projects = await findAllProjects('upload');
 
   try {
     Logger.info('Downloading the uploaded files for each project.');
-    const projectFiles = projects.map(({ projectName, upload }) => {
-      const zipBuffer = uploadServices.downloadUploadedFiles(`${projectName} project`, upload);
-      return { projectName, zipBuffer };
+    const projectFiles = projects.map((project) => {
+      const zipBuffer = uploadServices.downloadUploadedFiles(`${project.projectName} project`, project.upload);
+      return { project, zipBuffer };
     });
     Logger.info(`Downloaded the uploaded files for ${projects.length} project(s).`);
 

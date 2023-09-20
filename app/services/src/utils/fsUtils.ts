@@ -7,7 +7,7 @@ import Constants from '@Constants';
 import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
-import { IUpload } from '@models/Upload';
+import type { IUpload } from '@models/Upload';
 import type { IFile } from '@models/schemas/FileSchema';
 
 /**

@@ -5,13 +5,14 @@ import { HttpStatusCode } from 'axios';
 
 import type AppError from '@errors/AppError';
 
-import { IUser } from '@models/User';
-import { ISubmission } from '@models/Submission';
+import type { IUser } from '@models/User';
+import type { ISubmission } from '@models/Submission';
 
 import authMiddlewares from '@middlewares/authMiddlewares';
 import submissionMiddlewares from '@middlewares/submissionMiddlewares';
 
 import submissionServices from '@services/submissionServices';
+import submissionMessageProducers from '@rabbitmq/test-runner/producers/submissionMessageProducers';
 
 import routerUtils from '@utils/routerUtils';
 
@@ -53,7 +54,7 @@ router.get('/:submissionId', submissionMiddlewares.requireSubmissionOwned, async
   const { submissionId } = req.params;
 
   submissionServices.findSubmissionById(projectName, submissionId).then((submission) => {
-    res.status(HttpStatusCode.Ok).json(submission);
+    res.status(HttpStatusCode.Ok).json(submission.toLean());
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -79,9 +80,13 @@ router.post('/', authMiddlewares.requireUser, upload.single('srcZip'), async (re
     const { user, projectName } = res.locals;
     const zipBuffer = routerUtils.getZipBuffer(req);
 
-    await submissionServices.runAndCreateSubmission(user as IUser, projectName, zipBuffer).then((submission) => {
-      res.status(HttpStatusCode.Created).json(submission);
-    });
+    // Create a submission for the given project with the uploaded files
+    const { submission, project } = await submissionServices.createSubmission(user as IUser, projectName, zipBuffer);
+
+    // Upload the submission to the test runner service
+    const messageRequest = await submissionMessageProducers.produceSubmissionMessage(user, zipBuffer, project, submission);
+
+    res.status(HttpStatusCode.Ok).json({ messageRequest: messageRequest.toLean(), submission: submission.toLean() });
   } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);
   }

@@ -1,8 +1,7 @@
 import Logger from '@Logger';
-import AppError from '@errors/AppError';
 
 import type { IUser } from '@models/User';
-import { IProject } from '@models/Project';
+import type { IProject } from '@models/Project';
 import MessageRequest from '@models/MessageRequest';
 import type { IMessageRequest } from '@models/MessageRequest';
 
@@ -10,10 +9,8 @@ import RabbitExchangeProducer from '@rabbitmq/helpers/RabbitExchangeProducer';
 
 import TestRunnerResponse from '@rabbitmq/test-runner/dto/responses/TestRunnerResponse';
 import ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses/ContainerExecutionResponse';
-import ContainerExecutionStatus from '@rabbitmq/test-runner/dto/responses/enums/ContainerExecutionStatus';
 
-import rabbitResponseUtils from '@rabbitmq/test-runner/utils/testRunnerResponseUtils';
-import rabbitErrorUtils from '@rabbitmq/test-runner/utils/testRunnerErrorUtils';
+import testRunnerResponseUtils from '@rabbitmq/test-runner/utils/testRunnerResponseUtils';
 
 import messageRequestServices from '@services/messageRequestServices';
 import projectServices from '@services/projectServices';
@@ -33,40 +30,33 @@ const projectRemovalMessageProducer = RabbitExchangeProducer.create(
  * Produces and sends a message to upload the provided project to the Test Runner service for Docker image building.
  *
  * @param {IUser | null} deployer - The user initiating the project upload.
- * @param {string} projectName - The name of the project to upload.
+ *                                  "`null` indicates the system user - calls originated from the business logic without a user"
  * @param {Buffer} zipBuffer - The ZIP buffer containing project files.
+ * @param {IProject} project - The project to upload.
  * @returns {Promise<IMessageRequest>} A promise that resolves to the message request created for the upload.
  * @throws {AppError} If any error occurs during the upload process.
  */
 const produceProjectUploadMessage = async (
-  deployer: IUser | null, projectName: string, zipBuffer: Buffer
+  deployer: IUser | null, zipBuffer: Buffer, project: IProject
 ): Promise<IMessageRequest> => {
-  Logger.info(`Uploading ${projectName} project to the Test Runner service to build the Docker image.`);
+  Logger.info(`[${deployer?.email}] Uploading ${project.projectName} project to the Test Runner service to build the Docker image.`);
+
   const messageRequest = new MessageRequest({ deployer, channel: RABBITMQ_EXCHANGE_PROJECT_UPLOAD });
+  const payload = { projectName: project.projectName, zipBuffer };
 
   await projectUploadMessageProducer.then((producer) => producer.sendExchange(
-    Buffer.from(JSON.stringify({ projectName, zipBuffer })),
+    Buffer.from(JSON.stringify(payload)),
     async (message: string) => {
-      const response: {
-        isError: boolean; data: ContainerExecutionResponse | AppError;
-      } = rabbitResponseUtils.handleRabbitResponse<ContainerExecutionResponse>(
+      const response = testRunnerResponseUtils.handleRabbitResponse<ContainerExecutionResponse>(
         JSON.parse(message) as TestRunnerResponse,
         {
-          successMessage: `Successfully uploaded ${projectName} project to the Test Runner service to build the Docker image.`,
-          errorMessage: 'An error occurred while uploading the project to the Test Runner service.'
+          successMessage: `[${deployer?.email}] Successfully uploaded ${project.projectName} project to the Test Runner service to build the Docker image.`,
+          errorMessage: `[${deployer?.email}] An error occurred while uploading the project to the Test Runner service.`
         }
       );
 
-      // Update project with test runner output if the container execution succeeded; otherwise, handle error
-      let project;
-      if ((response.data as ContainerExecutionResponse).status === ContainerExecutionStatus.SUCCESS) {
-        project = await projectServices.updateProjectWithTestRunnerOutput(
-          projectName, response.data as ContainerExecutionResponse);
-      } else {
-        project = await projectServices.findProjectByName(projectName, '_id', '_id');
-        response.data = rabbitErrorUtils.handleContainerError(response.data as ContainerExecutionResponse);
-      }
-
+      // Update the project with test runner output
+      await projectServices.updateProjectWithTestRunnerOutput(project.projectName, response.data as ContainerExecutionResponse);
       await messageRequestServices.updateMessageRequest(messageRequest, project._id, 'Project', response);
     },
     { waitForAllCustomers: true }
@@ -86,17 +76,19 @@ const produceProjectUploadMessage = async (
 const produceProjectRemovalMessage = async (
   deployer: IUser, project: IProject
 ): Promise<IMessageRequest> => {
-  Logger.info(`Sending a project deletion request to the Test Runner service for the ${project.projectName} project to remove its Docker image.`);
+  Logger.info(`[${deployer?.email}] Sending a project deletion request to the Test Runner service for the ${project.projectName} project to remove its Docker image.`);
+
   const messageRequest = new MessageRequest({ deployer, channel: RABBITMQ_EXCHANGE_PROJECT_REMOVAL });
+  const payload = project.projectName;
 
   await projectRemovalMessageProducer.then((producer) => producer.sendExchange(
-    Buffer.from(project.projectName),
+    Buffer.from(payload),
     async (message: string) => {
-      const response = rabbitResponseUtils.handleRabbitResponse<object>(
+      const response = testRunnerResponseUtils.handleRabbitResponse<object>(
         JSON.parse(message) as TestRunnerResponse,
         {
-          successMessage: `Successfully sent a project deletion request to the Test Runner service for the ${project.projectName} project to remove its Docker image.`,
-          errorMessage: `An error occurred while sending a project deletion request to the Test Runner service for the ${project.projectName} project to remove its Docker image.`
+          successMessage: `[${deployer?.email}] Successfully sent a project deletion request to the Test Runner service for the ${project.projectName} project to remove its Docker image.`,
+          errorMessage: `[${deployer?.email}] An error occurred while sending a project deletion request to the Test Runner service for the ${project.projectName} project to remove its Docker image.`
         }
       );
 

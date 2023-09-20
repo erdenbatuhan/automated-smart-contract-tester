@@ -4,7 +4,7 @@ export default interface ExecutionMessage {
     type: string;
     data: Uint8Array;
   };
-  options: {
+  options?: {
     containerTimeout?: number;
     execArgs?: object;
   };

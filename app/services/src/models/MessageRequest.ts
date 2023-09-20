@@ -15,6 +15,8 @@ export interface IMessageRequest extends mongoose.Document {
   isError?: boolean;
   output?: object;
   elapsedTime: number; // Virtual Field
+
+  toLean(this: IMessageRequest): Promise<object>;
 }
 
 interface MessageRequestModel extends mongoose.Model<IMessageRequest> {
@@ -47,6 +49,16 @@ MessageRequestSchema.index(
 MessageRequestSchema.virtual<IMessageRequest>('elapsedTime', {
   get() { return this.updatedAt.getTime() - this.createdAt.getTime(); }
 });
+
+/**
+ * Converts the submission to a plain JavaScript object (POJO) while including virtuals and depopulating populated fields.
+ *
+ * @returns {Promise<object>} A Promise that resolves to a plain JavaScript object representing the document.
+ * @throws {Error} If an error occurs during the operation.
+ */
+MessageRequestSchema.methods.toLean = function toLean(this: IMessageRequest): Promise<object> {
+  return this.toObject({ virtuals: true, depopulate: true });
+};
 
 MessageRequestSchema.static('existsByIdAndDeployer',
   /**

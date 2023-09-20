@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import type { SaveOptions } from 'mongoose';
 
 import Constants from '@Constants';
 
@@ -17,7 +16,7 @@ export interface IProject extends mongoose.Document {
   output?: object;
   deployer: IUser; // Virtual Field
 
-  leanSave(this: IProject, options?: SaveOptions): Promise<IProject>;
+  toLean(this: IProject): Promise<object>;
 }
 
 const ProjectSchema = new mongoose.Schema<IProject>(
@@ -49,15 +48,13 @@ ProjectSchema.virtual<IProject>('deployer', {
 });
 
 /**
- * Save the document and return it as a lean object with virtuals and depopulated references.
+ * Converts the submission to a plain JavaScript object (POJO) while including virtuals and depopulating populated fields.
  *
- * Ensure that you do not set "depopulate" to "false" in order to prevent populating the "upload" document in the project.
- *
- * @param {SaveOptions} [options] - Optional options to pass to the save operation.
- * @returns {Promise<IProject>} A promise that resolves to the saved document as a lean object.
+ * @returns {Promise<object>} A Promise that resolves to a plain JavaScript object representing the document.
+ * @throws {Error} If an error occurs during the operation.
  */
-ProjectSchema.methods.leanSave = async function leanSave(this: IProject, options?: SaveOptions): Promise<IProject> {
-  return this.save(options).then((savedDoc) => savedDoc.toObject({ virtuals: true, depopulate: true, useProjection: true }));
+ProjectSchema.methods.toLean = function toLean(this: IProject): Promise<object> {
+  return this.toObject({ virtuals: true, depopulate: true });
 };
 
 // Project

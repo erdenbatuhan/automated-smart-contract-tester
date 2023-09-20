@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import type { SaveOptions } from 'mongoose';
 
 import Constants from '@Constants';
 
@@ -17,7 +16,7 @@ export interface ISubmission extends mongoose.Document {
   results: object;
   deployer: IUser; // Virtual Field
 
-  leanSave(this: ISubmission, options?: SaveOptions): Promise<ISubmission>;
+  toLean(this: ISubmission): Promise<object>;
 }
 
 interface SubmissionModel extends mongoose.Model<ISubmission> {
@@ -33,8 +32,8 @@ const SubmissionSchema = new mongoose.Schema<ISubmission, SubmissionModel>(
     results: { type: Object }
   },
   {
-    timestamps: { createdAt: true, updatedAt: false },
-    versionKey: false
+    timestamps: true,
+    optimisticConcurrency: true
   }
 );
 
@@ -54,13 +53,13 @@ SubmissionSchema.virtual<ISubmission>('deployer', {
 });
 
 /**
- * Save the document and return it as a lean object with virtuals and depopulated references.
+ * Converts the submission to a plain JavaScript object (POJO) while including virtuals and depopulating populated fields.
  *
- * @param {SaveOptions} [options] - Optional options to pass to the save operation.
- * @returns {Promise<ISubmission>} A promise that resolves to the saved document as a lean object.
+ * @returns {Promise<object>} A Promise that resolves to a plain JavaScript object representing the document.
+ * @throws {Error} If an error occurs during the operation.
  */
-SubmissionSchema.methods.leanSave = async function leanSave(this: ISubmission, options?: SaveOptions): Promise<ISubmission> {
-  return this.save(options).then((savedDoc) => savedDoc.toObject({ virtuals: true, depopulate: true, useProjection: true }));
+SubmissionSchema.methods.toLean = function toLean(this: ISubmission): Promise<object> {
+  return this.toObject({ virtuals: true, depopulate: true });
 };
 
 SubmissionSchema.static('findByDeployer',

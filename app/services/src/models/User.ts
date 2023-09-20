@@ -52,7 +52,7 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
  */
 UserSchema.methods.getPublicRepresentation = function getPublicRepresentation(this: IUser): IUser {
   // Depopulate, remove version keys, and use projection (removes password as its select property is false)
-  return this.toObject({ depopulate: true, versionKey: false, useProjection: true }) as IUser;
+  return this.toObject({ depopulate: true, versionKey: false }) as IUser;
 };
 
 UserSchema.pre<IUser>('save',

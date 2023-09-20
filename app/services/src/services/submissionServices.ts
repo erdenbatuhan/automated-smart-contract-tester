@@ -6,11 +6,15 @@ import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import type { IUser } from '@models/User';
+import type { IProject } from '@models/Project';
 import Submission from '@models/Submission';
 import type { ISubmission } from '@models/Submission';
+import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses/ContainerExecutionResponse';
 
 import projectServices from '@services/projectServices';
 import uploadServices from '@services/uploadServices';
+
+import executionOutputUtils from '@utils/executionOutputUtils';
 
 /**
  * Finds all submissions.
@@ -50,7 +54,7 @@ const findSubmissionById = (
 ): Promise<ISubmission> => Submission.findById(submissionId, projection, sessionOption)
   .populate(['project', 'upload']).exec()
   .then((submission) => {
-    if (!submission || submission.project.projectName !== projectName) {
+    if (!submission || (submission.project && submission.project!.projectName !== projectName)) {
       throw new AppError(HttpStatusCode.NotFound, `No submission with the ID '${submissionId}' found within the ${projectName} project.`);
     }
 
@@ -76,18 +80,18 @@ const isSubmissionUploadedByGivenUser = (
   });
 
 /**
- * Run a submission for a specified project, including uploading submission files,
- * executing the Docker image, and saving the submission with status and results.
+ * Create a submission for a specified project, including uploading submission files.
  *
  * @param {IUser} user - The user performing the upload.
  * @param {string} projectName - The name of the project for which the submission is run.
  * @param {Buffer} zipBuffer - The zip buffer containing project data.
- * @returns {Promise<ISubmission>} A Promise that resolves to the saved submission document.
+ * @returns {Promise<{ submission: ISubmission; project: IProject; }>} A Promise that resolves to the saved submission document
+ *                                                                     and the retrieved project the submission is related to.
  * @throws {AppError} If an error occurs during any step of the submission process.
  */
-const runAndCreateSubmission = async (
+const createSubmission = async (
   user: IUser, projectName: string, zipBuffer: Buffer
-): Promise<ISubmission> => {
+): Promise<{ submission: ISubmission; project: IProject; }> => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -95,28 +99,20 @@ const runAndCreateSubmission = async (
     Logger.info(`Running a submission for the ${projectName} project.`);
 
     // Find the project by name and create a new submission document
-    const project = await projectServices.findProjectByName(projectName, null, 'config', { session });
+    const project = await projectServices.findProjectByName(projectName, null, 'projectName config', { session });
     const submission = new Submission({ project });
 
     // Upload submission files and get the upload document saved
     submission.upload = await uploadServices.uploadZipBuffer(
       user, `project_${projectName}_submission_${submission._id}`, zipBuffer, null, { session });
 
-    // // Step 3: Send the files to the test runner service to run the Docker image
-    // const testExecutionOutput = await testRunnerExecutionApi.executeSubmission(
-    //   projectName, requestFile, project.config);
-    //
-    // // Step 4: Extract the status and calculate the score based on the execution output
-    // submission.testStatus = executionOutputUtils.extractTestStatus(testExecutionOutput);
-    // submission.results = executionOutputUtils.calculateTestScoreAndGenerateResults(testExecutionOutput);
-
     // Save the submission
-    const submissionSaved = await submission.leanSave({ session });
+    const submissionSaved = await submission.save({ session });
 
     // Commit transaction and return results
     return await session.commitTransaction().then(() => {
       Logger.info(`Successfully ran a submission (ID=${submission._id}) for the ${projectName} project.`);
-      return submissionSaved;
+      return { submission: submissionSaved, project };
     });
   } catch (err: AppError | Error | unknown) {
     // Abort the transaction
@@ -126,6 +122,34 @@ const runAndCreateSubmission = async (
     throw AppError.createAppError(err, `An error occurred while running a submission for the ${projectName} project.`);
   } finally {
     await session.endSession();
+  }
+};
+
+/**
+ * Updates a submission with the test execution output from the test runner service.
+ *
+ * @param {ISubmission} submission - The submission to be updated.
+ * @param {ContainerExecutionResponse} testExecutionOutput - The test runner's test execution output.
+ * @returns {Promise<ISubmission['_id']>} A Promise that resolves to the ID of the updated submission.
+ * @throws {AppError} If an error occurs while updating the submission.
+ */
+const updateSubmissionWithTestRunnerOutput = async (
+  submission: ISubmission, testExecutionOutput: ContainerExecutionResponse
+): Promise<ISubmission['_id']> => {
+  try {
+    Logger.info(`Updating submission (${submission._id}) with test runner output.`);
+
+    // Process output, e.g., extract the status and calculate the score based on the execution output
+    submission.testStatus = executionOutputUtils.extractTestStatus(testExecutionOutput);
+    submission.results = executionOutputUtils.calculateTestScoreAndGenerateResults(testExecutionOutput);
+
+    // Update the submission
+    const updatedSubmissionId = await submission.save().then(({ _id }) => _id);
+
+    Logger.info(`Submission (${updatedSubmissionId}) updated successfully.`);
+    return updatedSubmissionId;
+  } catch (err: AppError | Error | unknown) {
+    throw AppError.createAppError(err, `Error updating submission (${submission._id}) with test execution output: ${(err as Error).message}`);
   }
 };
 
@@ -189,7 +213,8 @@ export default {
   findAllSubmissionsByGivenUser,
   findSubmissionById,
   isSubmissionUploadedByGivenUser,
-  runAndCreateSubmission,
+  createSubmission,
+  updateSubmissionWithTestRunnerOutput,
   downloadSubmissionFiles,
   deleteSubmissionById
 };

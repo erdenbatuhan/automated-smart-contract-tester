@@ -5,7 +5,7 @@ import { HttpStatusCode } from 'axios';
 
 import AppError from '@errors/AppError';
 
-import { IUser } from '@models/User';
+import type { IUser } from '@models/User';
 import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 
 import authMiddlewares from '@middlewares/authMiddlewares';
@@ -38,9 +38,9 @@ const saveProject = async (
   const project = await saveFunction(user as IUser, projectName, zipBuffer, projectConfig);
 
   // Upload the project to the test runner service
-  const messageRequest = await projectMessageProducers.produceProjectUploadMessage(user, projectName, zipBuffer);
+  const messageRequest = await projectMessageProducers.produceProjectUploadMessage(user, zipBuffer, project);
 
-  return { messageRequest, project };
+  return { messageRequest: messageRequest.toLean(), project: project.toLean() };
 };
 
 /**
@@ -193,7 +193,7 @@ router.delete('/:projectName', authMiddlewares.requireAdmin, async (req: Request
     // Send the deletion request to test runner service
     const messageRequest = await projectMessageProducers.produceProjectRemovalMessage(user, project);
 
-    res.status(HttpStatusCode.Ok).json({ messageRequest, project: projectName });
+    res.status(HttpStatusCode.Ok).json({ messageRequest: messageRequest.toLean(), project: project.toLean() });
   } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);
   }

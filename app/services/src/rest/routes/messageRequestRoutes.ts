@@ -22,8 +22,8 @@ const router = Router();
 router.get('/:messageRequestId', messageRequestMiddlewares.requireMessageRequestOwned, async (req: Request, res: Response) => {
   const { messageRequestId } = req.params;
 
-  return messageRequestServices.findMessageRequest(messageRequestId, true).then((messageRequest) => {
-    res.status(HttpStatusCode.Ok).json(messageRequest);
+  return messageRequestServices.findMessageRequest(messageRequestId).then((messageRequest) => {
+    res.status(HttpStatusCode.Ok).json(messageRequest.toLean());
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
