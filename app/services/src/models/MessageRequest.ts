@@ -6,7 +6,7 @@ import type { IUser } from '@models/User';
 
 export interface IMessageRequest extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
-  deployer: IUser;
+  deployer?: IUser;
   channel: string;
   associatedDocumentId?: mongoose.Schema.Types.ObjectId;
   associatedDocumentType?: string;
@@ -23,7 +23,7 @@ interface MessageRequestModel extends mongoose.Model<IMessageRequest> {
 
 const MessageRequestSchema = new mongoose.Schema<IMessageRequest, MessageRequestModel>(
   {
-    deployer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    deployer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     channel: { type: String, required: true },
     associatedDocumentId: { type: mongoose.Schema.Types.ObjectId },
     associatedDocumentType: { type: String },

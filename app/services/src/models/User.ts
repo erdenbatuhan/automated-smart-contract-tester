@@ -8,8 +8,6 @@ import AppError from '@errors/AppError';
 
 import UserRole from '@models/enums/UserRole';
 
-import errorUtils from '@utils/errorUtils';
-
 export interface IUser extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
   email: string;

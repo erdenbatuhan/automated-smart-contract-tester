@@ -32,14 +32,14 @@ const projectRemovalMessageProducer = RabbitExchangeProducer.create(
 /**
  * Produces and sends a message to upload the provided project to the Test Runner service for Docker image building.
  *
- * @param {IUser} deployer - The user initiating the project upload.
+ * @param {IUser | null} deployer - The user initiating the project upload.
  * @param {string} projectName - The name of the project to upload.
  * @param {Buffer} zipBuffer - The ZIP buffer containing project files.
  * @returns {Promise<IMessageRequest>} A promise that resolves to the message request created for the upload.
  * @throws {AppError} If any error occurs during the upload process.
  */
 const produceProjectUploadMessage = async (
-  deployer: IUser, projectName: string, zipBuffer: Buffer
+  deployer: IUser | null, projectName: string, zipBuffer: Buffer
 ): Promise<IMessageRequest> => {
   Logger.info(`Uploading ${projectName} project to the Test Runner service to build the Docker image.`);
   const messageRequest = new MessageRequest({ deployer, channel: RABBITMQ_EXCHANGE_PROJECT_UPLOAD });

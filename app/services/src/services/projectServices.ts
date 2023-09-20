@@ -227,6 +227,30 @@ const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProje
   .then(({ upload }) => uploadServices.downloadUploadedFiles(`${projectName} project`, upload));
 
 /**
+ * Downloads uploaded files for all projects in the database.
+ *
+ * @returns {Promise<{ projectName: string; zipBuffer: Buffer }[]>} A promise that resolves to an array of objects, each containing the project name and the corresponding ZIP buffer of uploaded files.
+ * @throws {AppError} If an error occurs during the operation.
+ */
+const downloadFilesForAllProjects = async (): Promise<{ projectName: string; zipBuffer: Buffer }[]> => {
+  Logger.info('Fetching all projects from the DB.');
+  const projects = await findAllProjects('upload');
+
+  try {
+    Logger.info('Downloading the uploaded files for each project.');
+    const projectFiles = projects.map(({ projectName, upload }) => {
+      const zipBuffer = uploadServices.downloadUploadedFiles(`${projectName} project`, upload);
+      return { projectName, zipBuffer };
+    });
+    Logger.info(`Downloaded the uploaded files for ${projects.length} project(s).`);
+
+    return projectFiles;
+  } catch (err: Error | unknown) {
+    throw AppError.createAppError(err, `An error occurred while downloading the uploaded files for ${projects.length} project(s).`);
+  }
+};
+
+/**
  * Deletes a project, including its associated upload.
  *
  * @param {string} projectName - The name of the project to delete.
@@ -268,38 +292,6 @@ const deleteProject = async (projectName: string): Promise<IProject> => {
   }
 };
 
-/**
- * Uploads all projects to the test runner service by fetching them from the database,
- * creating ZIP archives, and sending them to the test runner service.
- *
- * @throws {AppError |Error | unknown} If an error occurs during the process.
- * @returns {Promise<ContainerExecutionResponse['dockerImage']['imageID'][]>} A Promise that resolves to an array of
- *                                                                            Docker image IDs for the uploaded projects.
- */
-const uploadAllProjectsToTestRunner = async (): Promise<ContainerExecutionResponse['dockerImage']['imageID'][] | null> => null;
-// Logger.info('Fetching all projects from the DB.');
-// const projects = await findAllProjects('upload');
-//
-// Logger.info(`Uploading ${projects.length} project(s) to the test runner service.`);
-// return Promise.all(projects.map(({ projectName, upload }) => {
-//   const zipBuffer = uploadServices.downloadUploadedFiles(`${projectName} project`, upload);
-//   const requestFile = {
-//     fieldname: 'projectZip',
-//     originalname: `${projectName}.zip`,
-//     buffer: zipBuffer
-//   };
-//
-//   // return testRunnerProjectApi.uploadProject(projectName, requestFile);
-//   return [{ dockerImage: { imageID: 'null' } }];
-// })).then((responses) => {
-//   const dockerImageIds = responses.map(({ dockerImage }) => dockerImage.imageID);
-//
-//   Logger.info(`Successfully uploaded all projects to the test runner service and created the docker images: ${dockerImageIds.join(', ')}`);
-//   return dockerImageIds;
-// }).catch((err: AppError | Error | unknown) => {
-//   throw AppError.createAppError(err, 'An error occurred while uploading all projects to the test runner service.');
-// });
-
 export default {
   findAllProjects,
   findProjectByName,
@@ -309,5 +301,5 @@ export default {
   updateProjectConfig,
   downloadProjectFiles,
   deleteProject,
-  uploadAllProjectsToTestRunner
+  downloadFilesForAllProjects
 };

@@ -32,9 +32,7 @@ Promise.all([
     throw AppError.createAppError(err, 'Could not connect to the DB.');
   }),
   // (2) Prepare the test runner service by uploading all projects to it
-  projectMiddlewares.prepareTestRunnerService().catch((err: Error | unknown) => {
-    throw AppError.createAppError(err, 'Could not prepare the test runner service.');
-  })
+  projectMiddlewares.prepareTestRunnerService()
 ]).then(() => {
   // (3) Start the application server on the specified port
   app.listen(PORT, () => {
