@@ -104,11 +104,11 @@ UserSchema.static('login',
   async function login(email: string, password: string): Promise<IUser> {
     // Find the user by email
     const user = await this.findOne({ email }).select('+password').exec();
-    if (!user) throw errorUtils.handleError(new AppError(HttpStatusCode.NotFound, `No user with the email '${email}' found.`));
+    if (!user) throw AppError.createAppError(new AppError(HttpStatusCode.NotFound, `No user with the email '${email}' found.`));
 
     // Check credentials
     const credentialsApproved = await bcrypt.compare(password, user.password);
-    if (!credentialsApproved) throw errorUtils.handleError(new AppError(HttpStatusCode.Unauthorized, 'Invalid credentials!'));
+    if (!credentialsApproved) throw AppError.createAppError(new AppError(HttpStatusCode.Unauthorized, 'Invalid credentials!'));
 
     return user;
   }

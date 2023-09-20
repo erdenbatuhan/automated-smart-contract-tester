@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import type { ProjectionType, SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import type { IUser } from '@models/User';
@@ -14,7 +14,6 @@ import uploadServices from '@services/uploadServices';
 
 import testRunnerExecutionApi from '@api/services/testrunner/executionApi';
 
-import errorUtils from '@utils/errorUtils';
 import type { RequestFile } from '@utils/routerUtils';
 import executionOutputUtils from '@utils/executionOutputUtils';
 
@@ -26,7 +25,7 @@ import executionOutputUtils from '@utils/executionOutputUtils';
  */
 const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find().exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, 'An error occurred while finding all submissions.');
+    throw AppError.createAppError(err, 'An error occurred while finding all submissions.');
   });
 
 /**
@@ -38,7 +37,7 @@ const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find()
  */
 const findAllSubmissionsByGivenUser = async (user: IUser): Promise<ISubmission[]> => Submission.findByDeployer(user)
   .catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, 'An error occurred while finding all submissions uploaded by a given user.');
+    throw AppError.createAppError(err, 'An error occurred while finding all submissions uploaded by a given user.');
   });
 
 /**
@@ -63,7 +62,7 @@ const findSubmissionById = (
     return submission;
   })
   .catch((err: AppError | Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while finding the submission with the ID '${submissionId}'.`);
+    throw AppError.createAppError(err, `An error occurred while finding the submission with the ID '${submissionId}'.`);
   });
 
 /**
@@ -78,7 +77,7 @@ const isSubmissionUploadedByGivenUser = (
   user: IUser, submissionId: string
 ): Promise<boolean> => Submission.existsByIdAndDeployer(submissionId, user)
   .catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while checking if the submission with the ID '${submissionId}' was uploaded by the user with email '${user.email}'.`);
+    throw AppError.createAppError(err, `An error occurred while checking if the submission with the ID '${submissionId}' was uploaded by the user with email '${user.email}'.`);
   });
 
 /**
@@ -129,7 +128,7 @@ const runAndCreateSubmission = async (
     await session.abortTransaction();
 
     // Handle any errors
-    throw errorUtils.handleError(err, `An error occurred while running a submission for the ${projectName} project.`);
+    throw AppError.createAppError(err, `An error occurred while running a submission for the ${projectName} project.`);
   } finally {
     await session.endSession();
   }
@@ -183,7 +182,7 @@ const deleteSubmissionById = async (projectName: string, submissionId: string, s
     await session.abortTransaction();
 
     // Handle any errors and throw an AppError with relevant status code and error message
-    throw errorUtils.handleError(err, `An error occurred while deleting the submission with the ID '${submissionId}'.`);
+    throw AppError.createAppError(err, `An error occurred while deleting the submission with the ID '${submissionId}'.`);
   } finally {
     // End the session
     await session.endSession();

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { HttpStatusCode } from 'axios';
 
-import Constants from '~Constants';
+import Constants from '@Constants';
 import type AppError from '@errors/AppError';
 
 import authMiddlewares from '@middlewares/authMiddlewares';

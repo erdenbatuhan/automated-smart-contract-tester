@@ -1,6 +1,6 @@
-import Constants from '~Constants';
-import Logger from '@logging/Logger';
-import type AppError from '@errors/AppError';
+import Constants from '@Constants';
+import Logger from '@Logger';
+import AppError from '@errors/AppError';
 
 import type { IDockerImage } from '@models/DockerImage';
 import DockerContainerHistory from '@models/DockerContainerHistory';
@@ -12,7 +12,6 @@ import DockerExitCode from '@models/enums/DockerExitCode';
 
 import dockerImageServices from '@services/dockerImageServices';
 
-import errorUtils from '@utils/errorUtils';
 import fsUtils from '@utils/fsUtils';
 import dockerUtils from '@utils/dockerUtils';
 import forgeUtils from '@forge/utils/forgeUtils';
@@ -31,7 +30,7 @@ const processDockerContainerOutput = (
   try {
     return forgeUtils.processForgeSnapshotOutput(output?.data);
   } catch (err: Error | unknown) {
-    throw errorUtils.handleError(err, `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`);
+    throw AppError.createAppError(err, `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`);
   }
 };
 
@@ -101,7 +100,7 @@ const saveProject = async (
     }
 
     // Throw error
-    throw errorUtils.handleError(err, `An error occurred while creating the ${projectName} project.`);
+    throw AppError.createAppError(err, `An error occurred while creating the ${projectName} project.`);
   }
 };
 

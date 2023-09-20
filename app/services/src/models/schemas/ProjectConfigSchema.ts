@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import Constants from '~Constants';
+import Constants from '@Constants';
 
 import TestSchema from '@models/schemas/TestSchema';
 import type { ITest } from '@models/schemas/TestSchema';

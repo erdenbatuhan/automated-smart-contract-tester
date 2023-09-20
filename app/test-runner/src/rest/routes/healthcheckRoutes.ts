@@ -1,9 +1,13 @@
-import { Request, Response } from 'express';
+import { Router } from 'express';
+import type { Request, Response } from 'express';
 import { HttpStatusCode } from 'axios';
+
+import AppError from '@errors/AppError';
 
 import dockerUtils from '@utils/dockerUtils';
 import routerUtils from '@utils/routerUtils';
-import AppError from '@errors/AppError';
+
+const router = Router();
 
 /**
  * Performs a health check on the service's Docker daemon accessibility and respond with a success message if the service is healthy.
@@ -14,7 +18,7 @@ import AppError from '@errors/AppError';
  * @throws {object} 503 - If the Docker daemon cannot be pinged and is not accessible.
  * @throws {object} 500 - If there's a server error.
  */
-const performHealthCheck = (req: Request, res: Response): void => {
+router.get('/', async (req: Request, res: Response) => {
   dockerUtils.ensureDockerDaemonAccessibility().then(({ socketPath, info }) => {
     res.status(HttpStatusCode.Ok).send({
       message: `The health check succeeded, and the Docker daemon is running on socket '${socketPath}'. The service is in a healthy state.`,
@@ -23,6 +27,6 @@ const performHealthCheck = (req: Request, res: Response): void => {
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
-};
+});
 
-export default { performHealthCheck };
+export default router;

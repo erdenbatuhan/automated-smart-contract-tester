@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import type { ProjectionType, SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import type { IUser } from '@models/User';
@@ -15,7 +15,6 @@ import uploadServices from '@services/uploadServices';
 import testRunnerProjectApi from '@api/services/testrunner/projectApi';
 import type ContainerExecutionResponse from '@api/services/testrunner/types/ContainerExecutionResponse';
 
-import errorUtils from '@utils/errorUtils';
 import type { RequestFile } from '@utils/routerUtils';
 
 /**
@@ -31,7 +30,7 @@ const findAllProjects = async (populatePath?: string | null): Promise<IProject[]
   if (populatePath) findQuery = findQuery.populate(populatePath);
 
   return findQuery.exec().catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, 'An error occurred while finding all projects.');
+    throw AppError.createAppError(err, 'An error occurred while finding all projects.');
   });
 };
 
@@ -56,7 +55,7 @@ const findProjectByName = async (
     if (!project) throw new AppError(HttpStatusCode.NotFound, `No project with the name '${projectName}' found.`);
     return project;
   }).catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while finding the project with the name '${projectName}'.`);
+    throw AppError.createAppError(err, `An error occurred while finding the project with the name '${projectName}'.`);
   });
 };
 
@@ -104,7 +103,7 @@ const saveProject = async (user: IUser, project: IProject, requestFile: RequestF
     await session.abortTransaction();
 
     // Handle any errors
-    throw errorUtils.handleError(err, `An error occurred while ${project.isNew ? 'creating' : 'updating'} a project.`);
+    throw AppError.createAppError(err, `An error occurred while ${project.isNew ? 'creating' : 'updating'} a project.`);
   } finally {
     await session.endSession();
   }
@@ -194,7 +193,7 @@ const updateProjectConfig = async (
     Logger.info(`Successfully updated the config of the ${projectName} project.`);
     return project;
   }).catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while updating the config of the ${projectName} project.`);
+    throw AppError.createAppError(err, `An error occurred while updating the config of the ${projectName} project.`);
   });
 };
 
@@ -244,7 +243,7 @@ const deleteProject = async (projectName: string): Promise<void> => {
     await session.abortTransaction();
 
     // Handle any errors and throw an AppError with relevant status code and error message
-    throw errorUtils.handleError(err, `An error occurred while deleting the ${projectName} project.`);
+    throw AppError.createAppError(err, `An error occurred while deleting the ${projectName} project.`);
   } finally {
     // End the session
     await session.endSession();
@@ -279,7 +278,7 @@ const uploadAllProjectsToTestRunner = async (): Promise<ContainerExecutionRespon
     Logger.info(`Successfully uploaded all projects to the test runner service and created the docker images: ${dockerImageIds.join(', ')}`);
     return dockerImageIds;
   }).catch((err: AppError | Error | unknown) => {
-    throw errorUtils.handleError(err, 'An error occurred while uploading all projects to the test runner service.');
+    throw AppError.createAppError(err, 'An error occurred while uploading all projects to the test runner service.');
   });
 };
 

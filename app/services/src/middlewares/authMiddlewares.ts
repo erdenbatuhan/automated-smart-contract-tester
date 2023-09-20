@@ -3,7 +3,7 @@ import { HttpStatusCode } from 'axios';
 import jwt from 'jsonwebtoken';
 import type { JwtPayload } from 'jsonwebtoken';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import type { IUser } from '@models/User';

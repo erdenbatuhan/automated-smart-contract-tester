@@ -1,7 +1,7 @@
 import path from 'path';
 
 export default class Constants {
-  // Config
+  // REST Config
   public static REQUEST_TIMEOUT = 180; // Defined in seconds
 
   // Paths

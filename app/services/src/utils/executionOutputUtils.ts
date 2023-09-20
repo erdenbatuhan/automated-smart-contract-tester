@@ -1,4 +1,4 @@
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 
 import TestStatus from '@models/enums/TestStatus';
 

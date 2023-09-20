@@ -1,4 +1,4 @@
-import Constants from '~Constants';
+import Constants from '@Constants';
 
 import type TestOutput from '@forge/types/ForgeTestOutput';
 import ForgeTestExecutionArgument from '@forge/types/enums/ForgeTestExecutionArgument';

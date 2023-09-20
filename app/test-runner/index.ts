@@ -4,12 +4,11 @@ import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
+import AppError from '@errors/AppError';
 
-import healthCheckMiddlewares from '@middlewares/healthCheckMiddlewares';
-import errorUtils from '@utils/errorUtils';
-
-import apiRoutes from './apiRoutes';
+import restRoutes from '@rest/restRoutes';
+import messageConsumers from '@rabbitmq/messageConsumers';
 
 // Read environment variables
 const { APP_NAME, SERVICE_NAME, PORT, MONGODB_URI } = process.env;
@@ -20,16 +19,17 @@ const app = express();
 app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
 app.use(helmet()); // Enhance security using Helmet middleware
 app.use(bodyParser.json({ limit: '50mb' })); // Parse JSON requests and set body size limit
-app.get('/', healthCheckMiddlewares.performHealthCheck); // Endpoint to perform a health check on the service to see if it's healthy
-app.use(`/api/${APP_NAME}/${SERVICE_NAME}/v1`, apiRoutes); // Mount modular routes with the common prefix
+app.use(`/api/${APP_NAME}/${SERVICE_NAME}/v1`, restRoutes); // Mount modular routes with the common prefix
 
 Promise.all([
   // (1) Establish a connection to MongoDB
   mongoose.connect(MONGODB_URI).catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, 'Could not connect to the DB.');
-  })
+    throw AppError.createAppError(err, 'Could not connect to the DB.');
+  }),
+  // (2) Initialize the message queue handlers
+  messageConsumers.initializeMessageConsumers()
 ]).then(() => {
-  // (2) Start the application server on the specified port
+  // (3) Start the application server on the specified port
   app.listen(PORT, () => {
     Logger.info(`The service '${APP_NAME}/${SERVICE_NAME}' is running on port ${PORT}!`);
   });

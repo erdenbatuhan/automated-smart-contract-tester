@@ -1,6 +1,6 @@
 import type { Channel, ConsumeMessage } from 'amqplib';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 
 import RabbitInstance from '@rabbitmq/helpers/RabbitInstance';
 
@@ -24,12 +24,12 @@ export default class RabbitConsumer {
       .catch((err) => Logger.error(`Could not remove the consumer '${consumer}': ${(err as Error).message}`));
   };
 
-  private sendBackResponse = (consumer: string, message: ConsumeMessage, content: Buffer): boolean => {
+  private sendBackResponse = (consumer: string, message: ConsumeMessage, content: object): boolean => {
     Logger.info(`Sending back the response to the queue '${message.properties.replyTo}' as ${consumer} (Content=${content.toString()}).`);
 
     return this.outgoingChannel.sendToQueue(
       message.properties.replyTo,
-      content,
+      Buffer.from(content.toString()),
       { correlationId: message.properties.correlationId }
     );
   };

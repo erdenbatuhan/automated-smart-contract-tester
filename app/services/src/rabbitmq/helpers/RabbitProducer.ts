@@ -1,6 +1,6 @@
 import type { Channel } from 'amqplib';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 
 import RabbitConstants from '@rabbitmq/helpers/RabbitConstants';
 import RabbitInstance from '@rabbitmq/helpers/RabbitInstance';

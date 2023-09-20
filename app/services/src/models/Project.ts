@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import type { SaveOptions } from 'mongoose';
 
-import Constants from '~Constants';
+import Constants from '@Constants';
 
 import type { IUpload } from '@models/Upload';
 import type { IUser } from '@models/User';

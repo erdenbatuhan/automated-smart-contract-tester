@@ -4,11 +4,9 @@ import AdmZip from 'adm-zip';
 import tar from 'tar';
 import { HttpStatusCode } from 'axios';
 
-import Constants from '~Constants';
-import Logger from '@logging/Logger';
+import Constants from '@Constants';
+import Logger from '@Logger';
 import AppError from '@errors/AppError';
-
-import errorUtils from './errorUtils';
 
 /**
  * Checks if a file exists within a directory.
@@ -140,7 +138,7 @@ const readFromZipBuffer = async (
     removeDirectorySync(dirPath);
 
     // Throw error
-    throw errorUtils.handleError(err, `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
+    throw AppError.createAppError(err, `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory.`);
   }
 };
 

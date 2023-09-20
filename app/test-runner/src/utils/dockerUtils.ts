@@ -2,8 +2,9 @@ import type { Container as ContainerType } from 'dockerode';
 import Dockerode from 'dockerode';
 import { HttpStatusCode } from 'axios';
 
-import Constants from '~Constants';
-import Logger from '@logging/Logger';
+import Constants from '@Constants';
+import Logger from '@Logger';
+import AppError from '@errors/AppError';
 
 import type { IDockerImage } from '@models/DockerImage';
 import type { IDockerContainerResults } from '@models/schemas/DockerContainerResultsSchema';
@@ -11,19 +12,18 @@ import DockerExitCode from '@models/enums/DockerExitCode';
 
 import conversionUtils from '@utils/conversionUtils';
 import fsUtils from '@utils/fsUtils';
-import errorUtils from '@utils/errorUtils';
 
 interface DockerHttpError extends Error {
   statusCode: number;
   json: { message: string; };
 }
 
-interface BuildStreamResult {
+interface DockerBuildStreamResult {
   error?: string;
   stream?: string;
 }
 
-interface ContainerExecutionOutput {
+interface DockerContainerExecutionOutput {
   statusCode: number;
   executionTimeSeconds: number;
   output: string;
@@ -44,7 +44,7 @@ const ensureDockerDaemonAccessibility = async (): Promise<{ socketPath: string, 
     return { socketPath: Constants.DOCKER_SOCKET_PATH, info: await dockerode.info() };
   } catch (err: Error | unknown) {
     const errMessage = `Failed to access the Docker daemon running on socket '${Constants.DOCKER_SOCKET_PATH}'`;
-    throw errorUtils.handleError(err, errMessage, HttpStatusCode.ServiceUnavailable);
+    throw AppError.createAppError(err, errMessage, HttpStatusCode.ServiceUnavailable);
   }
 };
 
@@ -55,7 +55,7 @@ const ensureDockerDaemonAccessibility = async (): Promise<{ socketPath: string, 
  * @returns {string} The extracted Docker image ID.
  * @throws {Error} If ID cannot be extracted
  */
-const extractImageIDFromStreamResult = (streamRes: BuildStreamResult[] | null): string => {
+const extractImageIDFromStreamResult = (streamRes: DockerBuildStreamResult[] | null): string => {
   try {
     const match = streamRes?.map(({ stream }) => stream).join('').match(/Successfully built ([a-f0-9]+)/);
     if (match && match[1]) return match[1];
@@ -140,7 +140,7 @@ const followImageProgressAndRetrieveImageID = async (
   dockerode.modem.followProgress(
     buildStream,
     // The callback function triggered when the progress is complete
-    (buildStreamErr: Error | null, buildStreamRes: BuildStreamResult[] | null) => {
+    (buildStreamErr: Error | null, buildStreamRes: DockerBuildStreamResult[] | null) => {
       try {
         const execErrMessage = buildStreamRes ? buildStreamRes.find(({ error }) => !!error) : null;
 
@@ -154,7 +154,7 @@ const followImageProgressAndRetrieveImageID = async (
       }
     },
     // The callback function triggered at each step
-    ({ stream: stepStream }: BuildStreamResult) => {
+    ({ stream: stepStream }: DockerBuildStreamResult) => {
       try {
         if (stepStream && /^Step \d+\/\d+ : .+$/.test(stepStream)) Logger.info(`[${imageName}] ${stepStream}`);
       } catch (err: Error | unknown) {
@@ -242,13 +242,13 @@ const createContainerWithFiles = async (
  * @param {ContainerType} container - The Docker container that may need to be killed.
  * @param {number} timeout - The maximum execution time allowed before considering a timeout (in seconds).
  * @param {boolean} timeoutActive - A boolean flag indicating whether the timeout is still active.
- * @returns {Promise<ContainerExecutionOutput>} A promise that resolves with the result of handling the container timeout,
+ * @returns {Promise<DockerContainerExecutionOutput>} A promise that resolves with the result of handling the container timeout,
  *                                              including exit status, execution time, and a timeout message,
  *                                              or rejects if there's an error.
  */
 const handleContainerTimeout = async (
   container: ContainerType, timeout: number, timeoutActive: boolean
-): Promise<ContainerExecutionOutput> => {
+): Promise<DockerContainerExecutionOutput> => {
   const message = `Container execution timed out after ${timeout} seconds.`;
 
   // Check if the timeout is still active, as it's possible that the execution has already completed before this runs
@@ -272,14 +272,14 @@ const handleContainerTimeout = async (
  * @param {ContainerType} container - The Docker container to start.
  * @param {object} [options] - Optional options.
  * @param {number} [options.timeout] - Timeout in seconds for container execution.
- * @returns {Promise<ContainerExecutionOutput>} A promise that resolves to the execution results and container output.
+ * @returns {Promise<DockerContainerExecutionOutput>} A promise that resolves to the execution results and container output.
  */
 const startContainer = async (
   dockerode: Dockerode, container: ContainerType, options?: { timeout?: number; }
-): Promise<ContainerExecutionOutput> => {
+): Promise<DockerContainerExecutionOutput> => {
   let timeoutActive = !!options?.timeout;
 
-  const promises: Promise<ContainerExecutionOutput>[] = []; // Promises to run concurrently, racing to complete first
+  const promises: Promise<DockerContainerExecutionOutput>[] = []; // Promises to run concurrently, racing to complete first
   const startTime = Date.now(); // Start time
 
   // Create a promise that starts the Docker container and waits for it to complete execution

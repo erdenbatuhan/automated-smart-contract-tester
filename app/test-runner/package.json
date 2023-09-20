@@ -13,14 +13,14 @@
   },
   "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app#readme",
   "_moduleAliases": {
-    "~Constants": "dist/Constants",
+    "@Constants": "dist/src/Constants",
+    "@Logger": "dist/src/Logger",
     "@errors": "dist/src/errors",
     "@forge": "dist/src/forge",
-    "@logging": "dist/src/logging",
     "@middlewares": "dist/src/middlewares",
     "@models": "dist/src/models",
     "@rabbitmq": "dist/src/rabbitmq",
-    "@routes": "dist/src/routes",
+    "@rest": "dist/src/rest",
     "@services": "dist/src/services",
     "@utils": "dist/src/utils"
   },

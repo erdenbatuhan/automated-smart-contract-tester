@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import type { SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import DockerImage from '@models/DockerImage';
@@ -12,7 +12,6 @@ import type { IDockerContainerHistory } from '@models/DockerContainerHistory';
 
 import dockerContainerHistoryServices from './dockerContainerHistoryServices';
 
-import errorUtils from '@utils/errorUtils';
 import dockerUtils from '@utils/dockerUtils';
 
 /**
@@ -23,7 +22,7 @@ import dockerUtils from '@utils/dockerUtils';
  */
 const findAllDockerImages = async (): Promise<IDockerImage[]> => DockerImage.find().exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, 'An error occurred while finding all docker images.');
+    throw AppError.createAppError(err, 'An error occurred while finding all docker images.');
   });
 
 /**
@@ -51,7 +50,7 @@ const findDockerImage = async (
     return dockerImage;
   })
   .catch((err: AppError | Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while finding the docker image with the name=${imageName}.`);
+    throw AppError.createAppError(err, `An error occurred while finding the docker image with the name=${imageName}.`);
   });
 
 /**
@@ -95,7 +94,7 @@ const handleSaveErrorAndReturn = async (
     httpErr.reason = `An image with imageID=${dockerImageID} already exists (${existingImage?.imageName}). Please use that one or delete it first!`;
   }
 
-  return errorUtils.handleError(httpErr, 'An error occurred while saving/updating the Docker Image with associated Docker Container History.');
+  return AppError.createAppError(httpErr, 'An error occurred while saving/updating the Docker Image with associated Docker Container History.');
 };
 
 /**
@@ -157,7 +156,7 @@ const deleteDockerImage = async (imageName: string): Promise<void> => {
 
     Logger.info(`Successfully deleted the Docker Image with the name=${imageName}.`);
   } catch (err: AppError | Error | unknown) {
-    throw errorUtils.handleError(err, `An error occurred while deleting the Docker Image with the name=${imageName}.`);
+    throw AppError.createAppError(err, `An error occurred while deleting the Docker Image with the name=${imageName}.`);
   }
 };
 

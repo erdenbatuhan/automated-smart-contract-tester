@@ -28,7 +28,8 @@ services:
       PORT: ${SERVICE_PORT}
       MONGODB_URI: ${SERVICES_MONGODB_URI}
       JWT_SECRET: ${SERVICES_JWT_SECRET}
-      RABBITMQ_HOST: rabbitmq # The service and container name of RabbitMQ
+      RABBITMQ_HOST: rabbitmq:5672
+      RABBITMQ_MANAGEMENT_HOST: rabbitmq:15672
     healthcheck:
       test: curl --fail http://localhost:${SERVICE_PORT} || exit 1
       interval: 3s
@@ -82,7 +83,7 @@ services:
       SERVICE_NAME: runner
       PORT: ${SERVICE_PORT}
       MONGODB_URI: mongodb://${MONGO_HOSTS}/testrunner_db?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
-      RABBITMQ_HOST: rabbitmq # The service and container name of RabbitMQ
+      RABBITMQ_HOST: rabbitmq
     healthcheck:
       test: curl --fail http://localhost:${SERVICE_PORT} || exit 1
       interval: 3s

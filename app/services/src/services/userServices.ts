@@ -1,13 +1,11 @@
 import type { SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import User from '@models/User';
 import type { IUser } from '@models/User';
-
-import errorUtils from '@utils/errorUtils';
 
 /**
  * Finds all users (without passwords).
@@ -20,7 +18,7 @@ const findAllUsers = async (
   sessionOption?: SessionOption
 ): Promise<IUser[]> => User.find({}, null, sessionOption).exec()
   .catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, 'An error occurred while finding all users.');
+    throw AppError.createAppError(err, 'An error occurred while finding all users.');
   });
 
 /**
@@ -39,7 +37,7 @@ const findUserById = (
     return user;
   })
   .catch((err) => {
-    throw errorUtils.handleError(err, `An error occurred while finding the user with the ID '${userId}'.`);
+    throw AppError.createAppError(err, `An error occurred while finding the user with the ID '${userId}'.`);
   });
 
 /**
@@ -60,7 +58,7 @@ const deleteUserById = async (userId: string, sessionOption?: SessionOption): Pr
 
     Logger.info(`Successfully deleted the user with the ID '${userId}'.`);
   }).catch((err: AppError | Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while deleting the user with the ID '${userId}'.`);
+    throw AppError.createAppError(err, `An error occurred while deleting the user with the ID '${userId}'.`);
   });
 };
 

@@ -3,14 +3,12 @@ import path from 'path';
 import AdmZip from 'adm-zip';
 import { HttpStatusCode } from 'axios';
 
-import Constants from '~Constants';
-import Logger from '@logging/Logger';
+import Constants from '@Constants';
+import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import { IUpload } from '@models/Upload';
 import type { IFile } from '@models/schemas/FileSchema';
-
-import errorUtils from '@utils/errorUtils';
 
 /**
  * Extracts the contents of a zip file to a specified directory.
@@ -111,7 +109,7 @@ const getUploadedFilesFromZipBuffer = async (
       return uploadFiles;
     });
   } catch (err: AppError | Error | unknown) {
-    throw errorUtils.handleError(err, `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
+    throw AppError.createAppError(err, `An error occurred while reading ${contextName} from the zip buffer and writing it to a temporary directory!`);
   } finally {
     removeDirectorySync(dirPath);
   }

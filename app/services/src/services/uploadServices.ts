@@ -1,7 +1,7 @@
 import type { SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
-import Logger from '@logging/Logger';
+import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import type { IUser } from '@models/User';
@@ -9,7 +9,6 @@ import Upload from '@models/Upload';
 import type { IUpload } from '@models/Upload';
 
 import fsUtils from '@utils/fsUtils';
-import errorUtils from '@utils/errorUtils';
 
 /**
  * Uploads a zip buffer.
@@ -37,7 +36,7 @@ const uploadZipBuffer = async (
       return uploadSaved;
     });
   } catch (err: AppError | Error | unknown) {
-    throw errorUtils.handleError(err, `An error occurred while uploading the zip buffer for ${uniqueName} by ${user.email}.`);
+    throw AppError.createAppError(err, `An error occurred while uploading the zip buffer for ${uniqueName} by ${user.email}.`);
   }
 };
 
@@ -59,7 +58,7 @@ const downloadUploadedFiles = (contextName: string, upload: IUpload): Buffer => 
     Logger.info(`Successfully downloaded the uploaded files for ${contextName} (Upload ID = ${upload._id}).`);
     return zipBuffer;
   } catch (err: AppError | Error | unknown) {
-    throw errorUtils.handleError(err, `An error occurred while downloading the uploaded files for ${contextName} (Upload ID = ${upload._id}).`);
+    throw AppError.createAppError(err, `An error occurred while downloading the uploaded files for ${contextName} (Upload ID = ${upload._id}).`);
   }
 };
 
@@ -81,7 +80,7 @@ const deleteUpload = async (upload: IUpload, sessionOption?: SessionOption): Pro
 
     Logger.info(`Successfully deleted the upload with the ID '${upload._id}'.`);
   }).catch((err: AppError | Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while deleting the upload with the ID '${upload._id}'.`);
+    throw AppError.createAppError(err, `An error occurred while deleting the upload with the ID '${upload._id}'.`);
   });
 };
 

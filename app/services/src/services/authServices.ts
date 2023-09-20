@@ -1,12 +1,11 @@
 import jwt from 'jsonwebtoken';
 
-import Constants from '~Constants';
-import Logger from '@logging/Logger';
+import Constants from '@Constants';
+import Logger from '@Logger';
+import AppError from '@errors/AppError';
 
 import User from '@models/User';
 import type { IUser } from '@models/User';
-
-import errorUtils from '@utils/errorUtils';
 
 // Read JWT secret from environment variables
 const { JWT_SECRET } = process.env;
@@ -43,7 +42,7 @@ const register = async (
     Logger.info(`Successfully registered a new user with the email '${email}'.`);
     return getAuthResponse(newUser);
   }).catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while registering a new user with the email '${email}'.`);
+    throw AppError.createAppError(err, `An error occurred while registering a new user with the email '${email}'.`);
   });
 };
 
@@ -65,7 +64,7 @@ const login = async (
     Logger.info(`Successfully logged in as ${email}.`);
     return getAuthResponse(user);
   }).catch((err: Error | unknown) => {
-    throw errorUtils.handleError(err, `An error occurred while logging a new user in with the email '${email}'.`);
+    throw AppError.createAppError(err, `An error occurred while logging a new user in with the email '${email}'.`);
   });
 };
 
