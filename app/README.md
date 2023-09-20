@@ -63,7 +63,7 @@ DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daem
 To start Docker containers for the application, use the following command:
 
 ```bash
-make run ARGS=-d # Run the containers in background
+make start ARGS=-d # Run the containers in background
 ```
 
 This command also stops any existing containers related to this application before starting new ones.

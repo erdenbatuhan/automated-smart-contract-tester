@@ -14,13 +14,13 @@ For instructions on running the entire application using _Docker Compose_, pleas
 To run a RabbitMQ instance, execute the following command:
 
 ```bash
-make rabbit_run ARGS=-d # Run the RabbitMQ instance in background
+make rabbit_start ARGS=-d # Run the RabbitMQ instance in background
 ```
 
 To remove the RabbitMQ instance:
 
 ```bash
-make rabbit_clean
+make rabbit_stop
 ```
 
 ### Environment Setup

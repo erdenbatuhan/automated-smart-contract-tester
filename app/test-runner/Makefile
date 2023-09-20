@@ -30,13 +30,13 @@ clean: remove_image
 ###  RabbitMQ  ###
 ### ---------- ###
 
-.PHONY: rabbit_clean
-rabbit_clean:
+.PHONY: rabbit_stop
+rabbit_stop:
 	docker rm -f rabbitmq
 	docker volume rm -f rabbitmq.datavolume
 
-.PHONY: rabbit_run
-rabbit_run: rabbit_clean
+.PHONY: rabbit_start
+rabbit_start: rabbit_stop
 	docker volume create volume-rabbitmq.data
 	docker run $(ARGS) -p ${RABBITMQ_PORT}:5672 -p ${RABBITMQ_MANAGEMENT_PORT}:15672 -v rabbitmq.datavolume:/var/lib/rabbitmq  --name rabbitmq rabbitmq:management
 
