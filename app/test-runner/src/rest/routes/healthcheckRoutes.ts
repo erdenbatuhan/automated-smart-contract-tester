@@ -18,7 +18,7 @@ const router = Router();
  * @throws {object} 503 - If the Docker daemon cannot be pinged and is not accessible.
  * @throws {object} 500 - If there's a server error.
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/docker', async (req: Request, res: Response) => {
   dockerUtils.ensureDockerDaemonAccessibility().then(({ socketPath, info }) => {
     res.status(HttpStatusCode.Ok).send({
       message: `The health check succeeded, and the Docker daemon is running on socket '${socketPath}'. The service is in a healthy state.`,

@@ -17,7 +17,7 @@ const router = Router();
 router.use(timeout(Constants.REQUEST_TIMEOUT * 1000)); // Set request timeout
 
 // Application Routes
-router.use('/', healthcheckRoutes);
+router.use('/healthcheck', healthcheckRoutes);
 router.use('/auth', authRoutes);
 router.use('/users', authMiddlewares.requireAuth, userRoutes);
 router.use('/projects', authMiddlewares.requireAuth, projectRoutes);

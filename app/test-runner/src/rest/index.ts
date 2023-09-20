@@ -14,7 +14,7 @@ const router = Router();
 router.use(timeout(Constants.REQUEST_TIMEOUT * 1000)); // Set request timeout
 
 // Application Routes
-router.use('/', healthcheckRoutes);
+router.use('/healthcheck', healthcheckRoutes);
 router.use('/forge', forgeRoutes);
 router.use('/projects', projectRoutes);
 router.use('/projects/images', dockerImageRoutes);

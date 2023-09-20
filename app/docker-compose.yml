@@ -31,10 +31,10 @@ services:
       RABBITMQ_HOST: rabbitmq:5672
       RABBITMQ_MANAGEMENT_HOST: rabbitmq:15672
     healthcheck:
-      test: curl --fail http://localhost:${SERVICE_PORT} || exit 1
-      interval: 3s
+      test: curl --fail http://localhost:${SERVICE_PORT}/api/${APP_NAME}/services/healthcheck/v1 || exit 1
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -56,9 +56,9 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_MANAGEMENT_PASSWORD}
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 10s
-      timeout: 10s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      retries: 10
   # Test Runner
   runner:
     container_name: runner
@@ -85,8 +85,8 @@ services:
       MONGODB_URI: mongodb://${MONGO_HOSTS}/testrunner_db?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
       RABBITMQ_HOST: rabbitmq
     healthcheck:
-      test: curl --fail http://localhost:${SERVICE_PORT} || exit 1
-      interval: 3s
+      test: curl --fail http://localhost:${SERVICE_PORT}/api/${APP_NAME}/runner/v1/healthcheck/docker || exit 1
+      interval: 5s
       timeout: 5s
       retries: 10
     depends_on:
