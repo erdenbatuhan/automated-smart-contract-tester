@@ -1,12 +1,3 @@
-[submodule "docs"]
-	path = docs
-	url = git@github.com:erdenbatuhan/automated-smart-contract-testing-docs.git
-[submodule "framework-comparison"]
-	path = framework-comparison
-	url = git@github.com:erdenbatuhan/automated-smart-contract-testing-comparison.git
 [submodule "dockerized-mongodb-replicas"]
-	path = app/mongo
+	path = mongo
 	url = git@github.com:erdenbatuhan/dockerized-mongodb-replicas.git
-[submodule "bbse-bank-2.0"]
-	path = other-projects/bbse-bank-2.0
-	url = git@github.com:erdenbatuhan/bbse-bank-2.0.git
