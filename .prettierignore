@@ -1,6 +1,9 @@
 # TS config file
 tsconfig.json
 
+# Docker Compose files
+docker-compose*.yml
+
 # All source files
 *.ts
 *.tsx

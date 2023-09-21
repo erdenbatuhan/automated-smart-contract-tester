@@ -18,8 +18,8 @@ services:
     networks:
       application-network: # External network to access this application
       isolated-network-rabbit: # Isolated network for RabbitMQ
-    #    ports: # Uncomment for testing purposes; preferably, it should only be accessible through the network `application-network`!
-    #      - ${PORT}:${PORT}
+#    ports: # Uncomment for testing purposes; preferably, it should only be accessible through the network `application-network`!
+#      - ${PORT}:${PORT}
     env_file:
       - application.properties
       - rabbitmq.properties
@@ -46,9 +46,9 @@ services:
       isolated-network-rabbit: # Isolated network for RabbitMQ
     volumes:
       - volume-rabbitmq.data:/var/lib/rabbitmq # Bind the data volume for RabbitMQ
-    #    ports: # Uncomment for testing purposes; under normal conditions, it should only be accessible through the isolated RabbitMQ network!
-    #      - "5672:5672" # RabbitMQ
-    #      - "15672:15672" # RabbitMQ Management Portal
+#    ports: # Uncomment for testing purposes; under normal conditions, it should only be accessible through the isolated RabbitMQ network!
+#      - "5672:5672" # RabbitMQ
+#      - "15672:15672" # RabbitMQ Management Portal
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_MANAGEMENT_USERNAME}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_MANAGEMENT_PASSWORD}
@@ -72,8 +72,8 @@ services:
       isolated-network-rabbit: # Isolated network for RabbitMQ
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
-    #    ports: # Uncomment for testing purposes; under normal conditions, it should only be accessible through the isolated RabbitMQ network!
-    #      - 5001:${PORT}
+#    ports: # Uncomment for testing purposes; under normal conditions, it should only be accessible through the isolated RabbitMQ network!
+#      - 5001:${PORT}
     env_file:
       - application.properties
       - rabbitmq.properties
