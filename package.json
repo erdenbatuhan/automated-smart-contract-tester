@@ -13,7 +13,7 @@
   },
   "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app#readme",
   "scripts": {
-    "prepare": "cd .. && husky install app/.husky"
+    "prepare": "husky install .husky"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
