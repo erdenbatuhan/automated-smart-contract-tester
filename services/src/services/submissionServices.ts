@@ -14,7 +14,7 @@ import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses
 import projectServices from '@services/projectServices';
 import uploadServices from '@services/uploadServices';
 
-import executionOutputUtils from '@utils/executionOutputUtils';
+import TestStatus from '@models/enums/TestStatus';
 
 /**
  * Finds all submissions.
@@ -139,9 +139,9 @@ const updateSubmissionWithTestRunnerOutput = async (
   try {
     Logger.info(`Updating submission (${submission._id}) with test runner output.`);
 
-    // Process output, e.g., extract the status and calculate the score based on the execution output
-    submission.testStatus = executionOutputUtils.extractTestStatus(testExecutionOutput);
-    submission.results = executionOutputUtils.calculateTestScoreAndGenerateResults(testExecutionOutput);
+    // Process the output and update the test status and results
+    submission.testStatus = testExecutionOutput.container?.output?.overall?.passed ? TestStatus.PASSED : TestStatus.FAILED;
+    submission.results = testExecutionOutput.container;
 
     // Update the submission
     const updatedSubmissionId = await submission.save().then(({ _id }) => _id);

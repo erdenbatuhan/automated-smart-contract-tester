@@ -13,7 +13,7 @@ export interface ISubmission extends mongoose.Document {
   project: IProject;
   upload: IUpload;
   testStatus: TestStatus;
-  results: object;
+  results?: object;
   deployer: IUser; // Virtual Field
 
   toLean(this: ISubmission): Promise<object>;
