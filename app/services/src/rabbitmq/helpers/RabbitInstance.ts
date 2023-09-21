@@ -4,12 +4,12 @@ import axios from 'axios';
 
 import RabbitConstants from '@rabbitmq/helpers/RabbitConstants';
 
-const { RABBITMQ_HOST, RABBITMQ_MANAGEMENT_HOST, RABBITMQ_MANAGEMENT_USERNAME, RABBITMQ_MANAGEMENT_PASSWORD } = process.env;
-if (!RABBITMQ_HOST || !RABBITMQ_MANAGEMENT_HOST || !RABBITMQ_MANAGEMENT_USERNAME || !RABBITMQ_MANAGEMENT_PASSWORD) {
+const { RABBITMQ_HOST, RABBITMQ_MANAGEMENT_USERNAME, RABBITMQ_MANAGEMENT_PASSWORD } = process.env;
+if (!RABBITMQ_HOST || !RABBITMQ_MANAGEMENT_USERNAME || !RABBITMQ_MANAGEMENT_PASSWORD) {
   throw new Error('Missing environment variables!');
 }
 
-const RABBIT_API_URL_QUEUES = `http://${RABBITMQ_MANAGEMENT_HOST}/api/queues`;
+const RABBIT_API_URL_QUEUES = `http://${RABBITMQ_HOST}:15672/api/queues`;
 
 interface RabbitApiResponseQueues {
   response: {

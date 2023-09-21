@@ -1,11 +1,11 @@
 include .env.development.local
 
-CONTAINER=$(APP_NAME)-$(SERVICE_NAME)
-IMAGE=$(CONTAINER):local
-BUILD_ARGS=\
+CONTAINER = $(APP_NAME)-runner
+IMAGE = $(CONTAINER):local
+BUILD_ARGS = \
 	--build-arg ENV=$(ENV) \
 	--build-arg PORT=$(PORT)
-ENV_FILE=--env-file .env.development.local
+ENV_FILE = --env-file .env.development.local
 
 .PHONY: remove_container
 remove_container:
@@ -38,7 +38,7 @@ rabbit_stop:
 .PHONY: rabbit_start
 rabbit_start: rabbit_stop
 	docker volume create volume-rabbitmq.data
-	docker run $(ARGS) -p ${RABBITMQ_PORT}:5672 -p ${RABBITMQ_MANAGEMENT_PORT}:15672 -v rabbitmq.datavolume:/var/lib/rabbitmq  --name rabbitmq rabbitmq:management
+	docker run $(ARGS) -p 5672:5672 -p 15672:15672 -v rabbitmq.datavolume:/var/lib/rabbitmq  --name rabbitmq rabbitmq:management
 
 ### ----------------------------------------------------------------------- ###
 ###  Caution: Use the following commands carefully!                         ###

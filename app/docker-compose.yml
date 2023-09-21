@@ -1,37 +1,34 @@
-# Docker Compose Configuration (To be run with ./mongo/docker-compose.mongo.yml)
-
 version: "3"
 networks:
-  isolated-rabbit-network: # Isolated Network for RabbitMQ
+  application-network: # External network for accessing this application
+  isolated-network-rabbit: # Isolated network for RabbitMQ
 volumes:
   volume-rabbitmq.data: # Data volume for RabbitMQ
 services:
-  # Services
+  # Backend Services
   services:
-    container_name: services
+    container_name: services # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
     build:
       context: ./services
       dockerfile: Dockerfile
       args:
         ENV: ${ENV}
-        PORT: ${SERVICE_PORT}
+        PORT: ${PORT}
     restart: unless-stopped
     networks:
-      isolated-rabbit-network: # Isolated Network for RabbitMQ
-    ports:
-      - 8000:${SERVICE_PORT}
+      application-network: # External network to access this application
+      isolated-network-rabbit: # Isolated network for RabbitMQ
+    #    ports: # Uncomment for testing purposes; preferably, it should only be accessible through the network `application-network`!
+    #      - ${PORT}:${PORT}
     env_file:
+      - application.properties
       - rabbitmq.properties
     environment:
-      APP_NAME: ${APP_NAME}
-      SERVICE_NAME: services
-      PORT: ${SERVICE_PORT}
       MONGODB_URI: ${SERVICES_MONGODB_URI}
       JWT_SECRET: ${SERVICES_JWT_SECRET}
-      RABBITMQ_HOST: rabbitmq:5672
-      RABBITMQ_MANAGEMENT_HOST: rabbitmq:15672
+      RABBITMQ_HOST: rabbitmq # Ensure this matches the service and container name of the RabbitMQ service
     healthcheck:
-      test: curl --fail http://localhost:${SERVICE_PORT}/api/${APP_NAME}/services/healthcheck/v1 || exit 1
+      test: curl --fail http://localhost:${PORT}/api/${APP_NAME}/services/healthcheck/v1 || exit 1
       interval: 10s
       timeout: 5s
       retries: 5
@@ -42,15 +39,16 @@ services:
         condition: service_healthy
   # RabbitMQ
   rabbitmq:
-    container_name: rabbitmq
+    container_name: rabbitmq # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
     image: "rabbitmq:management"
     restart: unless-stopped
     networks:
-      isolated-rabbit-network: # Isolated Network for RabbitMQ
+      isolated-network-rabbit: # Isolated network for RabbitMQ
     volumes:
       - volume-rabbitmq.data:/var/lib/rabbitmq # Bind the data volume for RabbitMQ
-    ports:
-      - "15672:15672" # RabbitMQ management UI
+    #    ports: # Uncomment for testing purposes; under normal conditions, it should only be accessible through the isolated RabbitMQ network!
+    #      - "5672:5672" # RabbitMQ
+    #      - "15672:15672" # RabbitMQ Management Portal
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_MANAGEMENT_USERNAME}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_MANAGEMENT_PASSWORD}
@@ -59,33 +57,31 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-  # Test Runner
+  # Test Runner Service
   runner:
-    container_name: runner
+    container_name: runner # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
     build:
       context: ./test-runner
       dockerfile: Dockerfile
       args:
         ENV: ${ENV}
-        PORT: ${SERVICE_PORT}
+        PORT: ${PORT}
     restart: unless-stopped
     networks:
-      isolated-network-mongo: # Isolated Network for MongoDB
-      isolated-rabbit-network: # Isolated Network for RabbitMQ
+      isolated-network-mongo: # Isolated network for MongoDB
+      isolated-network-rabbit: # Isolated network for RabbitMQ
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
-    #    ports:
-    #      - 8001:${SERVICE_PORT} # Uncomment only for testing purposes; should be accessible exclusively through the isolated rabbit network!
+    #    ports: # Uncomment for testing purposes; under normal conditions, it should only be accessible through the isolated RabbitMQ network!
+    #      - 5001:${PORT}
     env_file:
+      - application.properties
       - rabbitmq.properties
     environment:
-      APP_NAME: ${APP_NAME}
-      SERVICE_NAME: runner
-      PORT: ${SERVICE_PORT}
       MONGODB_URI: mongodb://${MONGO_HOSTS}/testrunner_db?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
-      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_HOST: rabbitmq # Ensure this matches the service and container name of the RabbitMQ service
     healthcheck:
-      test: curl --fail http://localhost:${SERVICE_PORT}/api/${APP_NAME}/runner/v1/healthcheck/docker || exit 1
+      test: curl --fail http://localhost:${PORT}/api/${APP_NAME}/runner/v1/healthcheck/docker || exit 1
       interval: 5s
       timeout: 5s
       retries: 10

@@ -1,11 +1,11 @@
 include .env.development.local
 
-CONTAINER=$(APP_NAME)-$(SERVICE_NAME)
-IMAGE=$(CONTAINER):local
-BUILD_ARGS=\
+CONTAINER = $(APP_NAME)-services
+IMAGE = $(CONTAINER):local
+BUILD_ARGS = \
 	--build-arg ENV=$(ENV) \
 	--build-arg PORT=$(PORT)
-ENV_FILE=--env-file .env.development.local
+ENV_FILE = --env-file .env.development.local
 
 .PHONY: remove_container
 remove_container:

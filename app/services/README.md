@@ -21,23 +21,21 @@ Before running the service, make sure that you have created a **.env.development
 ```bash
 ENV=dev # The staging environment (dev, qa, prod, etc.)
 APP_NAME=automated-smart-contract-testing
-SERVICE_NAME=services
-PORT=8000
+PORT=5000
 
 # Secrets
 MONGODB_URI= # Specify your MongoDB URI here
 JWT_SECRET= # Specify the secret used to sign JWTs
 
 # RabbitMQ
-RABBITMQ_HOST=127.0.0.1:5673
+RABBITMQ_HOST=127.0.0.1
 
 # RabbitMQ - Communication Channels
 RABBITMQ_EXCHANGE_PROJECT_UPLOAD=exchange_projects_upload
 RABBITMQ_EXCHANGE_PROJECT_REMOVAL=exchange_projects_removal
 RABBITMQ_QUEUE_SUBMISSION_UPLOAD=queue_submissions_upload
 
-# RabbitMQ - Management Portal
-RABBITMQ_MANAGEMENT_HOST=127.0.0.1:15673
+# RabbitMQ - Management Portal Credentials
 RABBITMQ_MANAGEMENT_USERNAME=guest
 RABBITMQ_MANAGEMENT_PASSWORD=guest
 ```

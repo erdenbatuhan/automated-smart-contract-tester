@@ -49,12 +49,13 @@ SERVICES_MONGODB_URI= # Specify the MongoDB URI of the services app
 SERVICES_JWT_SECRET= # Specify the secret used to sign JWTs in services app
 ```
 
-You can also override some of the environment variables defined in **application.properties** by specifying them in the **.env** file. To ensure successful overriding, it's crucial to import **.env** after **application.properties**. When building and running the _Docker Compose_ project, please follow the precise order provided in the commands below.
+You can customize certain environment variables defined in **application.properties** by specifying them in the **.env** file. To ensure successful overrides, it's important to import **.env** after **application.properties**, just like the order defined in the **Makefile**.
 
-The following variables can be overridden based on the configuration of the host machine on which you are running this:
+Here's an example illustrating how you can override variables based on the configuration of the host machine where you're running this:
 
 ```bash
 ENV=dev # The staging environment (dev, qa, prod, etc.)
+PORT=8008 # The port to which the application will be exposed
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on
 ```
 
@@ -106,4 +107,3 @@ Refer to the respective service's README:
 
 - [Test Runner](./test-runner/README.md)
 - [Services](./services/README.md)
-- [Web](./web/README.md)

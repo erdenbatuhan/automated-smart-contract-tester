@@ -30,8 +30,7 @@ Before running the service, make sure that you have created a **.env.development
 ```bash
 ENV=dev # The staging environment (dev, qa, prod, etc.)
 APP_NAME=automated-smart-contract-testing
-SERVICE_NAME=runner
-PORT=8001
+PORT=5001
 
 # Secrets
 MONGODB_URI= # Specify your MongoDB URI here
@@ -40,8 +39,7 @@ MONGODB_URI= # Specify your MongoDB URI here
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on
 
 # RabbitMQ
-RABBITMQ_PORT=5673
-RABBITMQ_HOST=127.0.0.1:5673
+RABBITMQ_HOST=127.0.0.1
 
 # RabbitMQ - Communication Channels
 RABBITMQ_EXCHANGE_PROJECT_UPLOAD=exchange_projects_upload

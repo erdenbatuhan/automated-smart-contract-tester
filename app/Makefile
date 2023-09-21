@@ -1,11 +1,11 @@
 include application.properties
 
-ENV_FILES=\
+ENV_FILES = \
 	--env-file $(MONGO_DIR)/mongo.properties \
 	--env-file ./application.properties \
 	--env-file ./rabbitmq.properties \
 	--env-file ./.env
-COMPOSE_FILES=\
+COMPOSE_FILES = \
 	-f ./docker-compose.yml \
 	-f $(MONGO_DIR)/docker-compose.mongo.yml
 
