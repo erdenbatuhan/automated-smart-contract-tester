@@ -50,7 +50,7 @@ RABBITMQ_QUEUE_SUBMISSION_UPLOAD=queue_submissions_upload
 RABBITMQ_MANAGEMENT_PORT=15673
 ```
 
-### Option 1) Using Docker
+### Option 1 - Using Docker
 
 #### Building the Docker image:
 
@@ -70,7 +70,7 @@ make run
 make clean
 ```
 
-### Option 2) Using Node Package Manager (npm)
+### Option 2 - Using Node Package Manager (npm)
 
 First, install the required packages:
 

@@ -40,7 +40,7 @@ RABBITMQ_MANAGEMENT_USERNAME=guest
 RABBITMQ_MANAGEMENT_PASSWORD=guest
 ```
 
-### Option 1) Using Docker
+### Option 1 - Using Docker
 
 #### Building the Docker image:
 
@@ -60,7 +60,7 @@ make run
 make clean
 ```
 
-### Option 2) Using Node Package Manager (npm)
+### Option 2 - Using Node Package Manager (npm)
 
 First, install the required packages:
 
