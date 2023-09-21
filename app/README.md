@@ -10,7 +10,7 @@
   - [Start Docker Containers](#start-docker-containers)
   - [Stop Docker Containers](#stop-docker-containers)
   - [Clean Up Docker Resources](#clean-up-docker-resources)
-  - [Clean Up the DB](#clean-up-the-db)
+  - [Clean Up Data](#clean-up-data)
   - [Prune Docker Resources](#prune-docker-resources)
   - [Prune Docker Resources with Volumes](#prune-docker-resources-with-volumes)
 - [(Optional) Running the services separately](#optional-running-the-services-separately)
@@ -81,24 +81,20 @@ make stop
 
 To clean up Docker resources, including removing containers, images, and volumes, use the following command:
 
+This command will remove images, containers, volumes (e.g., dangling volumes such as dangling Docker volumes such as _0c18b ... 362cf_), networks, and orphaned containers.
+
 ```bash
 make clean
 ```
 
-This command will:
+### Clean Up Data
 
-- Stop any existing containers related to the application and remove them
-- Remove Docker images related to the application
-- Remove dangling Docker volumes, excluding those with names ending in ".db"
-
-### Clean Up the DB
-
-To clean up the database, use the following command:
+To clean up the Mongo database and the RabbitMQ data, use the following command:
 
 Please note that this action is irreversible and will result in the removal of all your data!
 
 ```bash
-make clean_db
+make clean_data
 ```
 
 ## (Optional) Running the services separately

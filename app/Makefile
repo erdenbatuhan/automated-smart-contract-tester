@@ -17,18 +17,19 @@ stop:
 start: stop
 	docker compose -p $(APP_NAME) $(ENV_FILES) $(COMPOSE_FILES) up --build $(ARGS)
 
-.PHONY: clean_volumes
-clean_volumes: stop
+.PHONY: clean_dangling_volumes
+clean_dangling_volumes: stop
 	docker volume ls -qf dangling=true | egrep '^[a-z0-9]{64}' | xargs docker volume rm
 
 .PHONY: clean
-clean: clean_volumes
-	docker compose -p $(APP_NAME) ps -aq | xargs docker rm -f
-	docker images -a | awk '/$(APP_NAME)/ { print $$3 }' | xargs docker rmi -f
+clean: clean_dangling_volumes
+#	docker compose -p $(APP_NAME) ps -aq | xargs docker rm -f
+#	docker network ls --filter "name=$(APP_NAME).*" -q | xargs docker network rm
+	docker images -q --filter "label=com.docker.compose.project=$(APP_NAME)" | xargs docker rmi -f
 
-.PHONY: clean_db
-clean_db: clean_volumes
-	docker volume ls -q | grep "^$(APP_NAME).*\.db" | xargs -I {} docker volume rm {}
+.PHONY: clean_data
+clean_data: clean_dangling_volumes
+	docker volume ls -q --filter "label=com.docker.compose.project=$(APP_NAME)" | xargs docker volume rm
 
 ### ----------------------------------------------------------------------- ###
 ###  Caution: Use the following commands carefully!                         ###
