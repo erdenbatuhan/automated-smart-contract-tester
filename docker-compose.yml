@@ -24,7 +24,7 @@ services:
       - source: secret-services-mongodb_uri
         target: mongodb-uri.secret
       - source: secret-services-jwt
-        target: jwt-secret.secret
+        target: jwt.secret
     healthcheck:
       test: curl --fail http://localhost:${PORT}/api/${APP_NAME}/services/healthcheck/v1 || exit 1
       interval: 10s
