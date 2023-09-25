@@ -17,7 +17,7 @@ const upload = multer({ storage: multer.memoryStorage() });
  *
  * The uploaded ZIP file must contain the smart contracts in a 'src' folder.
  *
- * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes & project-middleware).
+ * @param {string} res.locals.projectName - The name of the project associated with the tests (see projectMiddlewares).
  * @consumes multipart/form-data
  * @param {file} req.file.srcZip - The ZIP file containing the smart contracts to be tested.
  * @param {object} [req.query.containerTimeout] - "Optional" timeout for container execution in seconds.

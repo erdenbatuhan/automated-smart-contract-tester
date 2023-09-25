@@ -24,15 +24,15 @@ const upload = multer({ storage: multer.memoryStorage() });
  *  - Admins can retrieve all submissions
  *  - Users can only retrieve the submissions uploaded by them
  *
- * @param {IUser} res.locals.user - The authenticated user (see auth-middleware).
- * @param {IUser} res.locals.findFunction - The function returning all submissions depending on the user access (see submission-middleware).
+ * @param {IUser} res.locals.user - The authenticated user (see authMiddlewares).
+ * @param {IUser} res.locals.findFunction - The function returning all submissions depending on the user access (see submissionMiddlewares).
  * @returns {object} 200 - An array containing all submissions.
  * @throws {object} 500 - If there's a server error.
  */
 router.get('/', submissionMiddlewares.determineFindFunctionBasedOnUserRole, async (req: Request, res: Response) => {
   const { findFunction } = res.locals;
 
-  findFunction.then((submissions: ISubmission) => {
+  findFunction.then((submissions: ISubmission[]) => {
     res.status(HttpStatusCode.Ok).json(submissions);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
@@ -42,8 +42,8 @@ router.get('/', submissionMiddlewares.determineFindFunctionBasedOnUserRole, asyn
 /**
  * Retrieves a submission by its ID.
  *
- * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
- * @param {string} res.locals.projectName - The name of the project (see api-routes & project-middleware).
+ * @param {IUser} res.locals.user - The user performing the retrieval (see authMiddlewares).
+ * @param {string} res.locals.projectName - The name of the project (see projectMiddlewares).
  * @param {string} req.params.submissionId - The ID of the submission.
  * @returns {object} 200 - The submission information.
  * @throws {object} 404 - If the submission does not exist.
@@ -65,8 +65,8 @@ router.get('/:submissionId', submissionMiddlewares.requireSubmissionOwned, async
  *
  * The uploaded ZIP file must contain the smart contracts (src folder).
  *
- * @param {IUser} res.locals.user - The user performing the upload (see auth-middleware).
- * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes & project-middleware).
+ * @param {IUser} res.locals.user - The user performing the upload (see authMiddlewares).
+ * @param {string} res.locals.projectName - The name of the project associated with the tests (see projectMiddlewares).
  * @consumes multipart/form-data
  * @param {file} req.file.srcZip - The ZIP file containing the smart contracts to be tested.
  * @returns {object} 201 - The submission created.
@@ -95,8 +95,8 @@ router.post('/', authMiddlewares.requireUser, upload.single('srcZip'), async (re
 /**
  * Downloads the uploaded files associated with a submission.
  *
- * @param {IUser} res.locals.user - The user requesting the download (see auth-middleware).
- * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes & project-middleware).
+ * @param {IUser} res.locals.user - The user requesting the download (see authMiddlewares).
+ * @param {string} res.locals.projectName - The name of the project associated with the tests (see projectMiddlewares).
  * @param {string} req.params.submissionId - The ID of the submission associated with the files downloaded.
  * @returns {object} 200 - The downloadable zip buffer.
  * @throws {object} 404 - If the submission doesn't exist.
@@ -119,8 +119,8 @@ router.get('/:submissionId/download', submissionMiddlewares.requireSubmissionOwn
 /**
  * Deletes a submission.
  *
- * @param {IUser} res.locals.user - The user performing the removal (see auth-middleware).
- * @param {string} res.locals.projectName - The name of the project associated with the tests (see api-routes & project-middleware).
+ * @param {IUser} res.locals.user - The user performing the removal (see authMiddlewares).
+ * @param {string} res.locals.projectName - The name of the project associated with the tests (see projectMiddlewares).
  * @param {string} req.params.submissionId - The ID of the submission to delete.
  * @returns {object} 204 - If the submission deletion is successful.
  * @throws {object} 404 - If the submission doesn't exist.

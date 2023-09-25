@@ -46,7 +46,7 @@ const saveProject = async (
 /**
  * Retrieves all projects.
  *
- * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
+ * @param {IUser} res.locals.user - The user performing the retrieval (see authMiddlewares).
  * @returns {object} 200 - An array containing all projects.
  * @throws {object} 500 - If there's a server error.
  */
@@ -61,7 +61,7 @@ router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response)
 /**
  * Retrieves a project by its name.
  *
- * @param {IUser} res.locals.user - The user performing the retrieval (see auth-middleware).
+ * @param {IUser} res.locals.user - The user performing the retrieval (see authMiddlewares).
  * @param {string} req.params.projectName - The name of the project.
  * @returns {object} 200 - The project information.
  * @throws {object} 404 - If the project does not exist.
@@ -82,7 +82,7 @@ router.get('/:projectName', authMiddlewares.requireUser, async (req: Request, re
  *
  * The uploaded ZIP file should contain the necessary files and folders.
  *
- * @param {IUser} res.locals.user - The user performing the upload (see auth-middleware).
+ * @param {IUser} res.locals.user - The user performing the upload (see authMiddlewares).
  * @param {string} req.params.projectName - The name of the project.
  * @consumes multipart/form-data
  * @param {file} req.file.projectZip - The ZIP file containing project files and folders.
@@ -106,7 +106,7 @@ router.post('/:projectName/upload', authMiddlewares.requireAdmin, upload.single(
  *
  * The uploaded ZIP file should contain the necessary files and folders.
  *
- * @param {IUser} res.locals.user - The user performing the upload (see auth-middleware).
+ * @param {IUser} res.locals.user - The user performing the upload (see authMiddlewares).
  * @param {string} req.params.projectName - The name of the project.
  * @consumes multipart/form-data
  * @param {file} req.file.projectZip - The ZIP file containing project files and folders.
@@ -128,7 +128,7 @@ router.put('/:projectName/upload', authMiddlewares.requireAdmin, upload.single('
 /**
  * Update test weights and execution arguments for an existing project using data from the request body.
  *
- * @param {IUser} res.locals.user - The user performing the update (see auth-middleware).
+ * @param {IUser} res.locals.user - The user performing the update (see authMiddlewares).
  * @param {string} req.params.projectName - The name of the project to update.
  * @param {IProjectConfig} req.body.updatedConfig - The object containing updated project configuration values for the tests.
  * @returns {object} 200 - The updated project.
@@ -154,7 +154,7 @@ router.put('/:projectName/update', authMiddlewares.requireAdmin, async (req: Req
 /**
  * Downloads the uploaded files associated with a project.
  *
- * @param {IUser} res.locals.user - The user requesting the download (see auth-middleware).
+ * @param {IUser} res.locals.user - The user requesting the download (see authMiddlewares).
  * @param {string} req.params.projectName - The name of the project associated with the files downloaded.
  * @returns {object} 200 - The downloadable zip buffer.
  * @throws {object} 404 - If the project doesn't exist.
@@ -176,7 +176,7 @@ router.get('/:projectName/download', authMiddlewares.requireAdmin, async (req: R
 /**
  * Deletes a project.
  *
- * @param {IUser} res.locals.user - The user performing the removal (see auth-middleware).
+ * @param {IUser} res.locals.user - The user performing the removal (see authMiddlewares).
  * @param {string} req.params.projectName - The name of the project to delete.
  * @returns {object} 200 - If the project deletion is successful.
  * @throws {object} 404 - If the project doesn't exist.
