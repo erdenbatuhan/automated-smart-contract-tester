@@ -63,6 +63,14 @@ SubmissionSchema.methods.toLean = function toLean(this: ISubmission): Promise<ob
 };
 
 SubmissionSchema.static('findByDeployer',
+  /**
+   * Find submissions by deployer.
+   *
+   * This static method searches for submissions associated with a specific deployer.
+   *
+   * @param {IUser} deployer - The deployer for whom to find submissions.
+   * @returns {Promise<ISubmission[]>} A Promise that resolves to an array of submissions matching the criteria.
+   */
   async function findByDeployer(deployer: IUser): Promise<ISubmission[]> {
     return this.aggregate([
       {
