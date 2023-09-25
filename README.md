@@ -2,9 +2,9 @@
 
 ## Contents
 
+- [High-level Sequence Diagram](#high-level-sequence-diagram)
 - [System Architecture](#system-architecture)
 - [Data Model](#data-model)
-- [High-level Sequence Diagram](#high-level-sequence-diagram)
 - [Running the Entire Application with Docker](#running-the-entire-application-with-docker)
   - [Secrets](#secrets)
   - [Start Docker Containers](#start-docker-containers)
@@ -16,6 +16,10 @@
   - [Setting up the Development Environment](#setting-up-the-development-environment)
   - [Running the services separately](#running-the-services-separately)
 
+## High-level Sequence Diagram
+
+![high-level-sequence-diagram](data/img/Smart%20Contract%20Testing%20Service%20%7C%20High-level%20Sequence%20Diagram%20%7C%20Exercise%20Upload%20&%20Code%20Submission.png)
+
 ## System Architecture
 
 ![system-architecture](data/img/Smart%20Contract%20Testing%20Service%20%7C%20System%20Architecture.png)
@@ -23,10 +27,6 @@
 ## Data Model
 
 ![data-model](data/img/Smart%20Contract%20Testing%20Service%20%7C%20Data%20Model.png)
-
-## High-level Sequence Diagram
-
-![high-level-sequence-diagram](data/img/Smart%20Contract%20Testing%20Service%20%7C%20High-level%20Sequence%20Diagram%20%7C%20Exercise%20Upload%20&%20Code%20Submission.png)
 
 ## Running the Entire Application with Docker
 
