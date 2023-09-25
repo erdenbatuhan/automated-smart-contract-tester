@@ -95,7 +95,7 @@ The directory `./data/postman` contains the Postman collections for the services
 
 1. **Install Postman:** If you haven't already, [install Postman](https://www.postman.com/downloads/) on your computer.
 2. **Configure Working Directory:** Ensure that the default [working directory](https://learning.postman.com/docs/getting-started/installation/settings/#working-directory) in Postman remains set to `~/Postman/files`. This setting is important for the workspace setup.
-3. **Initialize Postman Workspace:** Run the [./data/postman/scripts/postman_workdir_setup.sh](data/postman/scripts/postman_workdir_setup.sh) script in the root directory of the project (The same directory with this [README.md](./README.md)). This script will create the necessary Postman working directory for this application and transfer the example data used in the requests into the working directory.
+3. **Initialize Postman Workspace:** Run the [./data/postman/scripts/postman_workdir_setup.sh](data/postman/scripts/postman_workdir_setup.sh) script in the root directory of the project (The same directory with this [README.md](./README.md)). This script will create the necessary Postman working directory for this application and transfer the data used in the requests into the working directory.
 4. **(Optional) Create Workspace:** If desired, create a new Postman workspace named (e.g. _Automated Smart Contract Tester_). Workspaces help organize your collections.
 5. **Import Collections:** [Import the Postman collections](https://learning.postman.com/docs/getting-started/importing-and-exporting/importing-data/) located in [./data/postman/collections](./data/postman/collections) into your Postman workspace.
 
