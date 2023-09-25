@@ -64,6 +64,12 @@ make build
 make run
 ```
 
+#### Stopping the Docker container:
+
+```bash
+make stop
+```
+
 #### Cleaning up Docker resources, including removing the container and the image:
 
 ```bash

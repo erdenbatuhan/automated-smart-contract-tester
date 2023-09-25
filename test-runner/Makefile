@@ -32,6 +32,9 @@ run: remove_container
 		--env-file .env.local --env "RABBITMQ_HOST=$(RABBITMQ_CONTAINER)" \
 		$(ARGS) -t $(IMAGE)
 
+.PHONY: stop
+stop: remove_container
+
 .PHONY: clean
 clean: remove_image
 
