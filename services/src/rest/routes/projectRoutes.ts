@@ -7,6 +7,7 @@ import AppError from '@errors/AppError';
 
 import type { IUser } from '@models/User';
 import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
+import { testExecutionArgumentDescriptions } from '@models/schemas/TestExecutionArgumentsSchema';
 
 import authMiddlewares from '@middlewares/authMiddlewares';
 
@@ -42,6 +43,17 @@ const saveProject = async (
 
   return { messageRequest: messageRequest.toLean(), project: project.toLean() };
 };
+
+/**
+ * Retrieves descriptions of test execution arguments.
+ *
+ * @param {IUser} res.locals.user - The user performing the retrieval (see authMiddlewares).
+ * @returns {object} 200 - Descriptions of test execution arguments.
+ * @throws {object} 500 - Server error.
+ */
+router.get('/descriptions/test-execution-arguments', authMiddlewares.requireUser, async (req: Request, res: Response) => {
+  res.status(HttpStatusCode.Ok).json(testExecutionArgumentDescriptions);
+});
 
 /**
  * Retrieves all projects.
