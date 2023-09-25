@@ -73,7 +73,7 @@ services:
     volumes:
       - ${DOCKER_SOCKET_PATH}:${DOCKER_SOCKET_PATH} # Mount the Docker socket from the host machine into the Docker container
 #    ports: # Uncomment for testing purposes; under normal conditions, it should only be accessible through the isolated RabbitMQ network!
-#      - 5001:${PORT}
+#      - 4001:${PORT}
     env_file:
       - application.properties
       - rabbitmq.properties

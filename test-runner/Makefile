@@ -2,10 +2,11 @@ include .env.development.local
 
 CONTAINER = $(APP_NAME)-runner
 IMAGE = $(CONTAINER):local
-BUILD_ARGS = \
-	--build-arg ENV=$(ENV) \
-	--build-arg PORT=$(PORT)
-ENV_FILE = --env-file .env.development.local
+
+# RabbitMQ
+RABBITMQ_CONTAINER = $(APP_NAME)-rabbit
+RABBITMQ_VOLUME = $(APP_NAME)-volume-rabbit.data
+RABBITMQ_NETWORK = $(APP_NAME)-network-rabbit
 
 .PHONY: remove_container
 remove_container:
@@ -17,11 +18,19 @@ remove_image: remove_container
 
 .PHONY: build
 build: remove_image
-	docker build $(BUILD_ARGS) -t $(IMAGE) .
+	docker build \
+		--build-arg ENV=$(ENV) --build-arg PORT=$(PORT) \
+		-t $(IMAGE) .
 
 .PHONY: run
 run: remove_container
-	docker run $(ARGS) -t -p $(PORT):$(PORT) -v $(DOCKER_SOCKET_PATH):$(DOCKER_SOCKET_PATH) $(ENV_FILE) --name $(CONTAINER) $(IMAGE)
+	docker run \
+		-p $(PORT):$(PORT) \
+		-v $(DOCKER_SOCKET_PATH):$(DOCKER_SOCKET_PATH) \
+		--network $(RABBITMQ_NETWORK) \
+		--name $(CONTAINER) \
+		--env-file .env.development.local --env "RABBITMQ_HOST=$(RABBITMQ_CONTAINER)" \
+		$(ARGS) -t $(IMAGE)
 
 .PHONY: clean
 clean: remove_image
@@ -32,13 +41,20 @@ clean: remove_image
 
 .PHONY: rabbit_stop
 rabbit_stop:
-	docker rm -f rabbitmq
-	docker volume rm -f rabbitmq.datavolume
+	docker rm -f $(RABBITMQ_CONTAINER)
+	docker volume rm -f $(RABBITMQ_VOLUME)
+	docker network rm -f $(RABBITMQ_NETWORK)
 
 .PHONY: rabbit_start
 rabbit_start: rabbit_stop
-	docker volume create volume-rabbitmq.data
-	docker run $(ARGS) -p 5672:5672 -p 15672:15672 -v rabbitmq.datavolume:/var/lib/rabbitmq  --name rabbitmq rabbitmq:management
+	docker volume create $(RABBITMQ_VOLUME)
+	docker network create $(RABBITMQ_NETWORK)
+	docker run \
+		-p 5672:5672 -p 15672:15672 \
+		-v $(RABBITMQ_VOLUME):/var/lib/rabbitmq \
+		--network $(RABBITMQ_NETWORK) \
+		--name $(RABBITMQ_CONTAINER) \
+		$(ARGS) rabbitmq:management
 
 ### ----------------------------------------------------------------------- ###
 ###  Caution: Use the following commands carefully!                         ###

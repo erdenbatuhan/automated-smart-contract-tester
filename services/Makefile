@@ -2,10 +2,11 @@ include .env.development.local
 
 CONTAINER = $(APP_NAME)-services
 IMAGE = $(CONTAINER):local
-BUILD_ARGS = \
-	--build-arg ENV=$(ENV) \
-	--build-arg PORT=$(PORT)
-ENV_FILE = --env-file .env.development.local
+
+# RabbitMQ
+RABBITMQ_CONTAINER = $(APP_NAME)-rabbit
+RABBITMQ_VOLUME = $(APP_NAME)-volume-rabbit.data
+RABBITMQ_NETWORK = $(APP_NAME)-network-rabbit
 
 .PHONY: remove_container
 remove_container:
@@ -17,11 +18,18 @@ remove_image: remove_container
 
 .PHONY: build
 build: remove_image
-	docker build $(BUILD_ARGS) -t $(IMAGE) .
+	docker build \
+		--build-arg ENV=$(ENV) --build-arg PORT=$(PORT) \
+		-t $(IMAGE) .
 
 .PHONY: run
 run: remove_container
-	docker run $(ARGS) -t -p $(PORT):$(PORT) $(ENV_FILE) --name $(CONTAINER) $(IMAGE)
+	docker run \
+		-p $(PORT):$(PORT) \
+		--network $(RABBITMQ_NETWORK) \
+		--name $(CONTAINER) \
+		--env-file .env.development.local --env "RABBITMQ_HOST=$(RABBITMQ_CONTAINER)" \
+		$(ARGS) -t $(IMAGE)
 
 .PHONY: clean
 clean: remove_image

@@ -21,7 +21,7 @@ Before running the service, make sure that you have created a **.env.development
 ```bash
 ENV=dev # The staging environment (dev, qa, prod, etc.)
 APP_NAME=automated-smart-contract-testing
-PORT=5000
+PORT=4000
 
 # Secrets
 MONGODB_URI= # Specify your MongoDB URI here
