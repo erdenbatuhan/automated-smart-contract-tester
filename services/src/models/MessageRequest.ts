@@ -8,12 +8,14 @@ export interface IMessageRequest extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
   deployer?: IUser;
   channel: string;
-  associatedDocumentId?: mongoose.Schema.Types.ObjectId;
-  associatedDocumentType?: string;
-  startingPositionInQueue?: number;
-  completed?: boolean;
-  isError?: boolean;
-  output?: object;
+  completed: boolean;
+  messageInfo: {
+    associatedDocumentId?: mongoose.Schema.Types.ObjectId;
+    associatedDocumentType?: string;
+    startingPositionInQueue?: number;
+    isError?: boolean;
+    output?: object;
+  };
   elapsedTime: number; // Virtual Field
 
   toLean(this: IMessageRequest): Promise<object>;
@@ -27,12 +29,8 @@ const MessageRequestSchema = new mongoose.Schema<IMessageRequest, MessageRequest
   {
     deployer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     channel: { type: String, required: true },
-    associatedDocumentId: { type: mongoose.Schema.Types.ObjectId },
-    associatedDocumentType: { type: String },
-    startingPositionInQueue: { type: Number },
     completed: { type: Boolean, required: true, default: false },
-    isError: { type: Boolean },
-    output: { type: Object }
+    messageInfo: { type: Object }
   },
   {
     timestamps: true,

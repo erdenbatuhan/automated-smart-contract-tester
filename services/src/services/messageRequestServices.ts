@@ -62,14 +62,14 @@ const updateMessageRequest = (
   response?: { isError: boolean; data: ContainerExecutionResponse | AppError | object },
   positionInTheQueue?: number
 ): Promise<IMessageRequest> => findMessageRequest(messageRequest._id).then((messageRequestFound) => {
-  Object.assign(messageRequestFound, {
+  messageRequestFound.completed = true;
+  messageRequestFound.messageInfo = {
     associatedDocumentId,
     associatedDocumentType,
     startingPositionInQueue: positionInTheQueue || 0,
-    completed: true,
     isError: response?.isError,
     output: response?.data
-  });
+  };
 
   return saveMessageRequest(messageRequestFound);
 });
