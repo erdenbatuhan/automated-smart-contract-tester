@@ -1,0 +1,550 @@
+{
+  "info": {
+    "_postman_id": "8ade384b-e18f-4f6e-a924-b0ddb1a136b6",
+    "name": "services",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "13474205",
+    "_collection_link": "https://red-satellite-813631.postman.co/workspace/Automated-Smart-Contract-Tester~6822d0c4-8cfa-4a40-bde6-71b83fe0b248/collection/13474205-8ade384b-e18f-4f6e-a924-b0ddb1a136b6?action=share&source=collection_link&creator=13474205"
+  },
+  "item": [
+    {
+      "name": "healthcheck",
+      "item": [
+        {
+          "name": "Healthcheck",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/healthcheck",
+              "host": ["{{BASE_URL}}"],
+              "path": ["healthcheck"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"erden.batuhan@gmail.com\",\n    \"password\": \"hoporlor123\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/signup",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "signup"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    // \"email\": \"erden.batuhan@gmail.com\",\n    \"email\": \"batuhan.erden@tum.de\",\n    \"password\": \"hoporlor123\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"erden.batuhan@gmail.com\",\n    \"password\": \"hoporlor123\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/logout",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "users",
+      "item": [
+        {
+          "name": "Get all users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/users",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/users/:userId",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "6512086e0fc3cdce687ae0df"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a user",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/users/:userId",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "6512086e0fc3cdce687ae0df"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "projects",
+      "item": [
+        {
+          "name": "submissions",
+          "item": [
+            {
+              "name": "Get all submissions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/:projectName/submissions",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["projects", ":projectName", "submissions"],
+                  "variable": [
+                    {
+                      "key": "projectName",
+                      "value": "bbse-bank-2.0"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get a submission",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/:projectName/submissions/:submissionId",
+                  "host": ["{{BASE_URL}}"],
+                  "path": [
+                    "projects",
+                    ":projectName",
+                    "submissions",
+                    ":submissionId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "projectName",
+                      "value": "bbse-bank-2.0"
+                    },
+                    {
+                      "key": "submissionId",
+                      "value": "651211cd0fc3cdce687ae143"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Upload a submission",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "srcZip",
+                      "description": "The zipped src folder containing the smart contracts",
+                      "type": "file",
+                      "src": "automated-smart-contract-tester/example-inputs/bbse-bank-2.0/submission/submission_pass25_fail2.zip"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/:projectName/submissions",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["projects", ":projectName", "submissions"],
+                  "variable": [
+                    {
+                      "key": "projectName",
+                      "value": "bbse-bank-2.0"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Download a submission",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/:projectName/submissions/:submissionId/download",
+                  "host": ["{{BASE_URL}}"],
+                  "path": [
+                    "projects",
+                    ":projectName",
+                    "submissions",
+                    ":submissionId",
+                    "download"
+                  ],
+                  "variable": [
+                    {
+                      "key": "projectName",
+                      "value": "bbse-bank-2.0"
+                    },
+                    {
+                      "key": "submissionId",
+                      "value": "6500bc0124730ddd057d58f1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete a submission",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/:projectName/submissions/:submissionId",
+                  "host": ["{{BASE_URL}}"],
+                  "path": [
+                    "projects",
+                    ":projectName",
+                    "submissions",
+                    ":submissionId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "projectName",
+                      "value": "bbse-bank-2.0"
+                    },
+                    {
+                      "key": "submissionId",
+                      "value": "64ff4d144a57773cdec8c855"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "message-requests",
+          "item": [
+            {
+              "name": "Get all message requests",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/message-requests",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["message-requests"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get a message request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/message-requests/:messageRequestId",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["message-requests", ":messageRequestId"],
+                  "variable": [
+                    {
+                      "key": "messageRequestId",
+                      "value": "6510e6f9a0cc33520a0a778e"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get descriptions of available test execution arguments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/projects/descriptions/test-execution-arguments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects", "descriptions", "test-execution-arguments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/projects",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a project",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/projects/:projectName",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects", ":projectName"],
+              "variable": [
+                {
+                  "key": "projectName",
+                  "value": "bbse-bank-2.0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload a new project",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "projectZip",
+                  "description": "The zipped project files (remappings.txt, .gitmodules, src folder and test folder)",
+                  "type": "file",
+                  "src": "automated-smart-contract-tester/example-inputs/bbse-bank-2.0/project/bbse-bank-2.0.zip"
+                },
+                {
+                  "key": "projectConfig",
+                  "value": "{\n    \"containerTimeout\": 60,\n    \"testExecutionArguments\": {\n        \"gasLimit\": 4501026,\n        \"memoryLimit\": 67108864,\n        \"otherArg\": 21111995\n    }\n}",
+                  "description": "The project config (An object containing containerTimeout and testExecutionArguments)\n\nFor the possible test execution arguments, send a GET request to \"/projects/descriptions/test-execution-arguments\"",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/projects/:projectName/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects", ":projectName", "upload"],
+              "variable": [
+                {
+                  "key": "projectName",
+                  "value": "bbse-bank-2.0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update an existing project",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "projectZip",
+                  "description": "The zipped project files (remappings.txt, .gitmodules, src folder and test folder)",
+                  "type": "file",
+                  "src": "automated-smart-contract-tester/example-inputs/bbse-bank-2.0/project/bbse-bank-2.0.zip"
+                },
+                {
+                  "key": "projectConfig",
+                  "value": "{\n    \"containerTimeout\": 5,\n    \"testExecutionArguments\": {\n        \"gasLimit\": 8000000,\n        \"memoryLimit\": 4000000,\n        \"otherArg\": 3252345624632623\n    }\n}",
+                  "description": "The project config (An object containing containerTimeout and testExecutionArguments)\n\nFor the possible test execution arguments, send a GET request to \"/projects/descriptions/test-execution-arguments\"",
+                  "type": "default"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/projects/:projectName/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects", ":projectName", "upload"],
+              "variable": [
+                {
+                  "key": "projectName",
+                  "value": "bbse-bank-2.0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update the config of an existing project",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tests\": [{\n        \"test\": \"testFail_1_RevertWhen_YearlyReturnRateIsInvalid\",\n        \"weight\": 1.33\n    }],\n    \"containerTimeout\": 23,\n    \"execArgs\": { \"gasLimit\": 324324, \"memoryLimit\": 352532, \"otherArg\": 21111995, \"qwfqwf\": 23523, \"gasPrice\": 31 }\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/projects/:projectName/update",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects", ":projectName", "update"],
+              "variable": [
+                {
+                  "key": "projectName",
+                  "value": "bbse-bank-2.0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Download a project",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/projects/:projectName/download",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects", ":projectName", "download"],
+              "variable": [
+                {
+                  "key": "projectName",
+                  "value": "bbse-bank-2.0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a project",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/projects/:projectName",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects", ":projectName"],
+              "variable": [
+                {
+                  "key": "projectName",
+                  "value": "bbse-bank-2.0"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "HOST",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "BASE_URL",
+      "value": "{{HOST}}/api/automated-smart-contract-tester/services/v1"
+    }
+  ]
+}

@@ -12,6 +12,7 @@
   - [Clean Up Docker Resources](#clean-up-docker-resources)
   - [Clean Up Data](#clean-up-data)
   - [(Optional) Overriding Application Properties](#optional-overriding-application-properties)
+- [Setting up the Postman Workspace](#setting-up-the-postman-workspace)
 - [Development](#development)
   - [Setting up the Development Environment](#setting-up-the-development-environment)
   - [Running the services separately](#running-the-services-separately)
@@ -87,6 +88,23 @@ ENV=dev # The staging environment (dev, qa, prod, etc.).
 PORT=14000 # The port to which the application will be exposed.
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on.
 ```
+
+## Setting up the Postman Workspace
+
+The directory `./data/postman` contains the Postman collections for the `services` and `test-runner` services, along with example inputs used in these requests. To set up a Postman workspace on your local machine, follow these steps:
+
+1. **Install Postman:** If you haven't already, [install Postman](https://www.postman.com/downloads/) on your computer.
+2. **Configure Working Directory:** Ensure that the default [working directory](https://learning.postman.com/docs/getting-started/installation/settings/#working-directory) in Postman remains set to `~/Postman/files`. This setting is important for the workspace setup.
+3. **Initialize Postman Workspace:** Run the `./data/postman/postman_workdir_setup.sh` script located in the project directory. This script will create the necessary Postman working directory for this application and transfer the example data used in the requests into the working directory.
+4. **(Optional) Create Workspace:** If desired, create a new Postman workspace named `Automated Smart Contract Tester`. Workspaces help organize your collections.
+5. **Import Collections:** [Import the following Postman collections](https://learning.postman.com/docs/getting-started/importing-and-exporting/importing-data/) into your Postman workspace:
+   - `./data/postman/services.postman_collection.json`
+   - `./data/postman/test-runner.postman_collection.json`
+
+Remember to:
+
+- Update these collections if you create new endpoints or make changes during your development process. This ensures that other developers who might work on this project later have access to the up-to-date endpoints.
+- Add new or updated files needed in the requests both under your Postman working directory for this application (`~/Postman/files/automated-smart-contract-tester`) and to `./data/postman/files`.
 
 ## Development
 

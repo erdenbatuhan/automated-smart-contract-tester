@@ -1,0 +1,213 @@
+{
+  "info": {
+    "_postman_id": "589a2338-9544-4c19-a39f-91309a3a5af5",
+    "name": "test-runner",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "13474205",
+    "_collection_link": "https://red-satellite-813631.postman.co/workspace/Automated-Smart-Contract-Tester~6822d0c4-8cfa-4a40-bde6-71b83fe0b248/collection/13474205-589a2338-9544-4c19-a39f-91309a3a5af5?action=share&source=collection_link&creator=13474205"
+  },
+  "item": [
+    {
+      "name": "healthcheck",
+      "item": [
+        {
+          "name": "Healthcheck (Docker)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/healthcheck/docker",
+              "host": ["{{BASE_URL}}"],
+              "path": ["healthcheck", "docker"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "forge",
+      "item": [
+        {
+          "name": "Available test execution arguments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/forge/test/options/execution-arguments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["forge", "test", "options", "execution-arguments"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "projects",
+      "item": [
+        {
+          "name": "executions",
+          "item": [
+            {
+              "name": "Upload an execution",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "srcZip",
+                      "description": "The zipped src folder containing the smart contracts",
+                      "type": "file",
+                      "src": "automated-smart-contract-tester/example-inputs/bbse-bank-2.0/submission/submission_pass25_fail2.zip"
+                    },
+                    {
+                      "key": "execArgs",
+                      "value": "{ \"gasLimit\": 9501026, \"memoryLimit\": 97108864, \"otherArg\": 2142 }",
+                      "description": "Test execution arguments\n\nSend a GET request to \"/forge/test/options/execution-arguments\" for the possible values",
+                      "type": "default"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/:projectName/executions?containerTimeout=3",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["projects", ":projectName", "executions"],
+                  "query": [
+                    {
+                      "key": "containerTimeout",
+                      "value": "3"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "projectName",
+                      "value": "bbse-bank-2.0"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "images",
+          "item": [
+            {
+              "name": "Get all images",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/images",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["projects", "images"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get an image",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/images/:imageName",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["projects", "images", ":imageName"],
+                  "variable": [
+                    {
+                      "key": "imageName",
+                      "value": "bbse-bank-2.0"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete an image",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/projects/images/:imageName",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["projects", "images", ":imageName"],
+                  "variable": [
+                    {
+                      "key": "imageName",
+                      "value": "bbse-bank-2.0"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Create/Update a project",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "projectZip",
+                  "description": "The zipped project files (remappings.txt, .gitmodules, src folder and test folder)",
+                  "type": "file",
+                  "src": "automated-smart-contract-tester/example-inputs/bbse-bank-2.0/project/bbse-bank-2.0.zip"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/projects/:projectName/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["projects", ":projectName", "upload"],
+              "variable": [
+                {
+                  "key": "projectName",
+                  "value": "bbse-bank-2.0"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "HOST",
+      "value": "http://localhost:4001",
+      "type": "string"
+    },
+    {
+      "key": "BASE_URL",
+      "value": "{{HOST}}/api/automated-smart-contract-tester/runner/v1",
+      "type": "string"
+    }
+  ]
+}
