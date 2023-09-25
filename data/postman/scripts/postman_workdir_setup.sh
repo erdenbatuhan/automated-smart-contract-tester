@@ -9,7 +9,7 @@ if [ -z "$POSTMAN_WORKDIR" ]; then
 fi
 
 # Define the source and destination directories
-source_dir="$(pwd)/workdir"
+source_dir="$(pwd)/data/postman/workdir"
 destination_dir="$POSTMAN_WORKDIR/automated-smart-contract-tester"
 
 # Check if the destination directory exists
