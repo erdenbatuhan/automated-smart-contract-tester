@@ -2,14 +2,6 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/.donotcommit" />
-      <excludeFolder url="file://$MODULE_DIR$/.tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/app/services/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/app/services/temp" />
-      <excludeFolder url="file://$MODULE_DIR$/app/test-runner/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/app/test-runner/temp" />
-      <excludeFolder url="file://$MODULE_DIR$/temp" />
-      <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
