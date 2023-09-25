@@ -9,6 +9,25 @@ import type { IMessageRequest } from '@models/MessageRequest';
 import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses/ContainerExecutionResponse';
 
 /**
+ * Find all message requests associated with a user or all message requests.
+ *
+ * This function retrieves all message requests that match the given user's deployer field or returns all message requests if no user is provided.
+ *
+ * @param {IUser} [user] - The optional user for whom to find message requests. If omitted, all message requests are returned.
+ * @returns {Promise<IMessageRequest[]>} A Promise that resolves to an array of message requests.
+ * @throws {AppError} Throws an AppError if an error occurs during the database query.
+ */
+const findAllMessageRequests = async (
+  user?: IUser
+): Promise<IMessageRequest[]> => {
+  const findFunction = user ? MessageRequest.find({ deployer: user }) : MessageRequest.find();
+  return findFunction.exec()
+    .catch((err: Error | unknown) => {
+      throw AppError.createAppError(err, 'An error occurred while finding all message requests.');
+    });
+};
+
+/**
  * Finds a message request by its ID.
  *
  * @param {Types.ObjectId | string} messageRequestId - The ID of the message request to find.
@@ -75,6 +94,7 @@ const updateMessageRequest = (
 });
 
 export default {
+  findAllMessageRequests,
   findMessageRequest,
   doesMessageRequestBelongToGivenUser,
   saveMessageRequest,

@@ -8,6 +8,10 @@ import submissionServices from '@services/submissionServices';
 /**
  * Determines the appropriate function to retrieve submissions based on the user's role.
  *
+ * This middleware determines the function to retrieve submissions based on the user's role.
+ * - If the user is an admin, it sets the 'findFunction' in the response locals to retrieve all submissions.
+ * - If the user is not an admin, it sets the 'findFunction' in the response locals to retrieve submissions made by that user.
+ *
  * @param {Request} req - Express request object.
  * @param {Response} res - Express response object.
  * @param {NextFunction} next - Express next middleware function.
