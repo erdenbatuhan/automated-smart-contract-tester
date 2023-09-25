@@ -48,7 +48,7 @@ ProjectSchema.virtual<IProject>('deployer', {
 });
 
 /**
- * Converts the submission to a plain JavaScript object (POJO) while including virtuals and depopulating populated fields.
+ * Converts the project to a plain JavaScript object (POJO) while including virtuals and depopulating populated fields.
  *
  * @returns {Promise<object>} A Promise that resolves to a plain JavaScript object representing the document.
  * @throws {Error} If an error occurs during the operation.
