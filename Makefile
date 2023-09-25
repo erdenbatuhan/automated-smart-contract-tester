@@ -4,7 +4,7 @@ ENV_FILES = \
 	--env-file $(MONGO_DIR)/mongo.properties \
 	--env-file ./application.properties \
 	--env-file ./rabbitmq.properties \
-	--env-file ./.env
+	$(if $(wildcard .env), --env-file .env)
 COMPOSE_FILES = \
 	-f ./docker-compose.yml \
 	-f $(MONGO_DIR)/docker-compose.mongo.yml
