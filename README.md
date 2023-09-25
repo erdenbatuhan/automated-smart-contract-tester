@@ -34,7 +34,7 @@
 
 Create the following files and place the respective secrets in them:
 
-- `./services/secrets/jwt-secret.secret`
+- `./services/secrets/jwt.secret`
 - `./services/secrets/mongodb-uri.secret`
 
 **Exclusion in Docker:** It's important to note that the secrets directory won't be copied into the Docker container. Docker handles the logistics of secrets securely. This exclusion is specified in the `.dockerignore` file located in the `./services` directory.

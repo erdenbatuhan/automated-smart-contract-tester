@@ -16,7 +16,7 @@ import type { IUser } from '@models/User';
  */
 const getAuthResponse = (user: IUser): { payload: { user: IUser }, token: string } => {
   const payload = { user: user.getPublicRepresentation() };
-  const token = jwt.sign(payload, SecretsManager.getInstance().getSecret('jwt-secret'), { expiresIn: Constants.MAX_AGE_JWT });
+  const token = jwt.sign(payload, SecretsManager.getInstance().getSecret('jwt'), { expiresIn: Constants.MAX_AGE_JWT });
 
   return { payload, token };
 };

@@ -54,7 +54,7 @@ const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
     if (!token) throw new AppError(HttpStatusCode.Unauthorized, 'Cannot authenticate without a valid token.', 'Empty token!');
 
     // Extract user from the token (Throws an Error if the token is not verified)
-    const payload = jwt.verify(token, SecretsManager.getInstance().getSecret('jwt-secret')) as JwtPayload;
+    const payload = jwt.verify(token, SecretsManager.getInstance().getSecret('jwt')) as JwtPayload;
     res.locals.user = payload.user; // Set user object
 
     // Proceed

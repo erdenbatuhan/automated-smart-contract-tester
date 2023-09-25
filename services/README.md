@@ -44,7 +44,7 @@ RABBITMQ_MANAGEMENT_PASSWORD=guest
 
 Create the following files and place the respective secrets in them:
 
-- `./secrets/local/jwt-secret.local.secret`
+- `./secrets/local/jwt.local.secret`
 - `./secrets/local/mongodb-uri.local.secret`
 
 Ensure that each secret is securely stored in its respective file.

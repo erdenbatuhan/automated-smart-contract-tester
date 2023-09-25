@@ -1,14 +1,4 @@
 version: "3"
-networks:
-  application-network: # External network for accessing this application
-  isolated-network-rabbit: # Isolated network for RabbitMQ
-volumes:
-  volume-rabbitmq.data: # Data volume for RabbitMQ
-secrets:
-  SERVICES_MONGODB_URI:
-    file: ./services/secrets/mongodb-uri.secret
-  SERVICES_JWT_SECRET:
-    file: ./services/secrets/jwt-secret.secret
 services:
   # Backend Services
   services:
@@ -31,8 +21,10 @@ services:
     environment:
       RABBITMQ_HOST: rabbitmq # Ensure this matches the service and container name of the RabbitMQ service
     secrets:
-      - SERVICES_MONGODB_URI
-      - SERVICES_JWT_SECRET
+      - source: secret-services-mongodb_uri
+        target: mongodb-uri.secret
+      - source: secret-services-jwt
+        target: jwt-secret.secret
     healthcheck:
       test: curl --fail http://localhost:${PORT}/api/${APP_NAME}/services/healthcheck/v1 || exit 1
       interval: 10s
@@ -96,3 +88,13 @@ services:
         condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
+networks:
+  application-network: # External network for accessing this application
+  isolated-network-rabbit: # Isolated network for RabbitMQ
+volumes:
+  volume-rabbitmq.data: # Data volume for RabbitMQ
+secrets:
+  secret-services-mongodb_uri:
+    file: ./services/secrets/mongodb-uri.secret
+  secret-services-jwt:
+    file: ./services/secrets/jwt.secret
