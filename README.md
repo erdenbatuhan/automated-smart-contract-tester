@@ -88,7 +88,7 @@ PORT=14000 # The port to which the application will be exposed.
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on.
 ```
 
-### Development
+## Development
 
 ### Setting up the Development Environment
 
