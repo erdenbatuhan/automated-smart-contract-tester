@@ -3,6 +3,7 @@ import { HttpStatusCode } from 'axios';
 import jwt from 'jsonwebtoken';
 import type { JwtPayload } from 'jsonwebtoken';
 
+import SecretsManager from '@SecretsManager';
 import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
@@ -10,10 +11,6 @@ import type { IUser } from '@models/User';
 import UserRole from '@models/enums/UserRole';
 
 import routerUtils from '@utils/routerUtils';
-
-// Read JWT secret from environment variables
-const { JWT_SECRET } = process.env;
-if (!JWT_SECRET) throw new Error('Missing environment variables (\'JWT_SECRET\')!');
 
 /**
  * Handles access-related errors and either sends an appropriate response or throws an error.
@@ -57,7 +54,7 @@ const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
     if (!token) throw new AppError(HttpStatusCode.Unauthorized, 'Cannot authenticate without a valid token.', 'Empty token!');
 
     // Extract user from the token (Throws an Error if the token is not verified)
-    const payload = jwt.verify(token, JWT_SECRET!) as JwtPayload;
+    const payload = jwt.verify(token, SecretsManager.getInstance().getSecret('jwt-secret')) as JwtPayload;
     res.locals.user = payload.user; // Set user object
 
     // Proceed

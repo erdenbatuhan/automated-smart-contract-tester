@@ -16,7 +16,7 @@ If you haven't already done so, please follow the instructions in the [README](.
 
 ### Environment Setup
 
-Before running the service, make sure that you have created a **.env.development.local** file and set the following environment variables.
+Before running the service, make sure that you have created a `.env.local` file and set the following environment variables.
 
 ```bash
 ENV=dev # The staging environment (dev, qa, prod, etc.)
@@ -24,8 +24,8 @@ APP_NAME=automated-smart-contract-testing
 PORT=4000
 
 # Secrets
-MONGODB_URI= # Specify your MongoDB URI here
-JWT_SECRET= # Specify the secret used to sign JWTs
+SECRETS_DIR=./secrets/local
+SECRETS_EXT=.local.secret
 
 # RabbitMQ
 RABBITMQ_HOST=127.0.0.1
@@ -39,6 +39,15 @@ RABBITMQ_QUEUE_SUBMISSION_UPLOAD=queue_submissions_upload
 RABBITMQ_MANAGEMENT_USERNAME=guest
 RABBITMQ_MANAGEMENT_PASSWORD=guest
 ```
+
+### Secrets
+
+Create the following files and place the respective secrets in them:
+
+- `./secrets/local/jwt-secret.local.secret`
+- `./secrets/local/mongodb-uri.local.secret`
+
+Ensure that each secret is securely stored in its respective file.
 
 ### Option 1 - Using Docker
 

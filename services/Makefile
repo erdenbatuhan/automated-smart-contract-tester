@@ -1,4 +1,4 @@
-include .env.development.local
+include .env.local
 
 CONTAINER = $(APP_NAME)-services
 IMAGE = $(CONTAINER):local
@@ -26,9 +26,10 @@ build: remove_image
 run: remove_container
 	docker run \
 		-p $(PORT):$(PORT) \
+		-v $(SECRETS_DIR):/run/secrets \
 		--network $(RABBITMQ_NETWORK) \
 		--name $(CONTAINER) \
-		--env-file .env.development.local --env "RABBITMQ_HOST=$(RABBITMQ_CONTAINER)" \
+		--env-file .env.local -e "RABBITMQ_HOST=$(RABBITMQ_CONTAINER)" -e "SECRETS_DIR=" \
 		$(ARGS) -t $(IMAGE)
 
 .PHONY: clean

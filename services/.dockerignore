@@ -13,5 +13,8 @@ node_modules/
 # dotenv environment variable files
 .env*
 
+# Secrets
+secrets/
+
 # ESLint configs
 .eslintrc.*

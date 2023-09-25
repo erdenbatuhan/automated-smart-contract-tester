@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 
+import SecretsManager from '@SecretsManager';
 import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
@@ -14,8 +15,8 @@ import projectMiddlewares from '@middlewares/projectMiddlewares';
 import apiRouter from '@rest';
 
 // Read environment variables
-const { APP_NAME, PORT, MONGODB_URI } = process.env;
-if (!APP_NAME || !PORT || !MONGODB_URI) throw new Error('Missing environment variables!');
+const { APP_NAME, PORT } = process.env;
+if (!APP_NAME || !PORT) throw new Error('Missing environment variables!');
 
 // Initialize the Express app with middleware configurations
 const app = express();
@@ -34,7 +35,7 @@ app.use(`/api/${APP_NAME}/services/v1`, apiRouter); // Mount modular routes with
 
 Promise.all([
   // (1) Establish a connection to MongoDB
-  mongoose.connect(MONGODB_URI).catch((err: Error | unknown) => {
+  mongoose.connect(SecretsManager.getInstance().getSecret('mongodb-uri')).catch((err: Error | unknown) => {
     throw AppError.createAppError(err, 'Could not connect to the DB.');
   }),
   // (2) Prepare the test runner service by uploading all projects to it

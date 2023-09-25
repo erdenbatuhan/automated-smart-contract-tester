@@ -12,6 +12,9 @@ RUN if [ "$ENV" = "dev" ]; then NODE_ENV=$ENV npm i; else NODE_ENV=$ENV npm ci; 
 # Bundle the app source
 COPY . .
 
+# Ensure secrets are not included (already ignored in .dockerignore, this is just an additional safeguard)
+RUN rm -rf /app/secrets
+
 # Expose the port
 ARG PORT
 EXPOSE $PORT

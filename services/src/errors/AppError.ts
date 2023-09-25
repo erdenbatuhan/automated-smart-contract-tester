@@ -22,12 +22,13 @@ export default class AppError extends Error {
    * Handles an error by logging it and returning a new AppError object with a custom message or the original error message.
    *
    * @param {AppError | Error | unknown} err - The original error object.
-   * @param {string} [message] - The custom error message to include in the returned AppError object. If not provided, the original error message is used.
+   * @param {string | null} [message] - The custom error message to include in the returned AppError object. If not provided, the original error message is used.
    * @param {HttpStatusCode} [defaultStatusCode=HttpStatusCode.InternalServerError] - The default HTTP status code to use if the error is not an AppError.
    * @returns {AppError} A new AppError object with the specified message or the original error message.
    */
   public static createAppError = (
-    err: AppError | Error | unknown, message?: string, defaultStatusCode: HttpStatusCode = HttpStatusCode.InternalServerError
+    err: AppError | Error | unknown, message?: string | null,
+    defaultStatusCode: HttpStatusCode = HttpStatusCode.InternalServerError
   ): AppError => {
     const errStatusCode = (err as AppError)?.statusCode || defaultStatusCode;
     const errMessage = (err as Error)?.message;

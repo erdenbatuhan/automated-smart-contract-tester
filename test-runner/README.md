@@ -25,7 +25,7 @@ make rabbit_stop
 
 ### Environment Setup
 
-Before running the service, make sure that you have created a **.env.development.local** file and set the following environment variables.
+Before running the service, make sure that you have created a `.env.local` file and set the following environment variables.
 
 ```bash
 ENV=dev # The staging environment (dev, qa, prod, etc.)

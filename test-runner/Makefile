@@ -1,4 +1,4 @@
-include .env.development.local
+include .env.local
 
 CONTAINER = $(APP_NAME)-runner
 IMAGE = $(CONTAINER):local
@@ -29,7 +29,7 @@ run: remove_container
 		-v $(DOCKER_SOCKET_PATH):$(DOCKER_SOCKET_PATH) \
 		--network $(RABBITMQ_NETWORK) \
 		--name $(CONTAINER) \
-		--env-file .env.development.local --env "RABBITMQ_HOST=$(RABBITMQ_CONTAINER)" \
+		--env-file .env.local --env "RABBITMQ_HOST=$(RABBITMQ_CONTAINER)" \
 		$(ARGS) -t $(IMAGE)
 
 .PHONY: clean

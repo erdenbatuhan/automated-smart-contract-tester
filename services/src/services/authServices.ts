@@ -1,15 +1,12 @@
 import jwt from 'jsonwebtoken';
 
 import Constants from '@Constants';
+import SecretsManager from '@SecretsManager';
 import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import User from '@models/User';
 import type { IUser } from '@models/User';
-
-// Read JWT secret from environment variables
-const { JWT_SECRET } = process.env;
-if (!JWT_SECRET) throw new Error('Missing environment variables (\'JWT_SECRET\')!');
 
 /**
  * Generates an authentication response object with a user payload and JWT token.
@@ -19,7 +16,7 @@ if (!JWT_SECRET) throw new Error('Missing environment variables (\'JWT_SECRET\')
  */
 const getAuthResponse = (user: IUser): { payload: { user: IUser }, token: string } => {
   const payload = { user: user.getPublicRepresentation() };
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: Constants.MAX_AGE_JWT });
+  const token = jwt.sign(payload, SecretsManager.getInstance().getSecret('jwt-secret'), { expiresIn: Constants.MAX_AGE_JWT });
 
   return { payload, token };
 };
