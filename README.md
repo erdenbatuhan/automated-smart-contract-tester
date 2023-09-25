@@ -1,4 +1,4 @@
-# Automated Smart Contract Testing
+# Automated Smart Contract Tester
 
 ## Contents
 

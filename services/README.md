@@ -1,4 +1,4 @@
-# Automated Smart Contract Testing - Backend Services
+# Automated Smart Contract Tester - Services
 
 ## Running the entire application with Docker Compose
 
@@ -20,7 +20,7 @@ Before running the service, make sure that you have created a `.env.local` file 
 
 ```bash
 ENV=dev # The staging environment (dev, qa, prod, etc.)
-APP_NAME=automated-smart-contract-testing
+APP_NAME=automated-smart-contract-tester
 PORT=4000
 
 # Secrets

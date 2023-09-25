@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="mongo" pattern="file[automated-smart-contract-testing]:mongo//*" />
-</component>

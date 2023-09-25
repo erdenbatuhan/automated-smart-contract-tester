@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="test-runner" pattern="file[automated-smart-contract-testing]:test-runner//*&amp;&amp;!file[automated-smart-contract-testing]:test-runner/dist//*" />
-</component>

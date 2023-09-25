@@ -1,17 +1,17 @@
 {
-  "name": "automated-smart-contract-testing-runner",
+  "name": "smart-contract-test-runner",
   "version": "1.0.0",
   "description": "",
   "author": "Batuhan Erden",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/erdenbatuhan/automated-smart-contract-testing-app.git"
+    "url": "git+https://github.com/erdenbatuhan/automated-smart-contract-tester.git"
   },
   "bugs": {
-    "url": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app/issues"
+    "url": "https://github.com/erdenbatuhan/automated-smart-contract-tester/issues"
   },
-  "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-testing-app#readme",
+  "homepage": "https://github.com/erdenbatuhan/automated-smart-contract-tester#readme",
   "_moduleAliases": {
     "@Constants": "dist/src/Constants",
     "@Logger": "dist/src/Logger",

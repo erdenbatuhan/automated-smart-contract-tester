@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="services" pattern="file[automated-smart-contract-testing]:services//*&amp;&amp;!file[automated-smart-contract-testing]:services/dist//*" />
-</component>
