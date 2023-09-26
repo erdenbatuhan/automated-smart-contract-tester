@@ -29,7 +29,7 @@ services:
       test: curl --fail http://localhost:${PORT}/api/${APP_NAME}/services/healthcheck/v1 || exit 1
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -80,7 +80,7 @@ services:
       RABBITMQ_HOST: rabbitmq # Ensure this matches the service and container name of the RabbitMQ service
     healthcheck:
       test: curl --fail http://localhost:${PORT}/api/${APP_NAME}/runner/v1/healthcheck/docker || exit 1
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 10
     depends_on:
