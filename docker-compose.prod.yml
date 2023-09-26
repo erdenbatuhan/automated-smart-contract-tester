@@ -5,9 +5,8 @@ services:
     container_name: services # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
     build:
       context: ./services
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.prod
       args:
-        ENV: ${ENV}
         PORT: ${PORT}
     restart: unless-stopped
     networks:
@@ -27,7 +26,7 @@ services:
         target: jwt.secret
     healthcheck:
       test: curl --fail http://localhost:${PORT}/api/${APP_NAME}/services/healthcheck/v1 || exit 1
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 10
     depends_on:
@@ -60,9 +59,8 @@ services:
     container_name: runner # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
     build:
       context: ./test-runner
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.prod
       args:
-        ENV: ${ENV}
         PORT: ${PORT}
     restart: unless-stopped
     networks:
@@ -80,7 +78,7 @@ services:
       RABBITMQ_HOST: rabbitmq # Ensure this matches the service and container name of the RabbitMQ service
     healthcheck:
       test: curl --fail http://localhost:${PORT}/api/${APP_NAME}/runner/v1/healthcheck/docker || exit 1
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 10
     depends_on:

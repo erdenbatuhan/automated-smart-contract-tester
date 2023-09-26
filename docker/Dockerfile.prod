@@ -1,0 +1,49 @@
+# ------------- #
+#  Build Stage  #
+# ------------- #
+FROM node:18-alpine as build-stage
+
+# Set the working directory
+WORKDIR /app
+
+# Install the dependencies
+COPY package*.json ./
+RUN npm install
+
+# Bundle the app source
+COPY . .
+RUN rm -rf /app/secrets # Ensure secrets are not included (already ignored in .dockerignore, this is just an additional safeguard)
+
+# Build the app
+RUN npm run build
+
+# ------------------ #
+#  Production Stage  #
+# ------------------ #
+FROM node:18-alpine as production-stage
+
+# Install curl for Healthcheck
+RUN apk add --no-cache curl
+
+# Install pm2 globally
+RUN npm install -g pm2
+
+# Set the working directory
+WORKDIR /app
+
+# Install the dependencies (only production)
+COPY package*.json ./
+RUN NODE_ENV=production npm install --only=production
+
+# Copy the built files
+COPY --from=build-stage /app/dist dist
+
+# Copy the ecosystem config for pm2
+COPY ./ecosystem.config.js .
+
+# Expose the port
+ARG PORT
+EXPOSE $PORT
+
+# Start the app
+CMD [ "pm2-runtime", "start", "ecosystem.config.js", "--env=production"]

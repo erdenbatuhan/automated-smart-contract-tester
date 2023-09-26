@@ -1,0 +1,22 @@
+FROM node:18-alpine
+
+# Install curl for Healthcheck
+RUN apk add --no-cache curl
+
+# Set the working directory
+WORKDIR /app
+
+# Install the dependencies
+COPY package*.json ./
+RUN NODE_ENV=development npm install
+
+# Bundle the app source
+COPY . .
+#RUN rm -rf /app/secrets # Ensure secrets are not included (already ignored in .dockerignore, this is just an additional safeguard)
+
+# Expose the port
+ARG PORT
+EXPOSE $PORT
+
+# Start the app
+CMD [ "npm", "run", "dev" ]

@@ -28,7 +28,6 @@ make rabbit_stop
 Before running the service, make sure that you have created a `.env.local` file and set the following environment variables.
 
 ```bash
-ENV=dev # The staging environment (dev, qa, prod, etc.)
 APP_NAME=automated-smart-contract-tester
 PORT=4001
 
@@ -61,7 +60,7 @@ make build
 #### Starting the Docker container:
 
 ```bash
-make run
+make run ARGS=-d # Run the containers in background
 ```
 
 #### Stopping the Docker container:

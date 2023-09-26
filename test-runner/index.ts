@@ -1,3 +1,7 @@
+/* eslint-disable import/first */
+/* eslint-disable-next-line */
+if (process.env['NODE_ENV'] === 'production') require('module-alias/register'); // Register module aliases on production
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';

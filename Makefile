@@ -6,12 +6,12 @@ ENV_FILES = \
 	--env-file ./rabbitmq.properties \
 	$(if $(wildcard .env), --env-file .env)
 COMPOSE_FILES = \
-	-f ./docker-compose.yml \
+	-f ./docker-compose.prod.yml \
 	-f $(MONGO_DIR)/docker-compose.mongo.yml
 
 .PHONY: stop
 stop:
-	docker compose -p $(APP_NAME) down
+	docker compose -p $(APP_NAME) down || true
 
 .PHONY: start
 start: stop

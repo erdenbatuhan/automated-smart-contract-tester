@@ -27,10 +27,8 @@
   },
   "scripts": {
     "prepare": "cd .. && if [ -f \"./package.json\" ] && [ -d './.husky' ]; then npm install; fi",
-    "dev": "node --loader ts-node/esm -r dotenv/config index.ts dotenv_config_path=./.env.local | npx pino-pretty",
     "build": "rm -rf dist && tsc",
-    "serve": "npm run build && node -r module-alias/register dist/index.js",
-    "start": "if [ \"$ENV\" = \"dev\" ]; then npm run dev; else npm run serve; fi",
+    "dev": "node --loader ts-node/esm -r dotenv/config index.ts dotenv_config_path=./.env.local | npx pino-pretty",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

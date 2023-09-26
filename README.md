@@ -84,7 +84,6 @@ You can customize certain environment variables defined in `application.properti
 
 ```bash
 # .env
-ENV=dev # The staging environment (dev, qa, prod, etc.).
 PORT=14000 # The port to which the application will be exposed.
 DOCKER_SOCKET_PATH=/var/run/docker.sock # The socket that the Host's Docker Daemon runs on.
 ```
