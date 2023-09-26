@@ -7,7 +7,7 @@ WORKDIR /app
 # Install the dependencies
 COPY package*.json ./
 ARG ENV
-RUN if [ "$ENV" = "dev" ]; then NODE_ENV=$ENV npm i; else NODE_ENV=$ENV npm ci; fi
+RUN NODE_ENV=$ENV npm install
 
 # Bundle the app source
 COPY . .
