@@ -3,7 +3,6 @@ import type { Channel, ConsumeMessage } from 'amqplib';
 import Logger from '@Logger';
 
 import RabbitInstance from '@rabbitmq/helpers/RabbitInstance';
-import { Error } from 'mongoose';
 
 /**
  * A class for consuming messages from RabbitMQ queues and processing them.
