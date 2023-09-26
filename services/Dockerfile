@@ -1,10 +1,10 @@
 # Use an official Node.js runtime as the base image
 FROM node:18
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Install the project dependencies
+# Install the dependencies
 COPY package*.json ./
 ARG ENV
 RUN if [ "$ENV" = "dev" ]; then NODE_ENV=$ENV npm i; else NODE_ENV=$ENV npm ci; fi
