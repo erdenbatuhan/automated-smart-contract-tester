@@ -1,7 +1,7 @@
 include .env.local
 
 CONTAINER = $(APP_NAME)-services
-IMAGE = $(CONTAINER):local
+IMAGE = $(CONTAINER):dev
 
 # RabbitMQ
 RABBITMQ_CONTAINER = $(APP_NAME)-rabbit
