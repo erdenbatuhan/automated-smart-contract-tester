@@ -13,7 +13,7 @@ export default class RabbitConsumer {
   protected incomingChannel!: Channel;
   protected outgoingChannel!: Channel;
 
-  constructor(incomingExchangeOrQueue: string, prefetchCount: number) {
+  protected constructor(incomingExchangeOrQueue: string, prefetchCount: number) {
     this.incomingExchangeOrQueue = incomingExchangeOrQueue;
     this.prefetchCount = prefetchCount;
   }

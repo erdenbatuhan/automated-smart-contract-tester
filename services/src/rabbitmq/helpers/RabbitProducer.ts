@@ -15,7 +15,7 @@ export default class RabbitProducer {
   protected replyChannel!: Channel;
   protected consumers: Map<string, string> = new Map();
 
-  constructor(outgoingQueueOrExchange: string, prefetchCount: number) {
+  protected constructor(outgoingQueueOrExchange: string, prefetchCount: number) {
     this.replyQueue = `reply_${outgoingQueueOrExchange}`;
     this.prefetchCount = prefetchCount;
   }

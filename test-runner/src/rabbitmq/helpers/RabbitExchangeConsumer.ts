@@ -9,7 +9,7 @@ export default class RabbitExchangeConsumer extends RabbitConsumer {
   incomingExchange: string;
   queueBoundToIncomingExchange?: string;
 
-  constructor(incomingExchange: string, prefetchCount: number) {
+  private constructor(incomingExchange: string, prefetchCount: number) {
     super(incomingExchange, prefetchCount);
     this.incomingExchange = incomingExchange;
   }

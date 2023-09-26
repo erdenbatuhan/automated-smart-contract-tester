@@ -11,7 +11,7 @@ import RabbitProducer from '@rabbitmq/helpers/RabbitProducer';
 export default class RabbitExchangeProducer extends RabbitProducer {
   outgoingExchange: string;
 
-  constructor(outgoingExchange: string, prefetchCount: number) {
+  private constructor(outgoingExchange: string, prefetchCount: number) {
     super(outgoingExchange, prefetchCount);
     this.outgoingExchange = outgoingExchange;
   }

@@ -10,7 +10,7 @@ import RabbitProducer from '@rabbitmq/helpers/RabbitProducer';
 export default class RabbitQueueProducer extends RabbitProducer {
   outgoingQueue: string;
 
-  constructor(outgoingQueue: string, prefetchCount: number) {
+  private constructor(outgoingQueue: string, prefetchCount: number) {
     super(outgoingQueue, prefetchCount);
     this.outgoingQueue = outgoingQueue;
   }

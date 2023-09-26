@@ -8,7 +8,7 @@ import RabbitConsumer from '@rabbitmq/helpers/RabbitConsumer';
 export default class RabbitQueueConsumer extends RabbitConsumer {
   incomingQueue: string;
 
-  constructor(incomingQueue: string, prefetchCount: number) {
+  private constructor(incomingQueue: string, prefetchCount: number) {
     super(incomingQueue, prefetchCount);
     this.incomingQueue = incomingQueue;
   }
