@@ -31,7 +31,7 @@ run: remove_container
 		--network $(RABBITMQ_NETWORK) \
 		--name $(CONTAINER) \
 		--env-file .env.local -e "RABBITMQ_HOST=$(RABBITMQ_CONTAINER)" -e "SECRETS_DIR=" \
-		$(ARGS) -t $(IMAGE)
+		-t $(ARGS) $(IMAGE)
 
 .PHONY: stop
 stop: remove_container
