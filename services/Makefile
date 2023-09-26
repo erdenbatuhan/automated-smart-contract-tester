@@ -19,7 +19,7 @@ remove_image: remove_container
 .PHONY: build
 build: remove_image
 	docker build \
-		--build-arg ENV=$(ENV) --build-arg PORT=$(PORT) \
+		--build-arg PORT=$(PORT) \
 		-f docker/Dockerfile.dev \
 		-t $(IMAGE) .
 
