@@ -24,7 +24,7 @@ if (!APP_NAME || !PORT) throw new Error('Missing environment variables!');
 
 // Initialize the Express app with middleware configurations
 const app = express();
-app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
+app.use(cors({ origin: true, credentials: true })); // Enable Cross-Origin Resource Sharing (CORS)
 app.use(helmet()); // Enhance security using Helmet middleware
 app.use(bodyParser.json({ limit: '50mb' })); // Parse JSON requests and set body size limit
 app.use(cookieParser()); // Enable cookie parsing
