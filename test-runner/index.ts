@@ -45,4 +45,6 @@ Promise.all([
   app.listen(PORT, () => {
     Logger.info(`The service is now running on port ${PORT}!`);
   });
+}).catch(() => {
+  process.exit(1);
 });
