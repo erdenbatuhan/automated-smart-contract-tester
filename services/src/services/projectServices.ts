@@ -137,7 +137,7 @@ const rebuildAndUpdateProject = async (
   const existingProject = await findProjectByName(projectName, 'upload');
 
   // Clear the project's previous config and output
-  existingProject.config = { tests: [] };
+  existingProject.config = {};
   existingProject.output = {};
 
   // Update the existing project's config, if provided
@@ -201,8 +201,8 @@ const updateProjectConfig = async (
 
   // Update test weights if provided
   if (updatedConfig.tests) {
-    existingProject.config.tests = existingProject.config.tests.map((existingTest) => {
-      const newWeight = updatedConfig.tests.find(({ test }) => test === existingTest.test)?.weight;
+    existingProject.config.tests = existingProject.config.tests!.map((existingTest) => {
+      const newWeight = updatedConfig.tests!.find(({ test }) => test === existingTest.test)?.weight;
       existingTest.weight = newWeight || existingTest.weight;
 
       return existingTest;
