@@ -61,7 +61,7 @@
                       "key": "srcZip",
                       "description": "The zipped src folder containing the smart contracts",
                       "type": "file",
-                      "src": "/Users/batuhan/Developer/automated-smart-contract-tester/data/postman/workdir/example-inputs/bbse-bank-2.0/submission/submission_pass25_fail2.zip"
+                      "src": "automated-smart-contract-tester/example-inputs/bbse-bank-2.0/submission/submission_pass25_fail2.zip"
                     },
                     {
                       "key": "execArgs",
