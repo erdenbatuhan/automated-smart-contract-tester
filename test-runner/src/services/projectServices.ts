@@ -1,3 +1,5 @@
+import path from 'path';
+
 import Constants from '@Constants';
 import Logger from '@Logger';
 import AppError from '@errors/AppError';
@@ -5,45 +7,25 @@ import AppError from '@errors/AppError';
 import type { IDockerImage } from '@models/DockerImage';
 import DockerContainerHistory from '@models/DockerContainerHistory';
 import type { IDockerContainerHistory } from '@models/DockerContainerHistory';
-import type { IDockerContainerResults } from '@models/schemas/DockerContainerResultsSchema';
 
 import ContainerPurpose from '@models/enums/ContainerPurpose';
-import DockerExitCode from '@models/enums/DockerExitCode';
 
 import dockerImageServices from '@services/dockerImageServices';
+import executionServices from '@services/executionServices';
 
 import fsUtils from '@utils/fsUtils';
 import dockerUtils from '@utils/dockerUtils';
-import forgeUtils from '@forge/utils/forgeUtils';
-
-/**
- * Processes the docker container output, which is the gas snapshot output.
- *
- * @param {string} projectName - The name of the new project.
- * @param {IDockerContainerResults['output']} output - The "unprocessed" execution output.
- * @returns {{ tests: string[] }} An object containing the test names.
- * @throws {AppError} If any error occurs while retrieving the names of the tests.
- */
-const processDockerContainerOutput = (
-  projectName: string, output: IDockerContainerResults['output']
-): IDockerContainerResults['output'] => {
-  try {
-    return forgeUtils.processForgeSnapshotOutput(output?.data);
-  } catch (err: Error | unknown) {
-    throw AppError.createAppError(err, `An error occurred while retrieving the names of the tests for the ${projectName} project from the gas snapshot output.`);
-  }
-};
 
 /**
  * Reads and extracts a project from a zip buffer, ensuring it contains the required files and folders.
  *
  * @param {string} execName - The name of the execution.
  * @param {Buffer} zipBuffer - The zip buffer containing the project.
- * @returns {Promise<{ tempDirPath: string, tempProjectDirPath: string }>} A promise that resolves to an object containing temporary directory paths.
+ * @returns {Promise<{ tempDirPath: string; tempSrcDirPath: string; tempProjectDirPath: string; }>} A promise that resolves to an object containing temporary directory paths.
  */
 const readProjectFromZipBuffer = async (
   execName: string, zipBuffer: Buffer
-): Promise<{ tempDirPath: string, tempProjectDirPath: string }> => fsUtils.readFromZipBuffer(
+): Promise<{ tempDirPath: string; tempSrcDirPath: string; tempProjectDirPath: string; }> => fsUtils.readFromZipBuffer(
   execName,
   zipBuffer,
   {
@@ -51,19 +33,27 @@ const readProjectFromZipBuffer = async (
     requiredFolders: Constants.PROJECT_UPLOAD_REQUIREMENTS_FOLDERS
   },
   [Constants.PATH_PROJECT_TEMPLATE]
-).then(({ dirPath: tempDirPath, extractedPath: tempProjectDirPath }) => ({ tempDirPath, tempProjectDirPath }));
+).then(({ dirPath: tempDirPath, extractedPath: tempProjectDirPath }) => ({
+  tempDirPath,
+  tempSrcDirPath: path.join(tempProjectDirPath, Constants.PROJECT_FOLDERS.SRC),
+  tempProjectDirPath
+}));
 
 /**
  * Creates a new project or updates an existing one with the given name from a ZIP buffer.
  *
  * @param {string} projectName - The name of the project.
  * @param {Buffer} zipBuffer - The ZIP buffer containing the project files.
+ * @param {object} [options] - Optional additional execution options.
+ * @param {number} [options.containerTimeout] - Timeout for container execution in seconds.
+ * @param {object} [options.execArgs] - Additional execution arguments to pass to the container.
  * @returns {Promise<{ isNew: boolean; project: IDockerContainerHistory }>}
  *          A promise that resolves to an object containing the created Docker Image and the extracted test names.
  * @throws {AppError} If any error occurs during project creation.
  */
 const saveProject = async (
-  projectName: string, zipBuffer: Buffer
+  projectName: string, zipBuffer: Buffer,
+  { containerTimeout, execArgs }: { containerTimeout?: number; execArgs?: object; } = {}
 ): Promise<{ isNew: boolean; project: IDockerContainerHistory }> => {
   let dockerImage: IDockerImage | null = null;
 
@@ -72,15 +62,12 @@ const saveProject = async (
     const execName = `${projectName}_creation_${Date.now()}`;
 
     // Read the project from the zip buffer and use it to create a Docker Image
-    const { tempDirPath, tempProjectDirPath } = await readProjectFromZipBuffer(execName, zipBuffer);
-    dockerImage = await dockerUtils.createImage(projectName, tempProjectDirPath)
-      .finally(() => fsUtils.removeDirectorySync(tempDirPath)); // Remove the temporary directory after creating the image
+    const { tempDirPath, tempSrcDirPath, tempProjectDirPath } = await readProjectFromZipBuffer(execName, zipBuffer);
+    dockerImage = await dockerUtils.createImage(projectName, tempProjectDirPath);
 
-    // Run the Docker container to obtain the gas snapshot file and process the results (if the execution has exited with a non-error code)
-    const containerResults = await dockerUtils.runImage(execName, dockerImage!.imageName, Constants.CMD_RETRIEVE_SNAPSHOTS);
-    if (containerResults.statusCode === DockerExitCode.PURPOSELY_STOPPED) {
-      containerResults.output = processDockerContainerOutput(projectName, containerResults.output);
-    }
+    // Run docker image and add container results to the Docker Container History
+    const containerResults = await executionServices.runImageWithFilesInZipBuffer(
+      dockerImage!, execName, { tempDirPath, tempSrcDirPath }, { containerTimeout, execArgs });
 
     // Create a new Docker Container History
     const dockerContainerHistory = new DockerContainerHistory({

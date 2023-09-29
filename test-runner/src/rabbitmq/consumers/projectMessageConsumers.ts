@@ -5,7 +5,7 @@ import AppError from '@errors/AppError';
 
 import RabbitExchangeConsumer from '@rabbitmq/helpers/RabbitExchangeConsumer';
 
-import ProjectUploadMessage from '@rabbitmq/dto/incoming-messages/ProjectUploadMessage';
+import UploadMessage from '@rabbitmq/dto/incoming-messages/UploadMessage';
 import ReplyMessage from '@rabbitmq/dto/outgoing-messages/ReplyMessage';
 import FailedReplyMessage from '@rabbitmq/dto/outgoing-messages/FailedReplyMessage';
 
@@ -21,10 +21,10 @@ const PROJECT_REMOVAL_MESSAGE_LIMIT = 5;
 const consumeProjectUploadMessages = (
   consumer: RabbitExchangeConsumer
 ): Promise<string | undefined> => consumer.consumeExchange(async (message: string) => {
-  const { projectName, zipBuffer }: ProjectUploadMessage = JSON.parse(message);
+  const { projectName, zipBuffer, options } = JSON.parse(message) as UploadMessage;
   Logger.info(`Received a project upload request for the ${projectName} project.`);
 
-  return projectServices.saveProject(projectName, Buffer.from(zipBuffer.data))
+  return projectServices.saveProject(projectName, Buffer.from(zipBuffer.data), options)
     .then(({ isNew, project }) => {
       Logger.info(`Successfully processed the project upload request for the ${projectName} project.`);
       return new ReplyMessage(isNew ? HttpStatusCode.Created : HttpStatusCode.Ok, project);

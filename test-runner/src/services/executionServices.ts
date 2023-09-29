@@ -34,33 +34,33 @@ const processDockerContainerOutput = (
 };
 
 /**
- * Runs a Docker container with files read from a zip buffer, executes the given command, and updates the Docker container history.
+ * Runs a Docker container with files read from a zip buffer, executes the given command,
+ * and updates the Docker container history.
  *
- * @param {Buffer} zipBuffer - The zip buffer containing source files.
  * @param {IDockerImage} dockerImage - The Docker image to be executed.
- * @param {string} commandExecuted - The command to execute inside the Docker container.
- * @param {object} [options] - Optional additional execution options.
- * @param {number} [options.containerTimeout] - Timeout for container execution in seconds.
- * @returns {Promise<IDockerContainerHistory>} A promise that resolves to the updated Docker Container History.
+ * @param {string} execName - The name of the execution
+ * @param {{ tempDirPath: string; tempSrcDirPath: string; }} [fileOptions] - The temporary directory & source directory paths.
+ * @param {{ containerTimeout?: number; execArgs?: object; }} [executionOptions] - Optional additional execution options.
+ * @returns {Promise<IDockerContainerResults>} A promise that resolves to the Docker container results.
  * @throws {Error} If any error occurs during execution.
  */
 const runImageWithFilesInZipBuffer = async (
-  zipBuffer: Buffer, dockerImage: IDockerImage, commandExecuted: string,
-  { containerTimeout }: { containerTimeout?: number; } = {}
-): Promise<IDockerContainerHistory> => {
-  const dockerContainerHistory = new DockerContainerHistory({ dockerImage, purpose: ContainerPurpose.TEST_EXECUTION });
-  const execName = `${dockerImage.imageName}_execution_${dockerContainerHistory._id}_${Date.now()}`;
-
-  // Extract source files from the zip buffer
-  const { dirPath: tempDirPath, extractedPath: tempSrcDirPath } = await fsUtils.readFromZipBuffer(execName, zipBuffer);
+  dockerImage: IDockerImage, execName: string,
+  fileOptions: { tempDirPath: string; tempSrcDirPath: string; },
+  executionOptions: { containerTimeout?: number; execArgs?: object; } = {}
+): Promise<IDockerContainerResults> => {
+  const commandExecuted = forgeUtils.getTestExecutionCommand(executionOptions.execArgs);
 
   // Execute tests against smart contracts in the source files using a Docker container
   Logger.info(`Executing the tests using the following command in the ${dockerImage.imageName} image: ${commandExecuted}.`);
   const containerResults = await dockerUtils.runImage(
-    execName, dockerImage.imageName, commandExecuted, { srcDirPath: tempSrcDirPath, timeout: containerTimeout }
+    execName, dockerImage.imageName, commandExecuted, {
+      srcDirPath: fileOptions.tempSrcDirPath,
+      timeout: executionOptions.containerTimeout
+    }
   ).finally(() => {
     // Remove the temporary directory after running the container
-    fsUtils.removeDirectorySync(tempDirPath);
+    fsUtils.removeDirectorySync(fileOptions.tempDirPath);
     Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image.`);
   });
 
@@ -70,9 +70,7 @@ const runImageWithFilesInZipBuffer = async (
       dockerImage.imageName, containerResults.output);
   }
 
-  // Add container results to the Docker Container History
-  dockerContainerHistory.container = containerResults;
-  return dockerContainerHistory;
+  return containerResults;
 };
 
 /**
@@ -90,10 +88,16 @@ const executeTests = async (
   imageName: string, zipBuffer: Buffer,
   { containerTimeout, execArgs }: { containerTimeout?: number; execArgs?: object; } = {}
 ): Promise<IDockerContainerHistory> => {
-  const testExecutionCommand = forgeUtils.getTestExecutionCommand(execArgs);
   const dockerImage = await dockerImageServices.findDockerImage(imageName);
-  const dockerContainerHistory = await runImageWithFilesInZipBuffer(
-    zipBuffer, dockerImage!, testExecutionCommand, { containerTimeout });
+  const dockerContainerHistory = new DockerContainerHistory({ dockerImage, purpose: ContainerPurpose.TEST_EXECUTION });
+  const execName = `${dockerImage!.imageName}_execution_${dockerContainerHistory._id}_${Date.now()}`;
+
+  // Extract source files from the zip buffer
+  const { dirPath: tempDirPath, extractedPath: tempSrcDirPath } = await fsUtils.readFromZipBuffer(execName, zipBuffer);
+
+  // Run docker image and add container results to the Docker Container History
+  dockerContainerHistory.container = await runImageWithFilesInZipBuffer(
+    dockerImage!, execName, { tempDirPath, tempSrcDirPath }, { containerTimeout, execArgs });
 
   return dockerContainerHistoryServices.saveDockerContainerHistory(dockerContainerHistory)
     .then((dockerContainerHistorySaved) => {
@@ -104,4 +108,4 @@ const executeTests = async (
     });
 };
 
-export default { executeTests };
+export default { runImageWithFilesInZipBuffer, executeTests };

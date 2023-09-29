@@ -5,7 +5,7 @@ import AppError from '@errors/AppError';
 
 import RabbitQueueConsumer from '@rabbitmq/helpers/RabbitQueueConsumer';
 
-import ExecutionMessage from '@rabbitmq/dto/incoming-messages/ExecutionMessage';
+import UploadMessage from '@rabbitmq/dto/incoming-messages/UploadMessage';
 import ReplyMessage from '@rabbitmq/dto/outgoing-messages/ReplyMessage';
 import FailedReplyMessage from '@rabbitmq/dto/outgoing-messages/FailedReplyMessage';
 
@@ -19,7 +19,7 @@ const EXECUTION_MESSAGE_LIMIT = 10;
 const consumeExecutionMessages = (
   consumer: RabbitQueueConsumer
 ): Promise<string | undefined> => consumer.consumeQueue(async (message: string) => {
-  const { projectName, zipBuffer, options } = JSON.parse(message) as ExecutionMessage;
+  const { projectName, zipBuffer, options } = JSON.parse(message) as UploadMessage;
   Logger.info(`Received a submission for the ${projectName} project.`);
 
   return executionServices.executeTests(projectName, Buffer.from(zipBuffer.data), options)

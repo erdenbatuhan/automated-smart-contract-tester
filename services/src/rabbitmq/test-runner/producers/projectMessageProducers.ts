@@ -43,7 +43,11 @@ const produceProjectUploadMessage = async (
   Logger.info(`[${deployerEmail}] Uploading ${project.projectName} project to the Test Runner service to build the Docker image.`);
 
   const messageRequest = new MessageRequest({ deployer, channel: RABBITMQ_EXCHANGE_PROJECT_UPLOAD });
-  const payload = { projectName: project.projectName, zipBuffer };
+  const payload = {
+    projectName: project.projectName,
+    zipBuffer,
+    options: { containerTimeout: project.config?.containerTimeout, execArgs: project.config?.testExecutionArguments }
+  };
 
   await projectUploadMessageProducer.then((producer) => producer.sendExchange(
     Buffer.from(JSON.stringify(payload)),
