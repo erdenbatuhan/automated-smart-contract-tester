@@ -201,7 +201,7 @@
                     },
                     {
                       "key": "submissionId",
-                      "value": "651211cd0fc3cdce687ae143"
+                      "value": "6516e37023b0661c7b488f50"
                     }
                   ]
                 }
@@ -298,43 +298,6 @@
           ]
         },
         {
-          "name": "message-requests",
-          "item": [
-            {
-              "name": "Get all message requests",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{BASE_URL}}/message-requests",
-                  "host": ["{{BASE_URL}}"],
-                  "path": ["message-requests"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Get a message request",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{BASE_URL}}/message-requests/:messageRequestId",
-                  "host": ["{{BASE_URL}}"],
-                  "path": ["message-requests", ":messageRequestId"],
-                  "variable": [
-                    {
-                      "key": "messageRequestId",
-                      "value": "6510e6f9a0cc33520a0a778e"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
           "name": "Get descriptions of available test execution arguments",
           "request": {
             "method": "GET",
@@ -372,7 +335,7 @@
               "variable": [
                 {
                   "key": "projectName",
-                  "value": "bbse-bank-2.0"
+                  "value": "bbse_failed"
                 }
               ]
             }
@@ -396,8 +359,8 @@
                 {
                   "key": "projectConfig",
                   "value": "{\n    \"containerTimeout\": 60,\n    \"testExecutionArguments\": {\n        \"gasLimit\": 4501026,\n        \"memoryLimit\": 67108864,\n        \"otherArg\": 21111995\n    }\n}",
-                  "description": "The project config (An object containing containerTimeout and testExecutionArguments)\n\nFor the possible test execution arguments, send a GET request to \"/projects/descriptions/test-execution-arguments\"",
-                  "type": "default"
+                  "description": "The project config (An object containing containerTimeout and testExecutionArguments)\nFor the possible test execution arguments, send a GET request to \"/projects/descriptions/test-execution-arguments\"",
+                  "type": "text"
                 }
               ]
             },
@@ -408,7 +371,7 @@
               "variable": [
                 {
                   "key": "projectName",
-                  "value": "bbse-bank-2.0"
+                  "value": "bbse-bank-2.7"
                 }
               ]
             }
@@ -431,7 +394,7 @@
                 },
                 {
                   "key": "projectConfig",
-                  "value": "{\n    \"containerTimeout\": 5,\n    \"testExecutionArguments\": {\n        \"gasLimit\": 8000000,\n        \"memoryLimit\": 4000000,\n        \"otherArg\": 3252345624632623\n    }\n}",
+                  "value": "{\n    \"containerTimeout\": 0.2,\n    \"testExecutionArguments\": {\n        \"gasLimit\": 9000000,\n        \"memoryLimit\": 5000000,\n        \"otherArg\": 3252345624632623\n    }\n}",
                   "description": "The project config (An object containing containerTimeout and testExecutionArguments)\n\nFor the possible test execution arguments, send a GET request to \"/projects/descriptions/test-execution-arguments\"",
                   "type": "default"
                 }
@@ -511,6 +474,43 @@
                 {
                   "key": "projectName",
                   "value": "bbse-bank-2.0"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "message-requests",
+      "item": [
+        {
+          "name": "Get all message requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/message-requests",
+              "host": ["{{BASE_URL}}"],
+              "path": ["message-requests"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a message request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/message-requests/:messageRequestId",
+              "host": ["{{BASE_URL}}"],
+              "path": ["message-requests", ":messageRequestId"],
+              "variable": [
+                {
+                  "key": "messageRequestId",
+                  "value": "6516e42123b0661c7b488f84"
                 }
               ]
             }
