@@ -61,7 +61,7 @@
                       "key": "srcZip",
                       "description": "The zipped src folder containing the smart contracts",
                       "type": "file",
-                      "src": "automated-smart-contract-tester/example-inputs/bbse-bank-2.0/submission/submission_pass25_fail2.zip"
+                      "src": "/Users/batuhan/Developer/automated-smart-contract-tester/data/postman/workdir/example-inputs/bbse-bank-2.0/submission/submission_pass25_fail2.zip"
                     },
                     {
                       "key": "execArgs",
@@ -162,13 +162,25 @@
                   "description": "The zipped project files (remappings.txt, .gitmodules, src folder and test folder)",
                   "type": "file",
                   "src": "automated-smart-contract-tester/example-inputs/bbse-bank-2.0/project/bbse-bank-2.0.zip"
+                },
+                {
+                  "key": "execArgs",
+                  "value": "{ \"gasLimit\": 11501026, \"memoryLimit\": 67108864, \"otherArg\": 2142 }",
+                  "description": "Test execution arguments\nSend a GET request to \"/forge/test/options/execution-arguments\" for the possible values",
+                  "type": "text"
                 }
               ]
             },
             "url": {
-              "raw": "{{BASE_URL}}/projects/:projectName/upload",
+              "raw": "{{BASE_URL}}/projects/:projectName/upload?containerTimeout=4",
               "host": ["{{BASE_URL}}"],
               "path": ["projects", ":projectName", "upload"],
+              "query": [
+                {
+                  "key": "containerTimeout",
+                  "value": "4"
+                }
+              ],
               "variable": [
                 {
                   "key": "projectName",
