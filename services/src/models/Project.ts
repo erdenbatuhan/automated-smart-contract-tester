@@ -7,13 +7,15 @@ import type { IUser } from '@models/User';
 
 import ProjectConfigSchema from '@models/schemas/ProjectConfigSchema';
 import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
+import TestStatus from '@models/enums/TestStatus';
 
 export interface IProject extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
   projectName: string;
   upload: IUpload;
   config: IProjectConfig;
-  output?: object;
+  testStatus: TestStatus;
+  results?: object;
   deployer: IUser; // Virtual Field
 
   toLean(this: IProject): Promise<object>;
@@ -24,7 +26,8 @@ const ProjectSchema = new mongoose.Schema<IProject>(
     projectName: { type: String, maxlength: 20, unique: true, required: true },
     upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },
     config: { type: ProjectConfigSchema, required: true },
-    output: { type: Object }
+    testStatus: { type: String, enum: TestStatus, required: true, default: TestStatus.INCONCLUSIVE },
+    results: { type: Object }
   },
   {
     timestamps: true,
@@ -35,7 +38,7 @@ const ProjectSchema = new mongoose.Schema<IProject>(
 // Set a TTL for the project (It will be deleted after X seconds if the output is still null)
 ProjectSchema.index(
   { createdAt: 1 },
-  { expireAfterSeconds: Constants.PROJECT_DOC_TTL, partialFilterExpression: { output: null } }
+  { expireAfterSeconds: Constants.PROJECT_DOC_TTL, partialFilterExpression: { results: null } }
 );
 
 // Virtual Field: deployer

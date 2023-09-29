@@ -140,8 +140,8 @@ const updateSubmissionWithTestRunnerOutput = async (
     Logger.info(`Updating submission (${submission._id}) with test runner output.`);
 
     // Process the output and update the test status and results
-    submission.testStatus = testExecutionOutput.container?.output?.overall?.passed ? TestStatus.PASSED : TestStatus.FAILED;
-    submission.results = testExecutionOutput.container;
+    submission.testStatus = testExecutionOutput?.container?.output?.overall?.passed ? TestStatus.PASSED : TestStatus.FAILED;
+    submission.results = testExecutionOutput?.container;
 
     // Update the submission
     const updatedSubmissionId = await submission.save().then(({ _id }) => _id);

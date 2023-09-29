@@ -12,6 +12,7 @@ import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses/ContainerExecutionResponse';
 
 import uploadServices from '@services/uploadServices';
+import TestStatus from '@models/enums/TestStatus';
 
 /**
  * Finds all projects.
@@ -138,7 +139,7 @@ const rebuildAndUpdateProject = async (
 
   // Clear the project's previous config and output
   existingProject.config = {};
-  existingProject.output = {};
+  existingProject.results = {};
 
   // Update the existing project's config, if provided
   if (config) existingProject.config = config;
@@ -164,9 +165,10 @@ const updateProjectWithTestRunnerOutput = async (
     Logger.info(`Updating project '${projectName}' with test runner output.`);
     const project = await findProjectByName(projectName, null, null, { session });
 
-    // Process output, e.g., extract tests
+    // Process the output and update the test status and results
     project.config.tests = testRunnerOutput?.container?.output?.tests?.map((test) => ({ ...test, weight: 1.0 })) || [];
-    project.output = testRunnerOutput;
+    project.testStatus = testRunnerOutput?.container?.output?.overall?.passed ? TestStatus.PASSED : TestStatus.FAILED;
+    project.results = testRunnerOutput;
 
     // Update the project and commit transaction
     const updatedProjectId = await project.save({ session }).then(({ _id }) => _id);
