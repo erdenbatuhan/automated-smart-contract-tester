@@ -11,7 +11,7 @@ export interface IDockerImage extends mongoose.Document {
 const DockerImageSchema = new mongoose.Schema<IDockerImage>(
   {
     imageID: { type: String, unique: true, required: true },
-    imageName: { type: String, unique: true, required: true },
+    imageName: { type: String, maxlength: 20, unique: true, required: true },
     imageBuildTimeSeconds: { type: Number, required: true },
     imageSizeMB: { type: Number, required: true }
   },
