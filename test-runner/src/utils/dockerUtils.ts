@@ -335,7 +335,12 @@ const runImage = async (
     const containerName = await container.inspect().then(({ Name }) => Name.slice(1)); // Container name without the leading slash
 
     // Add the results to the container results object
-    containerResults = { ...containerResults, containerName, statusCode, executionTimeSeconds };
+    containerResults = {
+      ...containerResults,
+      containerName,
+      statusCode: (Object.values(DockerExitCode).includes(statusCode)) ? statusCode : DockerExitCode.APPLICATION_ERROR,
+      executionTimeSeconds
+    };
     containerResults.output = statusCode === DockerExitCode.PURPOSELY_STOPPED ? { data: stdOutput } : { error: stdOutput };
 
     Logger.info(`${imageName}/${containerName} container exited with code ${statusCode} (Elapsed time: ${executionTimeSeconds} seconds).`);
