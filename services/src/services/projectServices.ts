@@ -1,13 +1,13 @@
-import mongoose from 'mongoose';
 import type { ProjectionType, SessionOption } from 'mongoose';
+import mongoose from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
 import Logger from '@Logger';
 import AppError from '@errors/AppError';
 
 import type { IUser } from '@models/User';
-import Project from '@models/Project';
 import type { IProject } from '@models/Project';
+import Project from '@models/Project';
 import type { IProjectConfig } from '@models/schemas/ProjectConfigSchema';
 import type ContainerExecutionResponse from '@rabbitmq/test-runner/dto/responses/ContainerExecutionResponse';
 
@@ -139,6 +139,7 @@ const rebuildAndUpdateProject = async (
 
   // Clear the project's previous config and output
   existingProject.config = {};
+  existingProject.testStatus = TestStatus.INCONCLUSIVE;
   existingProject.results = {};
 
   // Update the existing project's config, if provided
