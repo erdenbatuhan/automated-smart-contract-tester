@@ -7,7 +7,6 @@ import type { IDockerContainerHistory } from '@models/DockerContainerHistory';
 import type { IDockerContainerResults } from '@models/schemas/DockerContainerResultsSchema';
 
 import ContainerPurpose from '@models/enums/ContainerPurpose';
-import DockerExitCode from '@models/enums/DockerExitCode';
 
 import dockerImageServices from '@services/dockerImageServices';
 import dockerContainerHistoryServices from '@services/dockerContainerHistoryServices';
@@ -15,23 +14,6 @@ import dockerContainerHistoryServices from '@services/dockerContainerHistoryServ
 import fsUtils from '@utils/fsUtils';
 import dockerUtils from '@utils/dockerUtils';
 import forgeUtils from '@forge/utils/forgeUtils';
-
-/**
- * Processes the docker container output, which is the test execution output.
- *
- * @param {string} imageName - The name of the Docker Image.
- * @param {IDockerContainerResults['output']} output - The "unprocessed" execution output.
- * @returns {IDockerContainerResults['output']} The extracted test results.
- */
-const processDockerContainerOutput = (
-  imageName: string, output: IDockerContainerResults['output']
-): IDockerContainerResults['output'] => {
-  try {
-    return forgeUtils.processForgeTestOutput(output?.data);
-  } catch (err: Error | unknown) {
-    throw AppError.createAppError(err, `An error occurred while extracting the test results from the executed Docker container created from the image '${imageName}'.`);
-  }
-};
 
 /**
  * Runs a Docker container with files read from a zip buffer, executes the given command,
@@ -64,10 +46,11 @@ const runImageWithFilesInZipBuffer = async (
     Logger.info(`Executed the tests with the command '${commandExecuted}' in the ${dockerImage.imageName} image.`);
   });
 
-  // Extract and process test execution results from the container output (if the execution has exited with a non-error code)
-  if (containerResults.statusCode === DockerExitCode.PURPOSELY_STOPPED) {
-    containerResults.output = processDockerContainerOutput(
-      dockerImage.imageName, containerResults.output);
+  // Extract and process test execution results from the container output
+  try {
+    containerResults.output = forgeUtils.processForgeTestOutput(containerResults);
+  } catch (err: Error | unknown) {
+    throw AppError.createAppError(err, `An error occurred while extracting the test results from the executed Docker container created from the image '${dockerImage.imageName}'.`);
   }
 
   return containerResults;

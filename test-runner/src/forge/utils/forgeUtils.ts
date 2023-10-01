@@ -1,8 +1,13 @@
 import Constants from '@Constants';
 
+import type { IDockerContainerResults } from '@models/schemas/DockerContainerResultsSchema';
+import type { ITestOutput } from '@models/schemas/ForgeTestOutputSchema';
+import DockerExitCode from '@models/enums/DockerExitCode';
+
 import type TestOutput from '@forge/types/ForgeTestOutput';
 import ForgeTestExecutionArgument from '@forge/types/enums/ForgeTestExecutionArgument';
 
+import forgeCommonParsers from '@forge/parsers/forgeCommonParsers';
 import forgeSnapshotOutputParsers from '@forge/parsers/forgeSnapshotOutputParsers';
 import forgeTestOutputParsers from '@forge/parsers/forgeTestOutputParsers';
 import forgeGasOutputParsers from '@forge/parsers/forgeGasOutputParsers';
@@ -59,13 +64,18 @@ const processForgeSnapshotOutput = (gasSnapshotText: string | undefined | null):
 /**
  * Process Forge test output by combining test results and gas change information.
  *
- * @param {string | undefined | null} forgeTestOutput - The Forge test execution output as a string.
+ * @param {IDockerContainerResults} containerResults - The results of the container execution.
  * @returns {TestOutput} The processed test output, including test results and gas change information.
  */
-const processForgeTestOutput = (forgeTestOutput: string | undefined | null): TestOutput => {
+const processForgeTestOutput = (containerResults: IDockerContainerResults): ITestOutput => {
+  // Extract and process test execution results from the container output only when the execution has exited with a non-error code
+  if (containerResults.statusCode !== DockerExitCode.PURPOSELY_STOPPED) {
+    return { error: forgeCommonParsers.removeColorCodes(containerResults.output.error) };
+  }
+
   // Extract test results & gas change information from Forge test execution output
-  const testOutput = forgeTestOutputParsers.extractTestResultsFromForgeTestExecutionOutput(forgeTestOutput);
-  const gasChangeOutput = forgeGasOutputParsers.extractGasChangeFromForgeTestExecutionOutput(forgeTestOutput);
+  const testOutput = forgeTestOutputParsers.extractTestResultsFromForgeTestExecutionOutput(containerResults.output?.data);
+  const gasChangeOutput = forgeGasOutputParsers.extractGasChangeFromForgeTestExecutionOutput(containerResults.output?.data);
 
   // Merge test result and gas change values into a new object
   return {
