@@ -85,7 +85,7 @@ SubmissionSchema.static('findByDeployer',
     ]).exec()
       .then((submissionsAggregate) => {
         const uploadIds = submissionsAggregate.map(({ upload }) => upload._id);
-        return this.find({ upload: { $in: uploadIds } }).populate('upload').exec();
+        return this.find({ upload: { $in: uploadIds } }).populate(['project', 'upload']).exec();
       });
   }
 );
