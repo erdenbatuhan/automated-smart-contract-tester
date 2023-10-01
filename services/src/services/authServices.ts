@@ -12,10 +12,10 @@ import type { IUser } from '@models/User';
  * Generates an authentication response object with a user payload and JWT token.
  *
  * @param {IUser} user - The user object.
- * @returns {{ payload: { user: IUser }, token: string }} The authentication response object.
+ * @returns {{ payload: { user: object }, token: string }} The authentication response object.
  */
-const getAuthResponse = (user: IUser): { payload: { user: IUser }, token: string } => {
-  const payload = { user: user.getPublicRepresentation() };
+const getAuthResponse = (user: IUser): { payload: { user: object }, token: string } => {
+  const payload = { user: user.toLean() };
   const token = jwt.sign(payload, SecretsManager.getInstance().getSecret('jwt'), { expiresIn: Constants.MAX_AGE_JWT });
 
   return { payload, token };
@@ -27,11 +27,11 @@ const getAuthResponse = (user: IUser): { payload: { user: IUser }, token: string
  * @param {object} fields
  * @param {string} fields.email - The email of the new user.
  * @param {string} fields.password - The password for the new user.
- * @returns {Promise<{ payload: { user: IUser }, token: string }>} A promise that resolves to the authentication response object.
+ * @returns {Promise<{ payload: { user: object }, token: string }>} A promise that resolves to the authentication response object.
  */
 const register = async (
   { email, password }: { email: string; password: string; }
-): Promise<{ payload: { user: IUser }, token: string }> => {
+): Promise<{ payload: { user: object }, token: string }> => {
   Logger.info(`Registering a new user with the email '${email}'.`);
 
   // Create a new user and generate a JWT token (The password is hashed with mongoose pre-save hooks)
@@ -49,11 +49,11 @@ const register = async (
  * @param {object} fields
  * @param {string} fields.email - The email of the new user.
  * @param {string} fields.password - The password for the new user.
- * @returns {Promise<{ payload: { user: IUser }, token: string }>} A promise that resolves to the authentication response object.
+ * @returns {Promise<{ payload: { user: object }, token: string }>} A promise that resolves to the authentication response object.
  */
 const login = async (
   { email, password }: { email: string; password: string; }
-): Promise<{ payload: { user: IUser }, token: string }> => {
+): Promise<{ payload: { user: object }, token: string }> => {
   Logger.info(`Logging a new user in with the email '${email}'.`);
 
   // Log the user in and generate a JWT token

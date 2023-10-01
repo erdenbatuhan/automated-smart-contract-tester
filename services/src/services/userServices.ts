@@ -8,18 +8,21 @@ import User from '@models/User';
 import type { IUser } from '@models/User';
 
 /**
- * Finds all users (without passwords).
+ * Finds all users or specific users by their IDs.
  *
- * @returns {Promise<IUser[]>} A promise that resolves to an array of all users (without passwords).
+ * @param {string[] | null} [userIds] - Optional list of user IDs to filter the users.
+ * @returns {Promise<IUser[]>} A promise that resolves to an array of users (without passwords) matching the provided IDs.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllUsers = async (): Promise<IUser[]> => User.find().exec()
+const findUsersByIds = async (userIds?: string[] | null): Promise<IUser[]> => User.find(
+  userIds ? { _id: { $in: userIds } } : {}
+).exec()
   .catch((err: Error | unknown) => {
-    throw AppError.createAppError(err, 'An error occurred while finding all users.');
+    throw AppError.createAppError(err, 'An error occurred while finding users by IDs.');
   });
 
 /**
- * Finds a user by its ID (without password).
+ * Finds a user by its ID.
  *
  * @param {string} userId - The ID of the user to find.
  * @param {SessionOption} [sessionOption] - Optional session options.
@@ -60,4 +63,4 @@ const deleteUserById = async (userId: string, sessionOption?: SessionOption): Pr
   });
 };
 
-export default { findAllUsers, findUserById, deleteUserById };
+export default { findUsersByIds, findUserById, deleteUserById };

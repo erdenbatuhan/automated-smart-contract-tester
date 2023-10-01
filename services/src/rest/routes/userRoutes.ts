@@ -12,18 +12,24 @@ import routerUtils from '@utils/routerUtils';
 const router = Router();
 
 /**
- * Retrieves all users.
+ * Retrieves all users or specific users by their IDs.
  *
  * @param {IUser} res.locals.user - The user performing the retrieval (see authMiddlewares).
+ * @param {string | undefined} [req.query.ids] - Optional list of user IDs "separated by commas" to filter the users.
  * @returns {object} 200 - An array containing all users.
  * @throws {object} 500 - If there's a server error.
  */
 router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response) => {
-  userServices.findAllUsers().then((users) => {
-    res.status(HttpStatusCode.Ok).json(users.map((user) => user.getPublicRepresentation()));
-  }).catch((err: AppError | Error | unknown) => {
+  try {
+    const userIds = req.query?.ids ? String(req.query.ids).split(',') : null;
+
+    await userServices.findUsersByIds(userIds).then((users) => {
+      const leanUsers = users.map((user) => user.toLean());
+      res.status(HttpStatusCode.Ok).json(leanUsers);
+    });
+  } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);
-  });
+  }
 });
 
 /**
@@ -39,7 +45,8 @@ router.get('/:userId', authMiddlewares.requireUser, async (req: Request, res: Re
   const { userId } = req.params;
 
   userServices.findUserById(userId).then((user) => {
-    res.status(HttpStatusCode.Ok).json(user.getPublicRepresentation());
+    const leanUser = user.toLean();
+    res.status(HttpStatusCode.Ok).json(leanUser);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });

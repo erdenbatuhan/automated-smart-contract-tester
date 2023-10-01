@@ -19,7 +19,7 @@ const router = Router();
  * @param {number} code - HTTP status code to send in the response.
  * @param {object} payload - JSON payload to include in the response body.
  * @param {string} token - JWT token to set as an HTTP-only cookie.
- * @returns {void}
+ * @returns {object} An object with the user data in the response.
  */
 const returnJwtResponse = (res: Response, code: number, payload: object, token: string): void => {
   res.cookie(Constants.JWT_NAME, token, { httpOnly: true, maxAge: Constants.MAX_AGE_COOKIE });

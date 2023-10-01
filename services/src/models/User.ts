@@ -14,7 +14,7 @@ export interface IUser extends mongoose.Document {
   password: string;
   role: UserRole;
 
-  getPublicRepresentation(this: IUser): IUser;
+  toLean(this: IUser): object;
 }
 
 interface UserModel extends mongoose.Model<IUser> {
@@ -45,16 +45,6 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
   }
 );
 
-/**
- * Returns a public representation of the user object with sensitive data removed.
- *
- * @returns {IUser} A user object with sensitive data removed.
- */
-UserSchema.methods.getPublicRepresentation = function getPublicRepresentation(this: IUser): IUser {
-  // Depopulate, remove version keys, and use projection (removes password as its select property is false)
-  return this.toObject({ depopulate: true, versionKey: false, useProjection: true }) as IUser;
-};
-
 UserSchema.pre<IUser>('save',
   /**
    * Pre-save middleware to hash the user's password before saving.
@@ -67,6 +57,17 @@ UserSchema.pre<IUser>('save',
     next();
   }
 );
+
+/**
+ * Converts the user document to a plain JavaScript object (POJO)
+ * while including virtuals, removing version keys, and depopulating populated fields.
+ *
+ * @returns {object} A plain JavaScript object representing the document.
+ */
+UserSchema.methods.toLean = function toLean(this: IUser): object {
+  // Depopulate, remove version keys, and use projection (removes password as its select property is false)
+  return this.toObject({ depopulate: true, versionKey: false, useProjection: true });
+};
 
 UserSchema.static('register',
   /**
