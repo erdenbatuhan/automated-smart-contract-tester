@@ -41,7 +41,10 @@ const saveProject = async (
   // Upload the project to the test runner service
   const messageRequest = await projectMessageProducers.produceProjectUploadMessage(user, zipBuffer, project);
 
-  return { messageRequest: messageRequest.toLean(), project: project.toLean() };
+  const leanMessageRequest = messageRequest.toLean();
+  const leanProject = project.toLean();
+
+  return { messageRequest: leanMessageRequest, project: leanProject };
 };
 
 /**
@@ -64,7 +67,8 @@ router.get('/descriptions/test-execution-arguments', authMiddlewares.requireUser
  */
 router.get('/', authMiddlewares.requireUser, async (req: Request, res: Response) => {
   projectServices.findAllProjects().then((projects) => {
-    res.status(HttpStatusCode.Ok).json(projects);
+    const leanProjects = projects.map((project) => project.toLean());
+    res.status(HttpStatusCode.Ok).json(leanProjects);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -83,7 +87,8 @@ router.get('/:projectName', authMiddlewares.requireUser, async (req: Request, re
   const { projectName } = req.params;
 
   projectServices.findProjectByName(projectName).then((project) => {
-    res.status(HttpStatusCode.Ok).json(project);
+    const leanProject = project.toLean();
+    res.status(HttpStatusCode.Ok).json(leanProject);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -205,7 +210,10 @@ router.delete('/:projectName', authMiddlewares.requireAdmin, async (req: Request
     // Send the deletion request to test runner service
     const messageRequest = await projectMessageProducers.produceProjectRemovalMessage(user, project);
 
-    res.status(HttpStatusCode.Ok).json({ messageRequest: messageRequest.toLean(), project: project.toLean() });
+    const leanMessageRequest = messageRequest.toLean();
+    const leanProject = project.toLean();
+
+    res.status(HttpStatusCode.Ok).json({ messageRequest: leanMessageRequest, project: leanProject });
   } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);
   }

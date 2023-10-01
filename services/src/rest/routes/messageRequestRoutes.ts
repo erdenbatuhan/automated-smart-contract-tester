@@ -45,7 +45,8 @@ router.get('/:messageRequestId', messageRequestMiddlewares.requireMessageRequest
   const { messageRequestId } = req.params;
 
   return messageRequestServices.findMessageRequest(messageRequestId).then((messageRequest) => {
-    res.status(HttpStatusCode.Ok).json(messageRequest.toLean());
+    const leanMessageRequest = messageRequest.toLean();
+    res.status(HttpStatusCode.Ok).json(leanMessageRequest);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });

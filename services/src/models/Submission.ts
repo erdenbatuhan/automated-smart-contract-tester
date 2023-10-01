@@ -16,7 +16,7 @@ export interface ISubmission extends mongoose.Document {
   results?: object;
   deployer: IUser; // Virtual Field
 
-  toLean(this: ISubmission): Promise<object>;
+  toLean(this: ISubmission): object;
 }
 
 interface SubmissionModel extends mongoose.Model<ISubmission> {
@@ -55,10 +55,9 @@ SubmissionSchema.virtual<ISubmission>('deployer', {
 /**
  * Converts the submission to a plain JavaScript object (POJO) while including virtuals and depopulating populated fields.
  *
- * @returns {Promise<object>} A Promise that resolves to a plain JavaScript object representing the document.
- * @throws {Error} If an error occurs during the operation.
+ * @returns {object} A plain JavaScript object representing the document.
  */
-SubmissionSchema.methods.toLean = function toLean(this: ISubmission): Promise<object> {
+SubmissionSchema.methods.toLean = function toLean(this: ISubmission): object {
   return this.toObject({ virtuals: true, depopulate: true });
 };
 
@@ -81,8 +80,13 @@ SubmissionSchema.static('findByDeployer',
           as: 'upload'
         }
       },
-      { $match: { 'upload.deployer': new mongoose.Types.ObjectId(String(deployer._id)) } }
-    ]);
+      { $match: { 'upload.deployer': new mongoose.Types.ObjectId(String(deployer._id)) } },
+      { $unwind: '$upload' }
+    ]).exec()
+      .then((submissionsAggregate) => {
+        const uploadIds = submissionsAggregate.map(({ upload }) => upload._id);
+        return this.find({ upload: { $in: uploadIds } }).populate('upload').exec();
+      });
   }
 );
 

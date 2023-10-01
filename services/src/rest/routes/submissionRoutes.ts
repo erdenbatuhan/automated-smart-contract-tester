@@ -33,7 +33,8 @@ router.get('/', submissionMiddlewares.determineFindFunctionBasedOnUserRole, asyn
   const { findFunction } = res.locals;
 
   findFunction.then((submissions: ISubmission[]) => {
-    res.status(HttpStatusCode.Ok).json(submissions);
+    const leanSubmissions = submissions.map((submission) => submission.toLean());
+    res.status(HttpStatusCode.Ok).json(leanSubmissions);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -54,7 +55,8 @@ router.get('/:submissionId', submissionMiddlewares.requireSubmissionOwned, async
   const { submissionId } = req.params;
 
   submissionServices.findSubmissionById(projectName, submissionId).then((submission) => {
-    res.status(HttpStatusCode.Ok).json(submission.toLean());
+    const leanSubmission = submission.toLean();
+    res.status(HttpStatusCode.Ok).json(leanSubmission);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
@@ -86,7 +88,10 @@ router.post('/', authMiddlewares.requireUser, upload.single('srcZip'), async (re
     // Upload the submission to the test runner service
     const messageRequest = await submissionMessageProducers.produceSubmissionMessage(user, zipBuffer, project, submission);
 
-    res.status(HttpStatusCode.Ok).json({ messageRequest: messageRequest.toLean(), submission: submission.toLean() });
+    const leanMessageRequest = messageRequest.toLean();
+    const leanSubmission = submission.toLean();
+
+    res.status(HttpStatusCode.Ok).json({ messageRequest: leanMessageRequest, submission: leanSubmission });
   } catch (err: AppError | Error | unknown) {
     routerUtils.sendErrorResponse(res, err);
   }

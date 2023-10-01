@@ -17,11 +17,11 @@ import TestStatus from '@models/enums/TestStatus';
 /**
  * Finds all projects.
  *
- * @param {string} [populatePath] - Optional path(s) to populate in the query.
+ * @param {string | null} [populatePath = 'upload'] - Optional path(s) to populate in the query.
  * @returns {Promise<IProject[]>} A promise that resolves to an array of all projects.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllProjects = async (populatePath?: string | null): Promise<IProject[]> => {
+const findAllProjects = async (populatePath: string | null = 'upload'): Promise<IProject[]> => {
   // If a populate path is provided, add population to the query
   let findQuery = Project.find();
   if (populatePath) findQuery = findQuery.populate(populatePath);
@@ -35,14 +35,17 @@ const findAllProjects = async (populatePath?: string | null): Promise<IProject[]
  * Finds a project by its name.
  *
  * @param {string} projectName - The name of the project to find.
- * @param {string} [populatePath] - Optional path(s) to populate in the query.
- * @param {ProjectionType<IProject>} [projection] - Optional projection for the query.
+ * @param {string | null} [populatePath = 'upload'] - Optional path(s) to populate in the query.
+ * @param {ProjectionType<IProject> | null} [projection] - Optional projection for the query.
  * @param {SessionOption} [sessionOption] - Optional session option for the query.
  * @returns {Promise<IProject>} A promise that resolves to the found project.
  * @throws {AppError} If the project is not found (HTTP 404) or if an error occurs during the operation.
  */
 const findProjectByName = async (
-  projectName: string, populatePath?: string | null, projection?: ProjectionType<IProject> | null, sessionOption?: SessionOption
+  projectName: string,
+  populatePath: string | null = 'upload',
+  projection?: ProjectionType<IProject> | null,
+  sessionOption?: SessionOption
 ): Promise<IProject> => {
   // If a populate path is provided, add population to the query
   let findQuery = Project.findOne({ projectName }, projection, sessionOption);
@@ -135,7 +138,7 @@ const rebuildAndUpdateProject = async (
   user: IUser, projectName: string, zipBuffer: Buffer, config?: IProjectConfig
 ): Promise<IProject> => {
   // Find the existing project
-  const existingProject = await findProjectByName(projectName, 'upload');
+  const existingProject = await findProjectByName(projectName);
 
   // Clear the project's previous config and output
   existingProject.config = {};
@@ -200,7 +203,7 @@ const updateProjectConfig = async (
 ): Promise<IProject> => {
   // Find the existing project
   Logger.info(`Updating the config of the ${projectName} project.`);
-  const existingProject = await findProjectByName(projectName, 'upload');
+  const existingProject = await findProjectByName(projectName);
 
   // Update test weights if provided
   if (updatedConfig.tests) {
@@ -244,7 +247,7 @@ const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProje
  */
 const downloadFilesForAllProjects = async (): Promise<{ project: IProject; zipBuffer: Buffer }[]> => {
   Logger.info('Fetching all projects from the DB.');
-  const projects = await findAllProjects('upload');
+  const projects = await findAllProjects();
 
   try {
     Logger.info('Downloading the uploaded files for each project.');

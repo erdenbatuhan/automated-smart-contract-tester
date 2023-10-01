@@ -22,7 +22,7 @@ import TestStatus from '@models/enums/TestStatus';
  * @returns {Promise<ISubmission[]>} A promise that resolves to an array of all submissions.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find().exec()
+const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find().populate('upload').exec()
   .catch((err: Error | unknown) => {
     throw AppError.createAppError(err, 'An error occurred while finding all submissions.');
   });

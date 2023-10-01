@@ -18,7 +18,7 @@ export interface IProject extends mongoose.Document {
   results?: object;
   deployer: IUser; // Virtual Field
 
-  toLean(this: IProject): Promise<object>;
+  toLean(this: IProject): object;
 }
 
 const ProjectSchema = new mongoose.Schema<IProject>(
@@ -53,10 +53,9 @@ ProjectSchema.virtual<IProject>('deployer', {
 /**
  * Converts the project to a plain JavaScript object (POJO) while including virtuals and depopulating populated fields.
  *
- * @returns {Promise<object>} A Promise that resolves to a plain JavaScript object representing the document.
- * @throws {Error} If an error occurs during the operation.
+ * @returns {object} A plain JavaScript object representing the document.
  */
-ProjectSchema.methods.toLean = function toLean(this: IProject): Promise<object> {
+ProjectSchema.methods.toLean = function toLean(this: IProject): object {
   return this.toObject({ virtuals: true, depopulate: true });
 };
 
