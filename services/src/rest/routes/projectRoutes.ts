@@ -162,7 +162,8 @@ router.put('/:projectName/update', authMiddlewares.requireAdmin, async (req: Req
   }
 
   return projectServices.updateProjectConfig(projectName, updatedConfig).then((projectUpdated) => {
-    res.status(HttpStatusCode.Ok).json(projectUpdated);
+    const leanProject = projectUpdated.toLean();
+    res.status(HttpStatusCode.Ok).json(leanProject);
   }).catch((err: AppError | Error | unknown) => {
     routerUtils.sendErrorResponse(res, err);
   });
