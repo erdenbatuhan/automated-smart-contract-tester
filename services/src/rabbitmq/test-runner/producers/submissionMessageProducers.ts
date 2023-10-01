@@ -64,6 +64,7 @@ const produceSubmissionMessage = async (
     }
   ));
 
+  messageRequest.messageInfo = { startingPositionInQueue: positionInTheQueue };
   return await messageRequestServices.saveMessageRequest(messageRequest);
 };
 
