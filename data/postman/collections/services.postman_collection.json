@@ -108,9 +108,15 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{BASE_URL}}/users",
+              "raw": "{{BASE_URL}}/users?ids=6505e0e4901fb449def5eaad,6512086e0fc3cdce687ae0df",
               "host": ["{{BASE_URL}}"],
-              "path": ["users"]
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "6505e0e4901fb449def5eaad,6512086e0fc3cdce687ae0df"
+                }
+              ]
             }
           },
           "response": []
@@ -335,7 +341,7 @@
               "variable": [
                 {
                   "key": "projectName",
-                  "value": "bbse_failed"
+                  "value": "bbse-bank-2.0"
                 }
               ]
             }
@@ -371,7 +377,7 @@
               "variable": [
                 {
                   "key": "projectName",
-                  "value": "bbse-bank-2.7"
+                  "value": "bbse-bank-2.0"
                 }
               ]
             }
@@ -394,7 +400,7 @@
                 },
                 {
                   "key": "projectConfig",
-                  "value": "{\n    \"containerTimeout\": 0.2,\n    \"testExecutionArguments\": {\n        \"gasLimit\": 9000000,\n        \"memoryLimit\": 5000000,\n        \"otherArg\": 3252345624632623\n    }\n}",
+                  "value": "{\n    \"containerTimeout\": 3,\n    \"testExecutionArguments\": {\n        \"gasLimit\": 9000000,\n        \"memoryLimit\": 5000000,\n        \"otherArg\": 3252345624632623\n    }\n}",
                   "description": "The project config (An object containing containerTimeout and testExecutionArguments)\n\nFor the possible test execution arguments, send a GET request to \"/projects/descriptions/test-execution-arguments\"",
                   "type": "default"
                 }
