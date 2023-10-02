@@ -31,7 +31,7 @@ app.use(cookieParser()); // Enable cookie parsing
 app.use(
   rateLimit({
     windowMs: 2 * 60 * 1000,
-    limit: 20,
+    limit: 100,
     keyGenerator: (req) => req.ip
   })
 ); // Apply rate limiting: Allow a maximum of 20 requests per IP address in a 2-minute window
