@@ -24,7 +24,7 @@ export interface IProject extends mongoose.Document {
 const ProjectSchema = new mongoose.Schema<IProject>(
   {
     projectName: { type: String, maxlength: 20, unique: true, required: true },
-    upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },
+    upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true },
     config: { type: ProjectConfigSchema, required: true },
     testStatus: { type: String, enum: TestStatus, required: true, default: TestStatus.INCONCLUSIVE },
     results: { type: Object }

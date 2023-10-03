@@ -12,24 +12,25 @@ import submissionServices from '@services/submissionServices';
  * - If the user is an admin, it sets the 'findFunction' in the response locals to retrieve all submissions.
  * - If the user is not an admin, it sets the 'findFunction' in the response locals to retrieve submissions made by that user.
  *
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
+ * @param {IUser} res.locals.user - The user performing the retrieval (see authMiddlewares).
+ * @param {string} res.locals.projectName - The name of the project (see projectMiddlewares).
  * @returns {Promise<void>} A promise that resolves once the find function is set in the response locals.
  */
 const determineFindFunctionBasedOnUserRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { projectName } = res.locals;
+
   try {
     // If the user is an admin, return all submissions (Provide an empty next function to not trigger "next()" just yet)
     authMiddlewares.requireAdmin(req, res, () => null, { returnResponseOnError: false });
 
     // Set the find function to retrieve all submissions
-    res.locals.findFunction = submissionServices.findAllSubmissions();
+    res.locals.findFunction = submissionServices.findAllSubmissions(projectName);
   } catch {
     // If the user is not an admin, return submissions owned by the current user
     const { user } = res.locals;
 
     // Set the find function to retrieve submissions owned by the user
-    res.locals.findFunction = submissionServices.findAllSubmissionsByGivenUser(user);
+    res.locals.findFunction = submissionServices.findAllSubmissionsByGivenUser(projectName, user);
   }
 
   next();

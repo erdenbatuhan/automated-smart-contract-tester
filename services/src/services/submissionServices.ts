@@ -17,24 +17,39 @@ import uploadServices from '@services/uploadServices';
 import TestStatus from '@models/enums/TestStatus';
 
 /**
- * Finds all submissions.
+ * Finds all submissions associated with a specific project.
  *
- * @returns {Promise<ISubmission[]>} A promise that resolves to an array of all submissions.
+ * This function retrieves all submissions associated with the project
+ * that matches the specified project name.
+ *
+ * @param {string} projectName - The name of the project for which to find submissions.
+ * @param {SessionOption} [sessionOption] - Optional session option for the query.
+ * @returns {Promise<ISubmission[]>} A promise that resolves to an array of submissions associated with the given project.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllSubmissions = async (): Promise<ISubmission[]> => Submission.find().populate(['project', 'upload']).exec()
+const findAllSubmissions = async (
+  projectName: string, sessionOption?: SessionOption
+): Promise<ISubmission[]> => Submission.findAllByProject(projectName, sessionOption)
   .catch((err: Error | unknown) => {
     throw AppError.createAppError(err, 'An error occurred while finding all submissions.');
   });
 
 /**
- * Finds all submissions uploaded by a given user.
+ * Finds all submissions uploaded by a given user for a specific project.
  *
+ * This function retrieves all submissions associated with a project
+ * that matches the specified project name and were uploaded by the specified user.
+ *
+ * @param {string} projectName - The name of the project for which to find submissions.
  * @param {IUser} user - The user for whom to retrieve submissions.
- * @returns {Promise<ISubmission[]>} A promise that resolves to an array of submissions.
+ * @param {SessionOption} [sessionOption] - Optional session option for the query.
+ * @returns {Promise<ISubmission[]>} A promise that resolves to an array of submissions
+ *                                   uploaded by the given user for the given project.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllSubmissionsByGivenUser = async (user: IUser): Promise<ISubmission[]> => Submission.findByDeployer(user)
+const findAllSubmissionsByGivenUser = async (
+  projectName: string, user: IUser, sessionOption?: SessionOption
+): Promise<ISubmission[]> => Submission.findAllByProjectAndDeployer(projectName, user, sessionOption)
   .catch((err: Error | unknown) => {
     throw AppError.createAppError(err, 'An error occurred while finding all submissions uploaded by a given user.');
   });

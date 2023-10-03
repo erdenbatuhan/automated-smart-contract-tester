@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
+import type { SessionOption } from 'mongoose';
 
 import Constants from '@Constants';
 
+import Project from '@models/Project';
 import type { IProject } from '@models/Project';
 import Upload from '@models/Upload';
 import type { IUpload } from '@models/Upload';
@@ -20,14 +22,15 @@ export interface ISubmission extends mongoose.Document {
 }
 
 interface SubmissionModel extends mongoose.Model<ISubmission> {
-  findByDeployer(deployer: IUser): Promise<ISubmission[]>;
-  existsByIdAndDeployer(submissionId: string, deployer: IUser): Promise<boolean>;
+  findAllByProject(projectName: string, sessionOption?: SessionOption): Promise<ISubmission[]>
+  findAllByProjectAndDeployer(projectName: string, deployer: IUser, sessionOption?: SessionOption): Promise<ISubmission[]>;
+  existsByIdAndDeployer(submissionId: string, deployer: IUser, sessionOption?: SessionOption): Promise<boolean>;
 }
 
 const SubmissionSchema = new mongoose.Schema<ISubmission, SubmissionModel>(
   {
-    project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true, select: false },
-    upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true, select: false },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', index: true, required: true },
+    upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', index: true, required: true },
     testStatus: { type: String, enum: TestStatus, required: true, default: TestStatus.INCONCLUSIVE },
     results: { type: Object }
   },
@@ -61,32 +64,66 @@ SubmissionSchema.methods.toLean = function toLean(this: ISubmission): object {
   return this.toObject({ virtuals: true, depopulate: true });
 };
 
-SubmissionSchema.static('findByDeployer',
+SubmissionSchema.static('findAllByProject',
   /**
-   * Find submissions by deployer.
+   * Find all submissions associated with a specific project.
    *
-   * This static method searches for submissions associated with a specific deployer.
+   * This static method searches for all submissions associated with a project that matches the specified project name.
    *
+   * @param {string} projectName - The name of the project for which to find submissions.
+   * @param {SessionOption} [sessionOption] - Optional session option for MongoDB session management.
+   * @returns {Promise<ISubmission[]>} A Promise that resolves to an array of submissions associated with the project.
+   */
+  async function findAllByProject(
+    projectName: string, sessionOption?: SessionOption
+  ): Promise<ISubmission[]> {
+    return Project.findOne({ projectName }, null, sessionOption)
+      .then((project) => {
+        if (!project) return [];
+        return this.find({ project: project._id }, null, sessionOption);
+      });
+  }
+);
+
+SubmissionSchema.static('findAllByProjectAndDeployer',
+  /**
+   * Find submissions by project name and deployer.
+   *
+   * This static method searches for submissions associated with a specific project name and deployer.
+   *
+   * @param {string} projectName - The name of the project for which to find submissions.
    * @param {IUser} deployer - The deployer for whom to find submissions.
+   * @param {SessionOption} [sessionOption] - Optional session option for the query.
    * @returns {Promise<ISubmission[]>} A Promise that resolves to an array of submissions matching the criteria.
    */
-  async function findByDeployer(deployer: IUser): Promise<ISubmission[]> {
+  async function findAllByProjectAndDeployer(
+    projectName: string, deployer: IUser, sessionOption?: SessionOption
+  ): Promise<ISubmission[]> {
     return this.aggregate([
       {
-        $lookup: {
-          from: Upload.collection.name,
-          localField: 'upload',
-          foreignField: '_id',
-          as: 'upload'
+        $lookup: { from: Project.collection.name, localField: 'project', foreignField: '_id', as: 'project' }
+      },
+      {
+        $lookup: { from: Upload.collection.name, localField: 'upload', foreignField: '_id', as: 'upload' }
+      },
+      {
+        $match: {
+          'project.projectName': projectName,
+          'upload.deployer': new mongoose.Types.ObjectId(String(deployer._id))
         }
       },
-      { $match: { 'upload.deployer': new mongoose.Types.ObjectId(String(deployer._id)) } },
-      { $unwind: '$upload' }
-    ]).exec()
-      .then((submissionsAggregate) => {
-        const uploadIds = submissionsAggregate.map(({ upload }) => upload._id);
-        return this.find({ upload: { $in: uploadIds } }).populate(['project', 'upload']).exec();
-      });
+      {
+        $group: {
+          _id: null, // Group all documents into one group
+          uploadIds: { $push: '$upload._id' } // Accumulate upload IDs into an array
+        }
+      },
+      {
+        $project: { _id: 0, uploadIds: 1 } // Include only the uploadIds field (Exclude even the _id field)
+      }
+    ], sessionOption).exec().then(([aggregate]) => (
+      this.find({ upload: { $in: aggregate?.uploadIds } }).populate(['project', 'upload']).exec()
+    ));
   }
 );
 
@@ -96,10 +133,13 @@ SubmissionSchema.static('existsByIdAndDeployer',
    *
    * @param {string} submissionId - The ID of the submission to check.
    * @param {IUser} deployer - The deployer to check against.
+   * @param {SessionOption} [sessionOption] - Optional session option for the query.
    * @returns {Promise<boolean>} A promise that resolves to true if the submission was uploaded by the deployer, otherwise false.
    */
-  async function existsByIdAndDeployer(submissionId: string, deployer: IUser): Promise<boolean> {
-    return this.findById(submissionId, 'upload')
+  async function existsByIdAndDeployer(
+    submissionId: string, deployer: IUser, sessionOption?: SessionOption
+  ): Promise<boolean> {
+    return this.findById(submissionId, 'upload', sessionOption)
       .populate('upload').exec()
       .then((submissionFound) => !!submissionFound && String(submissionFound.deployer) === String(deployer._id));
   }

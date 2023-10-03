@@ -1,5 +1,5 @@
-import type { ProjectionType, SessionOption } from 'mongoose';
 import mongoose from 'mongoose';
+import type { ProjectionType, SessionOption } from 'mongoose';
 import { HttpStatusCode } from 'axios';
 
 import Logger from '@Logger';
@@ -17,11 +17,11 @@ import TestStatus from '@models/enums/TestStatus';
 /**
  * Finds all projects.
  *
- * @param {string | null} [populatePath = 'upload'] - Optional path(s) to populate in the query.
+ * @param {string} [populatePath] - Optional path(s) to populate in the query.
  * @returns {Promise<IProject[]>} A promise that resolves to an array of all projects.
  * @throws {AppError} If an error occurs during the operation.
  */
-const findAllProjects = async (populatePath: string | null = 'upload'): Promise<IProject[]> => {
+const findAllProjects = async (populatePath?: string): Promise<IProject[]> => {
   // If a populate path is provided, add population to the query
   let findQuery = Project.find();
   if (populatePath) findQuery = findQuery.populate(populatePath);
@@ -42,10 +42,8 @@ const findAllProjects = async (populatePath: string | null = 'upload'): Promise<
  * @throws {AppError} If the project is not found (HTTP 404) or if an error occurs during the operation.
  */
 const findProjectByName = async (
-  projectName: string,
-  populatePath: string | null = 'upload',
-  projection?: ProjectionType<IProject> | null,
-  sessionOption?: SessionOption
+  projectName: string, populatePath: string | null = 'upload',
+  projection?: ProjectionType<IProject> | null, sessionOption?: SessionOption
 ): Promise<IProject> => {
   // If a populate path is provided, add population to the query
   let findQuery = Project.findOne({ projectName }, projection, sessionOption);
@@ -247,7 +245,7 @@ const downloadProjectFiles = (projectName: string): Promise<Buffer> => findProje
  */
 const downloadFilesForAllProjects = async (): Promise<{ project: IProject; zipBuffer: Buffer }[]> => {
   Logger.info('Fetching all projects from the DB.');
-  const projects = await findAllProjects();
+  const projects = await findAllProjects('upload');
 
   try {
     Logger.info('Downloading the uploaded files for each project.');
