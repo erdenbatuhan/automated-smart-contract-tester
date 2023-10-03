@@ -12,8 +12,8 @@ services:
     networks:
       application-network: # External network to access this application
       isolated-network-rabbit: # Isolated network for RabbitMQ
-#    ports: # Uncomment for testing purposes; preferably, it should only be accessible through the network `application-network`!
-#      - ${PORT}:${PORT}
+    ports: # Preferably, it should only be accessible through the network `application-network`!
+      - ${PORT}:${PORT}
     env_file:
       - application.properties
       - rabbitmq.properties
@@ -88,6 +88,7 @@ services:
         condition: service_healthy
 networks:
   application-network: # External network for accessing this application
+    driver: bridge
   isolated-network-rabbit: # Isolated network for RabbitMQ
 volumes:
   volume-rabbitmq.data: # Data volume for RabbitMQ
