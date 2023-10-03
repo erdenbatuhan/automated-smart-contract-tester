@@ -88,7 +88,6 @@ services:
         condition: service_healthy
 networks:
   application-network: # External network for accessing this application
-    driver: bridge
   isolated-network-rabbit: # Isolated network for RabbitMQ
 volumes:
   volume-rabbitmq.data: # Data volume for RabbitMQ
