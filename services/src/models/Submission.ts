@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import type { SessionOption } from 'mongoose';
+import mongooseAutoPopulate from 'mongoose-autopopulate';
 
 import Constants from '@Constants';
 
@@ -30,7 +31,13 @@ interface SubmissionModel extends mongoose.Model<ISubmission> {
 const SubmissionSchema = new mongoose.Schema<ISubmission, SubmissionModel>(
   {
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', index: true, required: true },
-    upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', index: true, required: true },
+    upload: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Upload',
+      index: true,
+      required: true,
+      autopopulate: true // This field should be populated for the virtual field 'deployer'
+    },
     testStatus: { type: String, enum: TestStatus, required: true, default: TestStatus.INCONCLUSIVE },
     results: { type: Object }
   },
@@ -121,9 +128,10 @@ SubmissionSchema.static('findAllByProjectAndDeployer',
       {
         $project: { _id: 0, uploadIds: 1 } // Include only the uploadIds field (Exclude even the _id field)
       }
-    ], sessionOption).exec().then(([aggregate]) => (
-      this.find({ upload: { $in: aggregate?.uploadIds } }).populate(['project', 'upload']).exec()
-    ));
+    ], sessionOption).exec()
+      .then(([aggregate]) => (
+        this.find({ upload: { $in: aggregate?.uploadIds } })
+      ));
   }
 );
 
@@ -139,11 +147,13 @@ SubmissionSchema.static('existsByIdAndDeployer',
   async function existsByIdAndDeployer(
     submissionId: string, deployer: IUser, sessionOption?: SessionOption
   ): Promise<boolean> {
-    return this.findById(submissionId, 'upload', sessionOption)
-      .populate('upload').exec()
+    return this.findById(submissionId, 'upload', sessionOption).exec()
       .then((submissionFound) => !!submissionFound && String(submissionFound.deployer) === String(deployer._id));
   }
 );
+
+// Plugins
+(SubmissionSchema as mongoose.Schema<ISubmission>).plugin(mongooseAutoPopulate);
 
 // Submission
 export default mongoose.model<ISubmission, SubmissionModel>('Submission', SubmissionSchema);

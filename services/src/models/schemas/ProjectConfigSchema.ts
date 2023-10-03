@@ -13,8 +13,6 @@ export interface IProjectConfig {
   tests?: ITest[];
   containerTimeout?: number;
   testExecutionArguments?: ITestExecutionArguments;
-
-  preSave?(this: IProjectConfig, next: CallbackWithoutResultAndOptionalError): Promise<void>;
 }
 
 const ProjectConfigSchema = new mongoose.Schema<IProjectConfig>(

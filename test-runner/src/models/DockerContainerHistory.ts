@@ -15,8 +15,6 @@ export interface IDockerContainerHistory extends mongoose.Document {
   status: Status;
   purpose: ContainerPurpose;
   container?: IDockerContainerResults;
-
-  preSave(this: IDockerContainerHistory, next: CallbackWithoutResultAndOptionalError): Promise<void>;
 }
 
 const DockerContainerHistorySchema = new mongoose.Schema<IDockerContainerHistory>(

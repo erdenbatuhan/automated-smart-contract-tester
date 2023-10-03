@@ -36,10 +36,11 @@ const findAllMessageRequests = async (
  */
 const findMessageRequest = (
   messageRequestId: Schema.Types.ObjectId | string
-): Promise<IMessageRequest> => MessageRequest.findById(messageRequestId).exec().then((messageRequest) => {
-  if (!messageRequest) throw new AppError(HttpStatusCode.NotFound, `Message request with ID=${messageRequestId} not found.`);
-  return messageRequest;
-});
+): Promise<IMessageRequest> => MessageRequest.findById(messageRequestId).exec()
+  .then((messageRequest) => {
+    if (!messageRequest) throw new AppError(HttpStatusCode.NotFound, `Message request with ID=${messageRequestId} not found.`);
+    return messageRequest;
+  });
 
 /**
  * Checks if a message request with the specified ID belongs to the given user.

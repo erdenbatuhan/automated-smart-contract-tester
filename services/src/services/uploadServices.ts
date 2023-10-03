@@ -73,15 +73,16 @@ const downloadUploadedFiles = (contextName: string, upload: IUpload): Buffer => 
 const deleteUpload = async (upload: IUpload, sessionOption?: SessionOption): Promise<void> => {
   Logger.info(`Deleting the upload with the ID '${upload._id}'.`);
 
-  await Upload.findByIdAndDelete(upload._id, sessionOption).exec().then((uploadDeleted) => {
-    if (!uploadDeleted) {
-      throw new AppError(HttpStatusCode.NotFound, `No upload with the ID '${upload._id}' found.`);
-    }
+  await Upload.findByIdAndDelete(upload._id, sessionOption).exec()
+    .then((uploadDeleted) => {
+      if (!uploadDeleted) {
+        throw new AppError(HttpStatusCode.NotFound, `No upload with the ID '${upload._id}' found.`);
+      }
 
-    Logger.info(`Successfully deleted the upload with the ID '${upload._id}'.`);
-  }).catch((err: AppError | Error | unknown) => {
-    throw AppError.createAppError(err, `An error occurred while deleting the upload with the ID '${upload._id}'.`);
-  });
+      Logger.info(`Successfully deleted the upload with the ID '${upload._id}'.`);
+    }).catch((err: AppError | Error | unknown) => {
+      throw AppError.createAppError(err, `An error occurred while deleting the upload with the ID '${upload._id}'.`);
+    });
 };
 
 export default { uploadZipBuffer, downloadUploadedFiles, deleteUpload };

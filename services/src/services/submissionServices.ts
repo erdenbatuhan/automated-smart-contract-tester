@@ -67,7 +67,7 @@ const findAllSubmissionsByGivenUser = async (
 const findSubmissionById = (
   projectName: string, submissionId: string, projection?: ProjectionType<ISubmission>, sessionOption?: SessionOption
 ): Promise<ISubmission> => Submission.findById(submissionId, projection, sessionOption)
-  .populate(['project', 'upload']).exec()
+  .populate(['project']).exec()
   .then((submission) => {
     if (!submission || (submission.project && submission.project!.projectName !== projectName)) {
       throw new AppError(HttpStatusCode.NotFound, `No submission with the ID '${submissionId}' found within the ${projectName} project.`);
@@ -114,7 +114,7 @@ const createSubmission = async (
     Logger.info(`Running a submission for the ${projectName} project.`);
 
     // Find the project by name and create a new submission document
-    const project = await projectServices.findProjectByName(projectName, null, 'projectName config', { session });
+    const project = await projectServices.findProjectByName(projectName, '', { session });
     const submission = new Submission({ project });
 
     // Upload submission files and get the upload document saved
@@ -202,11 +202,12 @@ const deleteSubmissionById = async (projectName: string, submissionId: string, s
       .then(({ upload }) => uploadServices.deleteUpload(upload, { session }));
 
     // Step 2: Delete the submission from the DB
-    await Submission.findByIdAndDelete(submissionId, sessionOption).exec().then((submissionDeleted) => {
-      if (!submissionDeleted) throw new Error();
-    }).catch((err: AppError | Error | unknown) => {
-      throw new AppError(HttpStatusCode.InternalServerError, `Failed to delete the submission (ID=${submissionId}).`, (err as Error)?.message); // Should not happen normally!
-    });
+    await Submission.findByIdAndDelete(submissionId, sessionOption).exec()
+      .then((submissionDeleted) => {
+        if (!submissionDeleted) throw new Error();
+      }).catch((err: AppError | Error | unknown) => {
+        throw new AppError(HttpStatusCode.InternalServerError, `Failed to delete the submission (ID=${submissionId}).`, (err as Error)?.message); // Should not happen normally!
+      });
 
     // Commit transaction
     await session.commitTransaction();

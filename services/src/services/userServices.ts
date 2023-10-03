@@ -31,8 +31,7 @@ const findUsersByIds = async (userIds?: string[] | null): Promise<IUser[]> => Us
  */
 const findUserById = (
   userId: string, sessionOption?: SessionOption
-): Promise<IUser> => User.findById(userId, null, sessionOption)
-  .exec()
+): Promise<IUser> => User.findById(userId, null, sessionOption).exec()
   .then((user) => {
     if (!user) throw new AppError(HttpStatusCode.NotFound, `No user with the ID '${userId}' found.`);
     return user;
@@ -52,15 +51,16 @@ const findUserById = (
 const deleteUserById = async (userId: string, sessionOption?: SessionOption): Promise<void> => {
   Logger.info(`Deleting the user with the ID '${userId}'.`);
 
-  await User.findByIdAndDelete(userId, sessionOption).exec().then((userDeleted) => {
-    if (!userDeleted) {
-      throw new AppError(HttpStatusCode.NotFound, `No user with the ID '${userId}' found.`);
-    }
+  await User.findByIdAndDelete(userId, sessionOption).exec()
+    .then((userDeleted) => {
+      if (!userDeleted) {
+        throw new AppError(HttpStatusCode.NotFound, `No user with the ID '${userId}' found.`);
+      }
 
-    Logger.info(`Successfully deleted the user with the ID '${userId}'.`);
-  }).catch((err: AppError | Error | unknown) => {
-    throw AppError.createAppError(err, `An error occurred while deleting the user with the ID '${userId}'.`);
-  });
+      Logger.info(`Successfully deleted the user with the ID '${userId}'.`);
+    }).catch((err: AppError | Error | unknown) => {
+      throw AppError.createAppError(err, `An error occurred while deleting the user with the ID '${userId}'.`);
+    });
 };
 
 export default { findUsersByIds, findUserById, deleteUserById };

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongooseAutoPopulate from 'mongoose-autopopulate';
 
 import Constants from '@Constants';
 
@@ -24,7 +25,13 @@ export interface IProject extends mongoose.Document {
 const ProjectSchema = new mongoose.Schema<IProject>(
   {
     projectName: { type: String, maxlength: 20, unique: true, required: true },
-    upload: { type: mongoose.Schema.Types.ObjectId, ref: 'Upload', required: true },
+    upload: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Upload',
+      index: true,
+      required: true,
+      autopopulate: true // This field should be populated for the virtual field 'deployer'
+    },
     config: { type: ProjectConfigSchema, required: true },
     testStatus: { type: String, enum: TestStatus, required: true, default: TestStatus.INCONCLUSIVE },
     results: { type: Object }
@@ -58,6 +65,9 @@ ProjectSchema.virtual<IProject>('deployer', {
 ProjectSchema.methods.toLean = function toLean(this: IProject): object {
   return this.toObject({ virtuals: true, depopulate: true });
 };
+
+// Plugins
+ProjectSchema.plugin(mongooseAutoPopulate);
 
 // Project
 export default mongoose.model<IProject>('Project', ProjectSchema);
