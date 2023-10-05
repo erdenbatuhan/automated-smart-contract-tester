@@ -20,7 +20,7 @@ remove_image: remove_container
 build: remove_image
 	docker build \
 		--build-arg PORT=$(PORT) \
-		-f ./docker/dev/Dockerfile.dev \
+		-f docker/Dockerfile.dev \
 		-t $(IMAGE) .
 
 .PHONY: run
