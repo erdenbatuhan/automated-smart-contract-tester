@@ -1,11 +1,12 @@
 version: "3"
+
 services:
   # Backend Services
   services:
     container_name: services # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
     build:
       context: ./services
-      dockerfile: docker/Dockerfile.prod
+      dockerfile: docker/prod/Dockerfile.prod
       args:
         PORT: ${PORT}
     restart: unless-stopped
@@ -34,6 +35,7 @@ services:
         condition: service_healthy
       runner:
         condition: service_healthy
+
   # RabbitMQ
   rabbitmq:
     container_name: rabbitmq # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
@@ -54,12 +56,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
   # Test Runner Service
   runner:
     container_name: runner # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
     build:
       context: ./test-runner
-      dockerfile: docker/Dockerfile.prod
+      dockerfile: docker/prod/Dockerfile.prod
       args:
         PORT: ${PORT}
     restart: unless-stopped
@@ -86,11 +89,14 @@ services:
         condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
+
 networks:
   application-network: # External network for accessing this application
   isolated-network-rabbit: # Isolated network for RabbitMQ
+
 volumes:
   volume-rabbitmq.data: # Data volume for RabbitMQ
+
 secrets:
   secret-services-mongodb_uri:
     file: ./services/secrets/mongodb-uri.secret
