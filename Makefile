@@ -7,7 +7,7 @@ ENV_FILES = \
 	$(if $(wildcard .env), --env-file .env)
 COMPOSE_FILES = \
 	-f $(MONGO_DIR)/docker-compose.mongo.yml \
-	-f ./docker-compose.prod.yml
+	-f ./docker/docker-compose.production.yml
 
 .PHONY: stop
 stop:

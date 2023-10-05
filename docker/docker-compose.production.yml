@@ -1,22 +1,24 @@
 version: "3"
+
 services:
   # Backend Services
   services:
     container_name: services # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
+    image: "${APP_NAME}-services:prod"
     build:
       context: ./services
-      dockerfile: docker/Dockerfile.prod
+      dockerfile: ./docker/Dockerfile.production
       args:
         PORT: ${PORT}
     restart: unless-stopped
     networks:
       application-network: # External network to access this application
       isolated-network-rabbit: # Isolated network for RabbitMQ
-    ports: # Preferably, it should only be accessible through the network `application-network`!
-      - ${PORT}:${PORT}
+#    ports: # Uncomment for testing purposes; preferably, it should only be accessible through the network `application-network`!
+#      - ${PORT}:${PORT}
     env_file:
-      - application.properties
-      - rabbitmq.properties
+      - ./application.properties
+      - ./rabbitmq.properties
     environment:
       RABBITMQ_HOST: rabbitmq # Ensure this matches the service and container name of the RabbitMQ service
     secrets:
@@ -34,6 +36,7 @@ services:
         condition: service_healthy
       runner:
         condition: service_healthy
+
   # RabbitMQ
   rabbitmq:
     container_name: rabbitmq # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
@@ -54,12 +57,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
   # Test Runner Service
   runner:
     container_name: runner # Keep this the same with the service name for better compatibility with both Docker Swarm and Compose configurations
+    image: "${APP_NAME}-runner:prod"
     build:
       context: ./test-runner
-      dockerfile: docker/Dockerfile.prod
+      dockerfile: ./docker/Dockerfile.production
       args:
         PORT: ${PORT}
     restart: unless-stopped
@@ -71,8 +76,8 @@ services:
 #    ports: # Uncomment for testing purposes; under normal conditions, it should only be accessible through the isolated RabbitMQ network!
 #      - 4001:${PORT}
     env_file:
-      - application.properties
-      - rabbitmq.properties
+      - ./application.properties
+      - ./rabbitmq.properties
     environment:
       MONGODB_URI: mongodb://${MONGO_HOSTS}/testrunner_db?replicaSet=${MONGO_REPL_ID}&retryWrites=true&w=majority
       RABBITMQ_HOST: rabbitmq # Ensure this matches the service and container name of the RabbitMQ service
@@ -86,11 +91,14 @@ services:
         condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
+
 networks:
   application-network: # External network for accessing this application
   isolated-network-rabbit: # Isolated network for RabbitMQ
+
 volumes:
   volume-rabbitmq.data: # Data volume for RabbitMQ
+
 secrets:
   secret-services-mongodb_uri:
     file: ./services/secrets/mongodb-uri.secret

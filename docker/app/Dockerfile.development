@@ -12,7 +12,7 @@ RUN NODE_ENV=development npm install
 
 # Bundle the app source
 COPY . .
-#RUN rm -rf /app/secrets # Ensure secrets are not included (already ignored in .dockerignore, this is just an additional safeguard)
+RUN rm -rf /app/secrets # Ensure secrets are not included (already ignored in .dockerignore, this is just an additional safeguard)
 
 # Expose the port
 ARG PORT
