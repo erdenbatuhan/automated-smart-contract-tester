@@ -34,5 +34,8 @@ COPY src src
 RUN forge snapshot --snap .gas-snapshot
 RUN rm -rf src/*
 
+# Remove the build artifacts and cache directories
+RUN forge clean
+
 # Run the tests (make sure to copy the "src" folder containing the implemented contracts before running the container!)
 CMD ["forge", "test", "-vv"]
