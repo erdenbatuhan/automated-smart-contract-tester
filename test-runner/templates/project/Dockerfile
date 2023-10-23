@@ -28,9 +28,9 @@ RUN ./install_libraries.sh
 COPY test test
 
 # (1) "forge build": Ensures that the compiler is pre-installed and the dependencies are pre-created
-# (2) "forge snapshot": (1) + Generates gas snapshots for all the test functions using the solution (src) provided
+# (2) "forge snapshot": (1) + Generates gas snapshots for all the test functions using the solution (the src folder) provided
 COPY src src
-# RUN forge build
+# RUN forge build (Redundant, as "forge snapshot" already compiles the project)
 RUN forge snapshot --snap .gas-snapshot
 RUN rm -rf src/*
 
