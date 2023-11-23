@@ -1,3 +1,6 @@
 [submodule "dockerized-mongodb-replicas"]
 	path = mongo
 	url = git@github.com:erdenbatuhan/dockerized-mongodb-replicas.git
+[submodule "framework-comparison"]
+	path = framework-comparison
+	url = git@github.com:erdenbatuhan/automated-smart-contract-tester-comparison.git
