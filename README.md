@@ -1,7 +1,11 @@
 # Automated Smart Contract Tester
 
+This project, a Master's Thesis in Informatics, was completed at the Technical University of Munich (TUM), specifically under the [Software Engineering for Business Information Systems (SEBIS)](https://github.com/sebischair) chair. For detailed information, the thesis is accessible via [this link](https://wwwmatthes.in.tum.de/pages/slyv5swkmrgf/Master-s-Thesis-Batuhan-Erden).
+
 ## Contents
 
+- [Abstract](#abstract)
+- [Comparative Analysis of Test Runner Frameworks](#comparative-analysis-of-test-runner-frameworks)
 - [High-level Sequence Diagram](#high-level-sequence-diagram)
 - [System Architecture](#system-architecture)
 - [Data Model](#data-model)
@@ -16,6 +20,20 @@
 - [Development](#development)
   - [Setting up the Development Environment](#setting-up-the-development-environment)
   - [Running the services separately](#running-the-services-separately)
+
+## Abstract
+
+In the rising era of modern computing, blockchain technology has emerged as a crucial player, enabling secure transactions within an immutable record-keeping system. Capturing major attention from both academia and industry, its growth has encouraged continuous development, especially in the area of smart contracts. Due to the unalterable nature of a blockchain, it is imperative to test smart contracts to guarantee that they are free of vulnerabilities before deployment. Therefore, automated testing of smart contracts has become an important notion that has also found its way into educational environments to build foundational knowledge.
+
+This thesis proposes a scalable service for automated unit testing of Solidity smart contracts within an educational context, allowing students to upload their smart contract inputs, which are executed against instructor-provided tests to offer constructive feedback on their contracts. The comparative analysis of the testing tools — Truffle, Hardhat, and Foundry — informs the selection of the optimal one to be used for smart contract testing, considering factors like usability, development experience, features, performance, and containerization capabilities. The service is designed with a microservice architecture and developed with the chosen tool used for smart contract testing. Furthermore, it is containerized using Docker and orchestrated with Docker Compose. Following that, inter-service communication is facilitated through RabbitMQ for stability under high loads, and Docker Swarm is utilized to enable horizontal scaling.
+
+The evaluation of the testing service encompasses security, stability, efficiency, and scalability, confirming its ability to handle the simultaneous load of multiple submissions in a secure and stable software package. The work concludes with discussion on the summary of the work, possible future directions, and the extensive documentation offered for future maintainability.
+
+We claim that this testing service will significantly contribute to the technological developments in educational settings, aiding students in creating more secure, reliable, and robust smart contracts before deploying them in critical applications. By utilizing an automated smart contract tester, students can have their contracts evaluated against tests developed by instructors, enhancing the learning process and eliminating the need for them to write their own tests. Moreover, the scalable and load-balancing nature of the service will allow for a smooth user experience, even during times of heavy load.
+
+## Comparative Analysis of Test Runner Frameworks
+
+To access an in-depth comparative analysis of various test runner frameworks, including Truffle, Hardhat, and Foundry, please visit [this repository](https://github.com/erdenbatuhan/automated-smart-contract-tester-comparison).
 
 ## High-level Sequence Diagram
 
